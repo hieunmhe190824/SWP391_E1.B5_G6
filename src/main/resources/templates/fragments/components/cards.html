@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <!-- Vehicle Card -->
+    <div th:fragment="vehicle-card(vehicle)" class="vehicle-card">
+        <img th:src="${vehicle.imageUrl}" th:alt="${vehicle.model.modelName}" />
+        <div class="vehicle-card-body">
+            <h3 class="vehicle-card-title" th:text="${vehicle.model.brand.brandName + ' ' + vehicle.model.modelName}">Vehicle Name</h3>
+            <p class="vehicle-card-text" th:text="'License: ' + ${vehicle.licensePlate}">License Plate</p>
+            <p class="vehicle-card-text" th:text="'Seats: ' + ${vehicle.seatingCapacity}">Seats</p>
+            <p class="vehicle-card-text" th:text="'Fuel: ' + ${vehicle.fuelType}">Fuel Type</p>
+            <p class="vehicle-card-price" th:text="${vehicle.dailyRate + ' VND/day'}">Price</p>
+            <a th:href="@{/bookings/create(vehicleId=${vehicle.id})}" class="btn btn-primary">Book Now</a>
+        </div>
+    </div>
+
+    <!-- Booking Card -->
+    <div th:fragment="booking-card(booking)" class="booking-card">
+        <div class="booking-info">
+            <h4 th:text="${booking.vehicle.model.brand.brandName + ' ' + booking.vehicle.model.modelName}">Vehicle</h4>
+            <p th:text="'From: ' + ${booking.startDate}">Start Date</p>
+            <p th:text="'To: ' + ${booking.endDate}">End Date</p>
+            <p th:text="'Total: ' + ${booking.totalAmount} + ' VND'">Total Amount</p>
+        </div>
+        <div class="booking-actions">
+            <span th:class="'booking-status status-' + ${booking.status.name().toLowerCase()}"
+                  th:text="${booking.status}">Status</span>
+        </div>
+    </div>
+
+    <!-- Simple Card -->
+    <div th:fragment="card(title, content)" class="card">
+        <h3 th:text="${title}">Card Title</h3>
+        <div th:replace="${content}">Card Content</div>
+    </div>
+
+    <!-- Page Card: standard card layout for dashboards/admin/staff pages -->
+    <section th:fragment="card-page(title, description, content)" class="page-card">
+        <div class="page-card-header">
+            <h2 th:text="${title}">Page Title</h2>
+            <p th:if="${description}" th:text="${description}" class="page-card-description">
+                Page description
+            </p>
+        </div>
+        <div class="page-card-body">
+            <div th:replace="${content}">Page Content</div>
+        </div>
+    </section>
+</body>
+</html>

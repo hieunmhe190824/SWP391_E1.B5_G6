@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/auth-layout :: auth-layout('Đăng nhập - Car Rental System', ~{::authForm})}">
+
+<div th:fragment="authForm">
+    <div class="form-icon">
+        <div class="icon-holder">
+            <img th:src="@{/images/icon1.svg}" alt="Login Icon">
+        </div>
+    </div>
+
+    <h3 class="form-title-center">Đăng nhập để sử dụng hệ thống thuê xe</h3>
+
+    <!-- Global messages -->
+    <div th:if="${param.error}">
+        <div th:replace="~{fragments/components/messages :: error('Email hoặc mật khẩu không đúng')}"></div>
+    </div>
+    <div th:if="${param.logout}">
+        <div th:replace="~{fragments/components/messages :: info('Bạn đã đăng xuất thành công')}"></div>
+    </div>
+    <div th:if="${param.registered}">
+        <div th:replace="~{fragments/components/messages :: success('Đăng ký thành công, vui lòng đăng nhập')}"></div>
+    </div>
+
+    <form th:action="@{/auth/login}" method="post">
+        <input type="hidden"
+               th:name="${_csrf.parameterName}"
+               th:value="${_csrf.token}"/>
+
+        <!-- Reusable form components -->
+        <div th:replace="~{fragments/components/forms :: input-email('Email đăng nhập', 'username', null, true, 'E-mail Address')}"></div>
+        <div th:replace="~{fragments/components/forms :: input-password('Mật khẩu', 'password', true, 'Password')}"></div>
+
+        <div class="form-button">
+            <button th:replace="~{fragments/components/buttons :: btn-submit('Đăng nhập')}"></button>
+        </div>
+    </form>
+
+    <p class="text-center" style="margin-top: 1rem;">
+        Chưa có tài khoản?
+        <a th:href="@{/auth/register}">Đăng ký ngay</a>
+    </p>
+</div>
+</html>

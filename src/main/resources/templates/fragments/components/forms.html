@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <!-- Text Input -->
+    <div th:fragment="input-text(label, name, value, required, placeholder)" class="form-group">
+        <label th:for="${name}" th:text="${label}">Label</label>
+        <input type="text"
+               th:id="${name}"
+               th:name="${name}"
+               th:value="${value}"
+               th:required="${required}"
+               th:placeholder="${placeholder}"
+               class="form-control" />
+    </div>
+
+    <!-- Email Input -->
+    <div th:fragment="input-email(label, name, value, required, placeholder)" class="form-group">
+        <label th:for="${name}" th:text="${label}">Label</label>
+        <input type="email"
+               th:id="${name}"
+               th:name="${name}"
+               th:value="${value}"
+               th:required="${required}"
+               th:placeholder="${placeholder}"
+               class="form-control" />
+    </div>
+
+    <!-- Password Input -->
+    <div th:fragment="input-password(label, name, required, placeholder)" class="form-group">
+        <label th:for="${name}" th:text="${label}">Label</label>
+        <input type="password"
+               th:id="${name}"
+               th:name="${name}"
+               th:required="${required}"
+               th:placeholder="${placeholder}"
+               class="form-control" />
+    </div>
+
+    <!-- Date Input -->
+    <div th:fragment="input-date(label, name, value, required)" class="form-group">
+        <label th:for="${name}" th:text="${label}">Label</label>
+        <input type="datetime-local"
+               th:id="${name}"
+               th:name="${name}"
+               th:value="${value}"
+               th:required="${required}"
+               class="form-control" />
+    </div>
+
+    <!-- Select Dropdown -->
+    <div th:fragment="select(label, name, options, required)" class="form-group">
+        <label th:for="${name}" th:text="${label}">Label</label>
+        <select th:id="${name}"
+                th:name="${name}"
+                th:required="${required}"
+                class="form-control">
+            <option value="">Select...</option>
+            <option th:each="option : ${options}"
+                    th:value="${option.id}"
+                    th:text="${option.name}">Option</option>
+        </select>
+    </div>
+
+    <!-- Textarea -->
+    <div th:fragment="textarea(label, name, value, required)" class="form-group">
+        <label th:for="${name}" th:text="${label}">Label</label>
+        <textarea th:id="${name}"
+                  th:name="${name}"
+                  th:required="${required}"
+                  class="form-control"
+                  rows="4"
+                  th:text="${value}"></textarea>
+    </div>
+</body>
+</html>

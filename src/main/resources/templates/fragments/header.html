@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <header th:fragment="header">
+        <nav class="navbar">
+            <a th:href="@{/}" class="navbar-brand">Car Rental System</a>
+            <ul class="navbar-nav">
+                <li><a th:href="@{/}">Home</a></li>
+                <li><a th:href="@{/vehicles}">Vehicles</a></li>
+                <li><a th:href="@{/bookings/my-bookings}">My Bookings</a></li>
+                <li><a th:href="@{/support/tickets}">Support</a></li>
+                <li><a th:href="@{/auth/login}">Login</a></li>
+                <li><a th:href="@{/auth/register}">Register</a></li>
+            </ul>
+        </nav>
+    </header>
+</body>
+</html>

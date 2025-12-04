@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Car Rental System</title>
+    <link rel="stylesheet" th:href="@{/static/css/main.css}">
+    <link rel="stylesheet" th:href="@{/static/css/components.css}">
+</head>
+<body>
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <main class="container">
+        <h1>My Profile</h1>
+
+        <div class="card">
+            <h2>Personal Information</h2>
+            <p><strong>Username:</strong> <span th:text="${user.username}">username</span></p>
+            <p><strong>Full Name:</strong> <span th:text="${user.fullName}">Full Name</span></p>
+            <p><strong>Email:</strong> <span th:text="${user.email}">email@example.com</span></p>
+            <p><strong>Phone:</strong> <span th:text="${user.phoneNumber}">Phone Number</span></p>
+            <p><strong>Role:</strong> <span th:text="${user.role}">CUSTOMER</span></p>
+        </div>
+    </main>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Bookings - Car Rental System</title>
+    <link rel="stylesheet" th:href="@{/static/css/main.css}">
+    <link rel="stylesheet" th:href="@{/static/css/components.css}">
+</head>
+<body>
+    <div th:replace="~{fragments/navbar :: staff-nav}"></div>
+
+    <main class="container">
+        <h1>Manage Bookings</h1>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Customer</th>
+                    <th>Vehicle</th>
+                    <th>Start Date</th>
+                    <th>End Date</th>
+                    <th>Total Amount</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="booking : ${bookings}">
+                    <td th:text="${booking.id}">1</td>
+                    <td th:text="${booking.customer.fullName}">Customer</td>
+                    <td th:text="${booking.vehicle.model.modelName}">Vehicle</td>
+                    <td th:text="${booking.startDate}">Start</td>
+                    <td th:text="${booking.endDate}">End</td>
+                    <td th:text="${booking.totalAmount}">Amount</td>
+                    <td th:text="${booking.status}">Status</td>
+                    <td>
+                        <a th:href="@{'/bookings/' + ${booking.id}}" class="btn btn-primary">View</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </main>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

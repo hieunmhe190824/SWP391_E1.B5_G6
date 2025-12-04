@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Car Rental System</title>
+    <link rel="stylesheet" th:href="@{/static/css/main.css}">
+    <link rel="stylesheet" th:href="@{/static/css/components.css}">
+</head>
+<body>
+    <div th:replace="~{fragments/navbar :: admin-nav}"></div>
+
+    <main class="container">
+        <h1>Admin Dashboard</h1>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3 th:text="${totalUsers}">0</h3>
+                <p>Total Users</p>
+            </div>
+
+            <div class="stat-card">
+                <h3 th:text="${totalVehicles}">0</h3>
+                <p>Total Vehicles</p>
+            </div>
+
+            <div class="stat-card">
+                <h3 th:text="${totalBookings}">0</h3>
+                <p>Total Bookings</p>
+            </div>
+        </div>
+
+        <section style="margin-top: 2rem;">
+            <h2>Quick Actions</h2>
+            <div class="grid">
+                <div class="card">
+                    <h3>Manage Users</h3>
+                    <a th:href="@{/admin/users}" class="btn btn-primary">View Users</a>
+                </div>
+
+                <div class="card">
+                    <h3>Manage Vehicles</h3>
+                    <a th:href="@{/admin/vehicles}" class="btn btn-primary">View Vehicles</a>
+                </div>
+
+                <div class="card">
+                    <h3>View Reports</h3>
+                    <a th:href="@{/admin/reports}" class="btn btn-primary">View Reports</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

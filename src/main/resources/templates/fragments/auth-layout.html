@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:fragment="auth-layout(pageTitle, formFragment)">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle}">Car Rental System - Authentication</title>
+
+    <!-- Vendor / template styles -->
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/fontawesome-all.min.css}">
+    <!-- Auth template styles (renamed from original iofrm) -->
+    <link rel="stylesheet" th:href="@{/css/auth-style.css}">
+    <link rel="stylesheet" th:href="@{/css/auth-theme-main.css}">
+
+    <!-- Project reusable styles -->
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+</head>
+
+<body>
+<div class="form-body without-side">
+    <div class="website-logo">
+        <a th:href="@{/}">
+            <div class="logo">
+                <img class="logo-size" th:src="@{/images/logo-light.svg}" alt="Car Rental System Logo">
+            </div>
+        </a>
+    </div>
+
+    <div class="auth-layout">
+        <div class="img-holder">
+            <div class="bg"></div>
+            <div class="info-holder">
+                <img th:src="@{/images/graphic8.svg}" alt="Car Rental Illustration">
+            </div>
+        </div>
+
+        <div class="form-holder">
+            <div class="form-content">
+                <div class="form-items">
+                    <div th:replace="${formFragment}"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/jquery.min.js}"></script>
+<script th:src="@{/js/popper.min.js}"></script>
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>
+
+

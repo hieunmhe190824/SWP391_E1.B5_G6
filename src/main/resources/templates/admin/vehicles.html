@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Vehicles - Car Rental System</title>
+    <link rel="stylesheet" th:href="@{/static/css/main.css}">
+    <link rel="stylesheet" th:href="@{/static/css/components.css}">
+</head>
+<body>
+    <div th:replace="~{fragments/navbar :: admin-nav}"></div>
+
+    <main class="container">
+        <h1>Manage Vehicles</h1>
+
+        <a th:href="@{/admin/vehicles/create}" class="btn btn-primary" style="margin-bottom: 1rem;">Add New Vehicle</a>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Brand</th>
+                    <th>Model</th>
+                    <th>License Plate</th>
+                    <th>Daily Rate</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="vehicle : ${vehicles}">
+                    <td th:text="${vehicle.id}">1</td>
+                    <td th:text="${vehicle.model.brand.brandName}">Brand</td>
+                    <td th:text="${vehicle.model.modelName}">Model</td>
+                    <td th:text="${vehicle.licensePlate}">License</td>
+                    <td th:text="${vehicle.dailyRate}">Rate</td>
+                    <td th:text="${vehicle.status}">Status</td>
+                    <td>
+                        <a th:href="@{'/admin/vehicles/' + ${vehicle.id}}" class="btn btn-primary">Edit</a>
+                        <a th:href="@{'/admin/vehicles/' + ${vehicle.id} + '/delete'}" class="btn btn-danger btn-delete">Delete</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </main>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+    <script th:src="@{/static/js/main.js}"></script>
+</body>
+</html>

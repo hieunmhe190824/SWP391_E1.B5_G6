@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <!-- Success Message -->
+    <div th:fragment="success(message)" class="alert alert-success">
+        <span th:text="${message}">Success message</span>
+    </div>
+
+    <!-- Error Message -->
+    <div th:fragment="error(message)" class="alert alert-error">
+        <span th:text="${message}">Error message</span>
+    </div>
+
+    <!-- Info Message -->
+    <div th:fragment="info(message)" class="alert alert-info">
+        <span th:text="${message}">Info message</span>
+    </div>
+
+    <!-- Warning Message -->
+    <div th:fragment="warning(message)" class="alert alert-warning">
+        <span th:text="${message}">Warning message</span>
+    </div>
+</body>
+</html>

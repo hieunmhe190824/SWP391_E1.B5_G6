@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home - Car Rental System</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+
+<main class="homepage">
+    <!-- HERO + SEARCH -->
+    <section class="hero-section">
+        <div class="hero-overlay"></div>
+        <div class="container hero-content">
+            <div class="hero-text">
+                <h1 class="hero-title">
+                    Find Your <span class="accent-primary">Perfect</span> Car
+                </h1>
+                <p class="hero-subtitle">
+                    Tìm kiếm, so sánh và đặt xe nhanh chóng với hệ thống thuê xe thông minh.
+                </p>
+            </div>
+
+            <div class="hero-search-card">
+                <div class="hero-search-toggle">
+                    <button class="chip chip-active" type="button">Tất cả</button>
+                    <button class="chip" type="button">Xe mới</button>
+                    <button class="chip" type="button">Đã qua sử dụng</button>
+                </div>
+
+                <form class="hero-search-form" th:action="@{/vehicles}" method="get">
+                    <div class="hero-search-fields">
+                        <div class="hero-search-field">
+                            <label>Hãng xe</label>
+                            <select name="brand" class="form-control">
+                                <option value="">Tất cả hãng</option>
+                            </select>
+                        </div>
+                        <div class="hero-search-field">
+                            <label>Dòng xe</label>
+                            <select name="model" class="form-control">
+                                <option value="">Tất cả dòng</option>
+                            </select>
+                        </div>
+                        <div class="hero-search-field">
+                            <label>Giá tối đa (VNĐ/ngày)</label>
+                            <select name="maxPrice" class="form-control">
+                                <option value="">Không giới hạn</option>
+                                <option value="700000">700,000</option>
+                                <option value="1000000">1,000,000</option>
+                                <option value="1500000">1,500,000</option>
+                                <option value="2000000">2,000,000</option>
+                            </select>
+                        </div>
+                        <div class="hero-search-button">
+                            <button type="submit" class="btn btn-primary hero-search-submit">
+                                <span>Tìm xe</span>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <div class="hero-categories">
+                    <button class="category-pill" type="button">Sedan</button>
+                    <button class="category-pill" type="button">SUV</button>
+                    <button class="category-pill" type="button">Hatchback</button>
+                    <button class="category-pill" type="button">Xe 7 chỗ</button>
+                    <button class="category-pill" type="button">Xe sang</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FEATURED LISTINGS -->
+    <section class="section-light">
+        <div class="container">
+            <div class="section-header">
+                <div>
+                    <p class="section-kicker">Handpicked</p>
+                    <h2 class="section-title">Featured Listings</h2>
+                </div>
+                <div class="section-tabs">
+                    <button class="chip chip-active" type="button">Xe mới</button>
+                    <button class="chip" type="button">Đã qua sử dụng</button>
+                </div>
+            </div>
+
+            <div class="featured-grid">
+                <article class="featured-main-card">
+                    <div class="featured-main-image"></div>
+                    <div class="featured-main-body">
+                        <h3>BMW 8-series coupe xám</h3>
+                        <div class="featured-main-meta">
+                            <span class="tag">2021</span>
+                            <span>Automatic</span>
+                            <span>Petrol</span>
+                        </div>
+                        <div class="featured-main-price">2.100.000 VNĐ/ngày</div>
+                    </div>
+                </article>
+
+                <div class="featured-side-grid">
+                    <article class="vehicle-card-small" th:each="i : ${#numbers.sequence(1,4)}">
+                        <div class="vehicle-card-thumb"></div>
+                        <div class="vehicle-card-body">
+                            <h4>Xe sedan hạng C</h4>
+                            <p class="vehicle-card-price">800.000 VNĐ/ngày</p>
+                            <p class="vehicle-card-meta">2020 • Automatic • 5 chỗ</p>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- POPULAR BRANDS -->
+    <section class="section-muted">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Popular Makes</h2>
+                <div class="section-tabs">
+                    <button class="chip chip-active" type="button">Toyota</button>
+                    <button class="chip" type="button">Honda</button>
+                    <button class="chip" type="button">Mazda</button>
+                    <button class="chip" type="button">Hyundai</button>
+                </div>
+            </div>
+
+            <div class="card-carousel">
+                <article class="vehicle-card-small" th:each="i : ${#numbers.sequence(1,4)}">
+                    <div class="vehicle-card-thumb"></div>
+                    <div class="vehicle-card-body">
+                        <h4>Toyota Vios 2023</h4>
+                        <p class="vehicle-card-price">600.000 VNĐ/ngày</p>
+                        <p class="vehicle-card-meta">2023 • Automatic • 5 chỗ</p>
+                    </div>
+                </article>
+            </div>
+
+            <div class="section-footer-right">
+                <a th:href="@{/vehicles}" class="btn btn-primary">Xem tất cả xe</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- WHY CHOOSE US -->
+    <section class="section-light">
+        <div class="container">
+            <h2 class="section-title text-center">Why choose us?</h2>
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3>Đa dạng dòng xe</h3>
+                    <p>Hơn 50+ mẫu xe từ phổ thông tới cao cấp, đáp ứng mọi nhu cầu di chuyển.</p>
+                </div>
+                <div class="info-card">
+                    <h3>Giá minh bạch</h3>
+                    <p>Giá thuê rõ ràng, không phí ẩn. Hỗ trợ báo giá nhanh theo thời gian thuê.</p>
+                </div>
+                <div class="info-card">
+                    <h3>Hỗ trợ 24/7</h3>
+                    <p>Đội ngũ chăm sóc khách hàng luôn sẵn sàng hỗ trợ trong suốt hành trình.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>
