@@ -3,41 +3,60 @@
       th:replace="~{fragments/auth-layout :: auth-layout('Đăng ký - Car Rental System', ~{::authForm})}">
 
 <div th:fragment="authForm">
+    <!-- Form Icon -->
     <div class="form-icon">
         <div class="icon-holder">
-            <img th:src="@{/images/icon1.svg}" alt="Register Icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
         </div>
     </div>
 
+    <!-- Form Title -->
     <h3 class="form-title-center">Đăng ký tài khoản khách hàng</h3>
 
+    <!-- Global messages - Sử dụng components có sẵn -->
     <div th:if="${error}">
         <div th:replace="~{fragments/components/messages :: error(${error})}"></div>
     </div>
+    <div th:if="${success}">
+        <div th:replace="~{fragments/components/messages :: success(${success})}"></div>
+    </div>
 
+    <!-- Registration Form -->
     <form id="registrationForm" th:action="@{/auth/register}" method="post" th:object="${user}">
-        <input type="hidden"
-               th:name="${_csrf.parameterName}"
-               th:value="${_csrf.token}"/>
-
-        <div th:replace="~{fragments/components/forms :: input-text('Họ và tên', 'fullName', *{fullName}, true, 'Nhập họ và tên')}"></div>
-        <div th:replace="~{fragments/components/forms :: input-email('Email', 'email', *{email}, true, 'Nhập email')}"></div>
-        <div th:replace="~{fragments/components/forms :: input-text('Số điện thoại', 'phone', *{phone}, true, 'Nhập số điện thoại')}"></div>
-        <div th:replace="~{fragments/components/forms :: input-password('Mật khẩu', 'password', true, 'Nhập mật khẩu')}"></div>
-
-        <div class="form-group">
-            <label for="confirmPassword">Xác nhận mật khẩu</label>
-            <input type="password" id="confirmPassword" class="form-control" required>
+        <!-- Form 2 columns layout -->
+        <div class="form-row">
+            <!-- Cột 1 -->
+            <div class="form-col">
+                <div th:replace="~{fragments/components/forms :: input-text('Họ và tên', 'fullName', *{fullName}, true, 'Nhập họ và tên đầy đủ')}"></div>
+                <div th:replace="~{fragments/components/forms :: input-email('Email', 'email', *{email}, true, 'Nhập email của bạn')}"></div>
+                <div th:replace="~{fragments/components/forms :: input-phone('Số điện thoại', 'phone', *{phone}, true, 'Nhập số điện thoại (10-11 chữ số)')}"></div>
+            </div>
+            
+            <!-- Cột 2 -->
+            <div class="form-col">
+                <div th:replace="~{fragments/components/forms :: input-password('Mật khẩu', 'password', true, 'Nhập mật khẩu (tối thiểu 8 ký tự)')}"></div>
+                <div th:replace="~{fragments/components/forms :: input-password-confirm('Xác nhận mật khẩu', 'confirmPassword', true, 'Nhập lại mật khẩu')}"></div>
+            </div>
         </div>
 
+        <!-- Địa chỉ - Full width ở dòng cuối -->
+        <div th:replace="~{fragments/components/forms :: textarea('Địa chỉ', 'address', *{address}, false, 'Nhập địa chỉ của bạn (tùy chọn)')}"></div>
+
+        <!-- Submit Button - Sử dụng component button có sẵn -->
         <div class="form-button">
             <button th:replace="~{fragments/components/buttons :: btn-submit('Đăng ký')}"></button>
         </div>
     </form>
 
-    <p class="text-center" style="margin-top: 1rem;">
+    <!-- Link to Login -->
+    <p class="text-center" style="margin-top: var(--spacing-xl);">
         Đã có tài khoản?
-        <a th:href="@{/auth/login}">Đăng nhập</a>
+        <a th:href="@{/auth/login}">Đăng nhập ngay</a>
     </p>
 </div>
 </html>

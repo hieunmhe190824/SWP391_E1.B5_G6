@@ -48,6 +48,11 @@
     max-width: 500px;
 }
 
+/* Form 2 columns cho register page - tăng max-width */
+.auth-layout .form-holder:has(.form-row) {
+    max-width: 800px;
+}
+
 .auth-layout .form-content {
     width: 100%;
 }
@@ -135,6 +140,19 @@
     letter-spacing: -0.02em;
 }
 
+/* ===== FORM ROW & COLUMNS (2 columns layout) ===== */
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+}
+
+.form-col {
+    display: flex;
+    flex-direction: column;
+}
+
 /* ===== FORM GROUPS ===== */
 .form-group {
     margin-bottom: var(--spacing-lg);
@@ -148,6 +166,13 @@
     color: var(--color-text);
     font-size: var(--font-base);
     transition: color var(--transition-base);
+}
+
+/* Required field asterisk - Dấu * đỏ cho field bắt buộc */
+.form-group label .required-asterisk {
+    color: var(--color-error);
+    margin-left: 4px;
+    font-weight: 700;
 }
 
 .form-group:focus-within label {
@@ -228,6 +253,7 @@
     align-items: center;
     gap: var(--spacing-sm);
     animation: slideIn 0.3s ease-out;
+    transition: opacity 0.5s ease-out, transform 0.5s ease-out;
 }
 
 @keyframes slideIn {
@@ -239,6 +265,16 @@
         opacity: 1;
         transform: translateX(0);
     }
+}
+
+/* Fade out animation cho alert */
+.alert.fade-out {
+    opacity: 0;
+    transform: translateY(-10px);
+    margin-bottom: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    overflow: hidden;
 }
 
 /* Success message màu green */
@@ -335,6 +371,16 @@
 
     .auth-layout .form-holder {
         max-width: 100%;
+    }
+
+    .auth-layout .form-holder.register-form {
+        max-width: 100%;
+    }
+
+    /* Chuyển form 2 cột thành 1 cột trên mobile */
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 0;
     }
 
     .form-title-center {

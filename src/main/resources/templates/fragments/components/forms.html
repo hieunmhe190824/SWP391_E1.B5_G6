@@ -13,7 +13,10 @@
 
     <!-- Text Input -->
     <div th:fragment="input-text(label, name, value, required, placeholder)" class="form-group">
-        <label th:for="${name}" th:text="${label}">Label</label>
+        <label th:for="${name}">
+            <span th:text="${label}">Label</span>
+            <span th:if="${required}" class="required-asterisk">*</span>
+        </label>
         <input type="text"
                th:id="${name}"
                th:name="${name}"
@@ -23,9 +26,28 @@
                class="form-control" />
     </div>
 
+    <!-- Phone Input - Chỉ cho phép nhập số -->
+    <div th:fragment="input-phone(label, name, value, required, placeholder)" class="form-group">
+        <label th:for="${name}">
+            <span th:text="${label}">Label</span>
+            <span th:if="${required}" class="required-asterisk">*</span>
+        </label>
+        <input type="tel"
+               th:id="${name}"
+               th:name="${name}"
+               th:value="${value}"
+               th:required="${required}"
+               th:placeholder="${placeholder}"
+               pattern="[0-9]{10,11}"
+               class="form-control" />
+    </div>
+
     <!-- Email Input -->
     <div th:fragment="input-email(label, name, value, required, placeholder)" class="form-group">
-        <label th:for="${name}" th:text="${label}">Label</label>
+        <label th:for="${name}">
+            <span th:text="${label}">Label</span>
+            <span th:if="${required}" class="required-asterisk">*</span>
+        </label>
         <input type="email"
                th:id="${name}"
                th:name="${name}"
@@ -37,7 +59,24 @@
 
     <!-- Password Input -->
     <div th:fragment="input-password(label, name, required, placeholder)" class="form-group">
-        <label th:for="${name}" th:text="${label}">Label</label>
+        <label th:for="${name}">
+            <span th:text="${label}">Label</span>
+            <span th:if="${required}" class="required-asterisk">*</span>
+        </label>
+        <input type="password"
+               th:id="${name}"
+               th:name="${name}"
+               th:required="${required}"
+               th:placeholder="${placeholder}"
+               class="form-control" />
+    </div>
+
+    <!-- Password Confirm Input -->
+    <div th:fragment="input-password-confirm(label, name, required, placeholder)" class="form-group">
+        <label th:for="${name}">
+            <span th:text="${label}">Label</span>
+            <span th:if="${required}" class="required-asterisk">*</span>
+        </label>
         <input type="password"
                th:id="${name}"
                th:name="${name}"
@@ -48,7 +87,10 @@
 
     <!-- Date Input -->
     <div th:fragment="input-date(label, name, value, required)" class="form-group">
-        <label th:for="${name}" th:text="${label}">Label</label>
+        <label th:for="${name}">
+            <span th:text="${label}">Label</span>
+            <span th:if="${required}" class="required-asterisk">*</span>
+        </label>
         <input type="datetime-local"
                th:id="${name}"
                th:name="${name}"
@@ -59,7 +101,10 @@
 
     <!-- Select Dropdown -->
     <div th:fragment="select(label, name, options, required)" class="form-group">
-        <label th:for="${name}" th:text="${label}">Label</label>
+        <label th:for="${name}">
+            <span th:text="${label}">Label</span>
+            <span th:if="${required}" class="required-asterisk">*</span>
+        </label>
         <select th:id="${name}"
                 th:name="${name}"
                 th:required="${required}"
@@ -72,11 +117,15 @@
     </div>
 
     <!-- Textarea -->
-    <div th:fragment="textarea(label, name, value, required)" class="form-group">
-        <label th:for="${name}" th:text="${label}">Label</label>
+    <div th:fragment="textarea(label, name, value, required, placeholder)" class="form-group">
+        <label th:for="${name}">
+            <span th:text="${label}">Label</span>
+            <span th:if="${required}" class="required-asterisk">*</span>
+        </label>
         <textarea th:id="${name}"
                   th:name="${name}"
                   th:required="${required}"
+                  th:placeholder="${placeholder}"
                   class="form-control"
                   rows="4"
                   th:text="${value}"></textarea>
