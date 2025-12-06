@@ -127,8 +127,11 @@
     justify-content: space-between;
     align-items: center;
     padding: 1rem 2rem;
-    background-color: #333;
+    background-color: var(--color-secondary-dark);
     color: #fff;
+    border: none;
+    box-shadow: none;
+    margin: 0;
 }
 
 .navbar-brand {
@@ -136,6 +139,20 @@
     font-weight: bold;
     color: #fff;
     text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.navbar-brand .brand-icon,
+.navbar-brand .brand-text {
+    color: #fff;
+}
+
+.navbar-brand .brand-icon svg {
+    color: #fff;
+    fill: none;
+    stroke: #fff;
 }
 
 .navbar-nav {

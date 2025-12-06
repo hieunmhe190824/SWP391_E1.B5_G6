@@ -4,7 +4,15 @@
     <meta charset="UTF-8">
 </head>
 <body>
-    <!-- Primary Button -->
+    <!-- ===== BUTTON COMPONENTS =====
+         Tất cả buttons sử dụng CSS Variables từ variables.css
+         Theme: Black & Blue
+         - .btn-primary = Blue (#3b82f6)
+         - .btn-secondary = Dark Gray (#1f2937)
+         - .btn-danger = Red (#ef4444)
+    -->
+
+    <!-- Primary Button - Blue Theme -->
     <th:block th:fragment="btn-primary(text, href)">
         <a th:href="${href}" class="btn btn-primary">
             <span th:text="${text}"></span>

@@ -6,36 +6,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="${pageTitle}">Car Rental System - Authentication</title>
 
-    <!-- Vendor / template styles -->
-    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
-    <link rel="stylesheet" th:href="@{/css/fontawesome-all.min.css}">
-    <!-- Auth template styles (renamed from original iofrm) -->
-    <link rel="stylesheet" th:href="@{/css/auth-style.css}">
-    <link rel="stylesheet" th:href="@{/css/auth-theme-main.css}">
+    <!-- ===== LINK CSS FILES ===== -->
+    <!-- Thứ tự quan trọng: Variables → Main → Components → Page-specific -->
+    
+    <!-- 1. Variables: CSS Variables (màu sắc, spacing...) - SỬA 1 CHỖ, TẤT CẢ THAY ĐỔI -->
+    <link rel="stylesheet" th:href="@{/css/variables.css}">
 
-    <!-- Project reusable styles -->
+    <!-- 2. Main: CSS chung cho toàn hệ thống -->
     <link rel="stylesheet" th:href="@{/css/main.css}">
+
+    <!-- 3. Components: CSS cho các components (buttons, cards, navbar...) -->
     <link rel="stylesheet" th:href="@{/css/components.css}">
+
+    <!-- 4. Auth: CSS riêng cho trang Auth (Login/Register) -->
+    <link rel="stylesheet" th:href="@{/css/auth.css}">
 </head>
 
 <body>
 <div class="form-body without-side">
-    <div class="website-logo">
-        <a th:href="@{/}">
-            <div class="logo">
-                <img class="logo-size" th:src="@{/images/logo-light.svg}" alt="Car Rental System Logo">
-            </div>
-        </a>
-    </div>
-
     <div class="auth-layout">
-        <div class="img-holder">
-            <div class="bg"></div>
-            <div class="info-holder">
-                <img th:src="@{/images/graphic8.svg}" alt="Car Rental Illustration">
-            </div>
-        </div>
-
         <div class="form-holder">
             <div class="form-content">
                 <div class="form-items">
@@ -50,6 +39,7 @@
 <script th:src="@{/js/popper.min.js}"></script>
 <script th:src="@{/js/bootstrap.bundle.min.js}"></script>
 <script th:src="@{/js/main.js}"></script>
+<script th:src="@{/js/login-validation.js}"></script>
 </body>
 </html>
 

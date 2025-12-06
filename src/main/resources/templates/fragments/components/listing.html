@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
 </head>
 <body>
+<!-- ===== LISTING COMPONENTS =====
+     Components cho danh sách và bảng
+     Sử dụng CSS Variables từ variables.css
+     Theme: Black & Blue
+-->
+
 <!-- Filter bar for list pages (vehicles, bookings, contracts, ...) -->
 <form th:fragment="filter-bar(actionUrl, searchName, searchValue, placeholder)"
       th:action="${actionUrl}"

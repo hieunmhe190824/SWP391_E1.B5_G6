@@ -4,16 +4,23 @@
     <meta charset="UTF-8">
 </head>
 <body>
-    <!-- Vehicle Card -->
+    <!-- Component: Thẻ hiển thị thông tin xe -->
     <div th:fragment="vehicle-card(vehicle)" class="vehicle-card">
-        <img th:src="${vehicle.imageUrl}" th:alt="${vehicle.model.modelName}" />
+        <!-- Ảnh xe - lấy từ database, tự động thêm /images/ nếu cần -->
+        <img th:src="${vehicle.firstImageUrl}" th:alt="${vehicle.model.brand.brandName + ' ' + vehicle.model.modelName}" />
         <div class="vehicle-card-body">
+            <!-- Tên xe: Hãng + Model -->
             <h3 class="vehicle-card-title" th:text="${vehicle.model.brand.brandName + ' ' + vehicle.model.modelName}">Vehicle Name</h3>
-            <p class="vehicle-card-text" th:text="'License: ' + ${vehicle.licensePlate}">License Plate</p>
-            <p class="vehicle-card-text" th:text="'Seats: ' + ${vehicle.seatingCapacity}">Seats</p>
-            <p class="vehicle-card-text" th:text="'Fuel: ' + ${vehicle.fuelType}">Fuel Type</p>
-            <p class="vehicle-card-price" th:text="${vehicle.dailyRate + ' VND/day'}">Price</p>
-            <a th:href="@{/bookings/create(vehicleId=${vehicle.id})}" class="btn btn-primary">Book Now</a>
+            <!-- Biển số xe -->
+            <p class="vehicle-card-text" th:text="'Biển số: ' + ${vehicle.licensePlate}">License Plate</p>
+            <!-- Số chỗ ngồi -->
+            <p class="vehicle-card-text" th:text="'Số chỗ: ' + ${vehicle.model.seats}">Seats</p>
+            <!-- Loại nhiên liệu -->
+            <p class="vehicle-card-text" th:text="'Nhiên liệu: ' + ${vehicle.model.fuelType}">Fuel Type</p>
+            <!-- Giá thuê/ngày -->
+            <p class="vehicle-card-price" th:text="${#numbers.formatDecimal(vehicle.dailyRate, 0, 'POINT', 0, 'POINT')} + ' VNĐ/ngày'">Price</p>
+            <!-- Nút đặt xe -->
+            <a th:href="@{/bookings/create(vehicleId=${vehicle.id})}" class="btn btn-primary">Đặt xe ngay</a>
         </div>
     </div>
 

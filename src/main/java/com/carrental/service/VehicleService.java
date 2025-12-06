@@ -24,7 +24,7 @@ public class VehicleService {
     }
 
     public List<Vehicle> getAvailableVehicles() {
-        return vehicleRepository.findByStatus(VehicleStatus.AVAILABLE);
+        return vehicleRepository.findByStatus(VehicleStatus.Available);
     }
 
     public List<Vehicle> getVehiclesByLocation(Long locationId) {
@@ -32,7 +32,7 @@ public class VehicleService {
     }
 
     public Vehicle createVehicle(Vehicle vehicle) {
-        vehicle.setStatus(VehicleStatus.AVAILABLE);
+        vehicle.setStatus(VehicleStatus.Available);
         return vehicleRepository.save(vehicle);
     }
 

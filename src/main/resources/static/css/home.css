@@ -1,0 +1,225 @@
+/* ===================================================================
+   HOME.CSS - Stylesheet cho trang chủ (Homepage)
+   Sử dụng CSS Variables từ variables.css (Black & Blue Theme)
+   =================================================================== */
+
+/* ===== CONTAINER - Giữ nội dung ở giữa trang ===== */
+.page-container {
+    max-width: var(--container-max);    /* 1200px từ variables.css */
+    margin: 0 auto;                     /* Căn giữa trang */
+    padding: 0 var(--spacing-lg);       /* 24px từ variables.css */
+}
+
+/* ===== PHẦN HERO - Banner đầu trang ===== */
+.hero {
+    /* Theme Black & Blue - Gradient từ đen sang xanh dương */
+    background: linear-gradient(135deg, var(--color-secondary-dark) 0%, var(--color-primary-dark) 100%);
+    color: var(--color-text-white);
+    padding: 80px var(--spacing-lg);
+    text-align: center;
+}
+
+.hero h1 {
+    font-size: var(--font-4xl);           /* 40px */
+    margin-bottom: var(--spacing-lg);
+    font-weight: 700;
+}
+
+.hero p {
+    font-size: var(--font-xl);            /* 20px */
+    margin-bottom: var(--spacing-2xl);
+    opacity: 0.9;
+}
+
+/* ===== FORM TÌM KIẾM - Search Box ===== */
+.search-box {
+    background: var(--color-surface);     /* Màu trắng */
+    padding: var(--spacing-2xl);          /* 48px */
+    border-radius: var(--radius-xl);      /* 16px */
+    max-width: 500px;
+    margin: 0 auto;
+    box-shadow: var(--shadow-xl);
+}
+
+.search-box label {
+    display: block;
+    margin-bottom: var(--spacing-sm);
+    font-weight: bold;
+    color: var(--color-text);
+}
+
+.search-box select {
+    width: 100%;
+    padding: var(--spacing-md);
+    font-size: var(--font-base);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-lg);
+    transition: border-color var(--transition-base);
+}
+
+.search-box select:focus {
+    outline: none;
+    border-color: var(--color-primary);  /* Blue border khi focus */
+}
+
+.search-box button {
+    width: 100%;
+    padding: var(--spacing-md);
+    font-size: var(--font-lg);
+    background-color: var(--color-primary);    /* Blue button */
+    color: var(--color-text-white);
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    font-weight: bold;
+    transition: all var(--transition-base);
+}
+
+/* Hiệu ứng khi hover (di chuột vào) button */
+.search-box button:hover {
+    background-color: var(--color-primary-dark);  /* Dark Blue */
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+/* ===== SECTION - Các phần nội dung ===== */
+.section {
+    padding: 60px var(--spacing-lg);
+}
+
+.section-title {
+    text-align: center;
+    font-size: var(--font-3xl);          /* 32px */
+    margin-bottom: 40px;
+    color: var(--color-text);
+    font-weight: 700;
+}
+
+/* ===== LƯỚI HIỂN THỊ XE - Car Grid ===== */
+/* Sử dụng CSS Grid để tạo lưới tự động responsive */
+.car-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: var(--spacing-2xl);             /* 48px */
+    margin-bottom: 40px;
+}
+
+/* ===== THẺ XE - Car Card ===== */
+/* Card hiển thị thông tin từng xe */
+.car-card {
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+    transition: all var(--transition-base);
+    border: 1px solid var(--color-border);
+}
+
+/* Hiệu ứng khi hover vào card */
+.car-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--color-primary);  /* Blue border khi hover */
+}
+
+/* ===== ẢNH XE ===== */
+.car-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+/* ===== THÔNG TIN XE ===== */
+.car-info {
+    padding: var(--spacing-lg);
+}
+
+.car-name {
+    font-size: var(--font-xl);           /* 20px */
+    font-weight: bold;
+    margin-bottom: var(--spacing-sm);
+    color: var(--color-text);
+}
+
+.car-details {
+    font-size: var(--font-sm);           /* 14px */
+    color: var(--color-text-light);
+    margin-bottom: var(--spacing-xs);
+}
+
+.car-price {
+    font-size: var(--font-2xl);          /* 24px */
+    font-weight: bold;
+    color: var(--color-primary);         /* Blue - highlight giá */
+    margin: var(--spacing-md) 0;
+}
+
+/* ===== PHẦN ƯU ĐIỂM - Features ===== */
+/* Grid layout cho 3 thẻ ưu điểm */
+.features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--spacing-2xl);
+}
+
+.feature-card {
+    background: var(--color-surface);
+    padding: var(--spacing-2xl);
+    border-radius: var(--radius-lg);
+    text-align: center;
+    box-shadow: var(--shadow-md);
+    transition: all var(--transition-base);
+    border: 1px solid var(--color-border);
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--color-primary);
+}
+
+.feature-card h3 {
+    font-size: var(--font-xl);
+    margin-bottom: var(--spacing-md);
+    color: var(--color-primary);         /* Blue */
+}
+
+.feature-card p {
+    color: var(--color-text-light);
+    line-height: 1.8;
+}
+
+/* ===== UTILITIES - Tiện ích ===== */
+.text-center {
+    text-align: center;
+}
+
+.btn-large {
+    padding: var(--spacing-md) var(--spacing-2xl);
+    font-size: var(--font-lg);
+}
+
+/* ===== RESPONSIVE - Tương thích màn hình nhỏ ===== */
+/* Khi màn hình nhỏ hơn 768px (mobile) */
+@media (max-width: 768px) {
+    .hero h1 {
+        font-size: var(--font-3xl);      /* 32px */
+    }
+
+    .hero p {
+        font-size: var(--font-base);     /* 16px */
+    }
+
+    .section-title {
+        font-size: var(--font-2xl);      /* 24px */
+    }
+
+    .car-grid {
+        grid-template-columns: 1fr;      /* 1 cột duy nhất trên mobile */
+    }
+
+    .search-box {
+        padding: var(--spacing-lg);
+    }
+}

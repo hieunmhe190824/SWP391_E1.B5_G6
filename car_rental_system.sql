@@ -357,32 +357,33 @@ INSERT INTO system_settings (setting_key, setting_value, description) VALUES
 -- ===================================================================
 
 -- 1. USERS (Admin, Staff, Customers)
--- Password for all: password123 (hashed with bcrypt)
+-- Password for all: password123 (hashed with BCryptPasswordEncoder - Spring Security)
+-- Hash: $2a$10$KNxt6bJBJgFC2iXKu7YpXu.TbsraYkW95TF5JswmL4pkSEhP0sWsG
 INSERT INTO users (email, password_hash, full_name, phone, address, role, status) VALUES
 -- Admin
-('admin@carrental.vn', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Nguyễn Văn Admin', '0901234567', '123 Phố Tràng Tiền, Quận Hoàn Kiếm, Hà Nội', 'Admin', 'Active'),
+('admin@carrental.vn', '$2a$10$KNxt6bJBJgFC2iXKu7YpXu.TbsraYkW95TF5JswmL4pkSEhP0sWsG', 'Nguyễn Văn Admin', '0901234567', '123 Phố Tràng Tiền, Quận Hoàn Kiếm, Hà Nội', 'Admin', 'Active'),
 
 -- Staff
-('nhanvien1@carrental.vn', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Trần Thị Hương', '0912345678', '456 Phố Bà Triệu, Quận Hai Bà Trưng, Hà Nội', 'Staff', 'Active'),
-('nhanvien2@carrental.vn', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Lê Văn Tùng', '0923456789', '789 Đường Láng Hạ, Quận Đống Đa, Hà Nội', 'Staff', 'Active'),
-('nhanvien3@carrental.vn', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Phạm Thị Mai', '0934567890', '321 Đường Cầu Giấy, Quận Cầu Giấy, Hà Nội', 'Staff', 'Active'),
+('nhanvien1@carrental.vn', '$2a$10$KNxt6bJBJgFC2iXKu7YpXu.TbsraYkW95TF5JswmL4pkSEhP0sWsG', 'Trần Thị Hương', '0912345678', '456 Phố Bà Triệu, Quận Hai Bà Trưng, Hà Nội', 'Staff', 'Active'),
+('nhanvien2@carrental.vn', '$2a$10$KNxt6bJBJgFC2iXKu7YpXu.TbsraYkW95TF5JswmL4pkSEhP0sWsG', 'Lê Văn Tùng', '0923456789', '789 Đường Láng Hạ, Quận Đống Đa, Hà Nội', 'Staff', 'Active'),
+('nhanvien3@carrental.vn', '$2a$10$KNxt6bJBJgFC2iXKu7YpXu.TbsraYkW95TF5JswmL4pkSEhP0sWsG', 'Phạm Thị Mai', '0934567890', '321 Đường Cầu Giấy, Quận Cầu Giấy, Hà Nội', 'Staff', 'Active'),
 
 -- Active Customers
-('khachhang1@gmail.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Nguyễn Minh Tuấn', '0945678901', '234 Phố Huế, Quận Hai Bà Trưng, Hà Nội', 'Customer', 'Active'),
-('khachhang2@gmail.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Lê Thị Lan Anh', '0956789012', '567 Đường Giải Phóng, Quận Hai Bà Trưng, Hà Nội', 'Customer', 'Active'),
-('khachhang3@gmail.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Trần Đức Minh', '0967890123', '890 Đường Láng, Quận Đống Đa, Hà Nội', 'Customer', 'Active'),
-('khachhang4@gmail.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Phạm Thị Thu Hà', '0978901234', '123 Đường Nguyễn Chí Thanh, Quận Đống Đa, Hà Nội', 'Customer', 'Active'),
-('khachhang5@gmail.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Hoàng Văn Hải', '0989012345', '456 Đường Trần Duy Hưng, Quận Cầu Giấy, Hà Nội', 'Customer', 'Active'),
-('khachhang6@gmail.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Đặng Thị Ngọc', '0990123456', '789 Phố Chùa Bộc, Quận Đống Đa, Hà Nội', 'Customer', 'Active'),
-('khachhang7@gmail.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Bùi Văn Nam', '0901234568', '321 Đường Nguyễn Văn Cừ, Quận Long Biên, Hà Nội', 'Customer', 'Active'),
-('khachhang8@gmail.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Võ Thị Kim Loan', '0912345679', '654 Đường Lê Duẩn, Quận Hoàn Kiếm, Hà Nội', 'Customer', 'Active'),
+('khachhang1@gmail.com', '$2a$10$KNxt6bJBJgFC2iXKu7YpXu.TbsraYkW95TF5JswmL4pkSEhP0sWsG', 'Nguyễn Minh Tuấn', '0945678901', '234 Phố Huế, Quận Hai Bà Trưng, Hà Nội', 'Customer', 'Active'),
+('khachhang2@gmail.com', '$2a$10$KNxt6bJBJgFC2iXKu7YpXu.TbsraYkW95TF5JswmL4pkSEhP0sWsG', 'Lê Thị Lan Anh', '0956789012', '567 Đường Giải Phóng, Quận Hai Bà Trưng, Hà Nội', 'Customer', 'Active'),
+('khachhang3@gmail.com', '$2a$10$KNxt6bJBJgFC2iXKu7YpXu.TbsraYkW95TF5JswmL4pkSEhP0sWsG', 'Trần Đức Minh', '0967890123', '890 Đường Láng, Quận Đống Đa, Hà Nội', 'Customer', 'Active'),
+('khachhang4@gmail.com', '$2a$10$KNxt6bJBJgFC2iXKu7YpXu.TbsraYkW95TF5JswmL4pkSEhP0sWsG', 'Phạm Thị Thu Hà', '0978901234', '123 Đường Nguyễn Chí Thanh, Quận Đống Đa, Hà Nội', 'Customer', 'Active'),
+('khachhang5@gmail.com', '$2a$10$KNxt6bJBJgFC2iXKu7YpXu.TbsraYkW95TF5JswmL4pkSEhP0sWsG', 'Hoàng Văn Hải', '0989012345', '456 Đường Trần Duy Hưng, Quận Cầu Giấy, Hà Nội', 'Customer', 'Active'),
+('khachhang6@gmail.com', '$2a$10$KNxt6bJBJgFC2iXKu7YpXu.TbsraYkW95TF5JswmL4pkSEhP0sWsG', 'Đặng Thị Ngọc', '0990123456', '789 Phố Chùa Bộc, Quận Đống Đa, Hà Nội', 'Customer', 'Active'),
+('khachhang7@gmail.com', '$2a$10$KNxt6bJBJgFC2iXKu7YpXu.TbsraYkW95TF5JswmL4pkSEhP0sWsG', 'Bùi Văn Nam', '0901234568', '321 Đường Nguyễn Văn Cừ, Quận Long Biên, Hà Nội', 'Customer', 'Active'),
+('khachhang8@gmail.com', '$2a$10$KNxt6bJBJgFC2iXKu7YpXu.TbsraYkW95TF5JswmL4pkSEhP0sWsG', 'Võ Thị Kim Loan', '0912345679', '654 Đường Lê Duẩn, Quận Hoàn Kiếm, Hà Nội', 'Customer', 'Active'),
 
 -- Customers with pending documents
-('khachhang9@gmail.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Nguyễn Thị Bích', '0923456780', '987 Đường Xuân Thủy, Quận Cầu Giấy, Hà Nội', 'Customer', 'Active'),
-('khachhang10@gmail.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Trần Văn Phúc', '0934567891', '135 Đường Tôn Đức Thắng, Quận Đống Đa, Hà Nội', 'Customer', 'Active'),
+('khachhang9@gmail.com', '$2a$10$KNxt6bJBJgFC2iXKu7YpXu.TbsraYkW95TF5JswmL4pkSEhP0sWsG', 'Nguyễn Thị Bích', '0923456780', '987 Đường Xuân Thủy, Quận Cầu Giấy, Hà Nội', 'Customer', 'Active'),
+('khachhang10@gmail.com', '$2a$10$KNxt6bJBJgFC2iXKu7YpXu.TbsraYkW95TF5JswmL4pkSEhP0sWsG', 'Trần Văn Phúc', '0934567891', '135 Đường Tôn Đức Thắng, Quận Đống Đa, Hà Nội', 'Customer', 'Active'),
 
 -- Inactive customer
-('khachhang11@gmail.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'Lê Thị Hồng', '0945678902', '246 Đường Tây Sơn, Quận Đống Đa, Hà Nội', 'Customer', 'Inactive');
+('khachhang11@gmail.com', '$2a$10$KNxt6bJBJgFC2iXKu7YpXu.TbsraYkW95TF5JswmL4pkSEhP0sWsG', 'Lê Thị Hồng', '0945678902', '246 Đường Tây Sơn, Quận Đống Đa, Hà Nội', 'Customer', 'Inactive');
 
 -- 2. USER DOCUMENTS
 INSERT INTO user_documents (user_id, document_type, document_number, image_url, expiry_date, status, verified_by) VALUES
@@ -502,50 +503,54 @@ INSERT INTO locations (location_name, address, city, phone) VALUES
 ('Chi nhánh Hà Đông', '357 Đường Quang Trung, Phường Quang Trung, Quận Hà Đông', 'Hà Nội', '0241234573');
 
 -- 6. VEHICLES
+-- Lưu ý: Tên file ảnh được đặt theo biển số xe (loại bỏ dấu gạch ngang, chữ thường)
+-- Ví dụ: Biển số 30A-12345 → Tên file: 30a12345.jpg (hoặc 30a12345.png, 30a12345.jpeg, v.v.)
+-- Hỗ trợ các định dạng: .jpg, .jpeg, .png, .webp, .gif, v.v.
+-- Tất cả ảnh phải được lưu trong folder: src/main/resources/static/images/
 INSERT INTO vehicles (model_id, location_id, license_plate, color, status, daily_rate, deposit_amount, images) VALUES
 -- Available vehicles
-(1, 1, '30A-12345', 'Trắng', 'Available', 500000, 3000000, '["https://example.com/vios1.jpg","https://example.com/vios2.jpg"]'),
-(1, 1, '30A-12346', 'Đen', 'Available', 500000, 3000000, '["https://example.com/vios3.jpg"]'),
-(5, 1, '30B-23456', 'Bạc', 'Available', 550000, 3500000, '["https://example.com/city1.jpg","https://example.com/city2.jpg"]'),
-(12, 2, '30C-34567', 'Đỏ', 'Available', 600000, 4000000, '["https://example.com/accent1.jpg"]'),
-(16, 2, '30D-45678', 'Xanh', 'Available', 400000, 2500000, '["https://example.com/morning1.jpg","https://example.com/morning2.jpg"]'),
-(22, 3, '30E-56789', 'Trắng', 'Available', 450000, 2800000, '["https://example.com/attrage1.jpg"]'),
-(4, 3, '30F-67890', 'Bạc', 'Available', 700000, 4500000, '["https://example.com/innova1.jpg","https://example.com/innova2.jpg"]'),
-(23, 4, '30G-78901', 'Đen', 'Available', 800000, 5000000, '["https://example.com/xpander1.jpg"]'),
+(1, 1, '30A-12345', 'Trắng', 'Available', 500000, 3000000, '["30a12345.jpg"]'),
+(1, 1, '30A-12346', 'Đen', 'Available', 500000, 3000000, '["30a12346.webp"]'),
+(5, 1, '30B-23456', 'Bạc', 'Available', 550000, 3500000, '["30b23456.jpg"]'),
+(12, 2, '30C-34567', 'Đỏ', 'Available', 600000, 4000000, '["30c34567.jpg"]'),
+(16, 2, '30D-45678', 'Xanh', 'Available', 400000, 2500000, '["30d45678.jpg"]'),
+(22, 3, '30E-56789', 'Trắng', 'Available', 450000, 2800000, '["30e56789.webp"]'),
+(4, 3, '30F-67890', 'Bạc', 'Available', 700000, 4500000, '["30f67890.jpg"]'),
+(23, 4, '30G-78901', 'Đen', 'Available', 800000, 5000000, '["30g78901.jpg"]'),
 
 -- Sedan category
-(2, 1, '30H-89012', 'Đen', 'Available', 1200000, 8000000, '["https://example.com/camry1.jpg","https://example.com/camry2.jpg","https://example.com/camry3.jpg"]'),
-(6, 2, '30I-90123', 'Trắng', 'Available', 1100000, 7500000, '["https://example.com/civic1.jpg","https://example.com/civic2.jpg"]'),
-(9, 3, '30J-01234', 'Đỏ', 'Available', 1150000, 7800000, '["https://example.com/mazda3-1.jpg"]'),
-(13, 4, '30K-12347', 'Xanh', 'Available', 1100000, 7500000, '["https://example.com/elantra1.jpg","https://example.com/elantra2.jpg"]'),
+(2, 1, '30H-89012', 'Đen', 'Available', 1200000, 8000000, '["30h89012.webp"]'),
+(6, 2, '30I-90123', 'Trắng', 'Available', 1100000, 7500000, '["30i90123.webp"]'),
+(9, 3, '30J-01234', 'Đỏ', 'Available', 1150000, 7800000, '["30j01234.jpg"]'),
+(13, 4, '30K-12347', 'Xanh', 'Available', 1100000, 7500000, '["30k12347.jpg"]'),
 
 -- SUV category
-(3, 1, '30L-23458', 'Đen', 'Available', 1800000, 12000000, '["https://example.com/fortuner1.jpg","https://example.com/fortuner2.jpg"]'),
-(7, 2, '30M-34569', 'Trắng', 'Available', 1500000, 10000000, '["https://example.com/crv1.jpg"]'),
-(10, 3, '30N-45670', 'Bạc', 'Available', 1600000, 11000000, '["https://example.com/cx5-1.jpg","https://example.com/cx5-2.jpg"]'),
-(14, 4, '30O-56781', 'Đỏ', 'Available', 1550000, 10500000, '["https://example.com/tucson1.jpg"]'),
-(18, 1, '30P-67892', 'Xanh', 'Available', 1650000, 11500000, '["https://example.com/seltos1.jpg","https://example.com/seltos2.jpg"]'),
+(3, 1, '30L-23458', 'Đen', 'Available', 1800000, 12000000, '["30l23458.jpg"]'),
+(7, 2, '30M-34569', 'Trắng', 'Available', 1500000, 10000000, '["30m34569.jpg"]'),
+(10, 3, '30N-45670', 'Bạc', 'Available', 1600000, 11000000, '["30n45670.jpg"]'),
+(14, 4, '30O-56781', 'Đỏ', 'Available', 1550000, 10500000, '["30o56781.jpeg"]'),
+(18, 1, '30P-67892', 'Xanh', 'Available', 1650000, 11500000, '["30p67892.jpg"]'),
 
 -- Luxury category
-(27, 1, '30Q-78903', 'Đen', 'Available', 3500000, 25000000, '["https://example.com/eclass1.jpg","https://example.com/eclass2.jpg","https://example.com/eclass3.jpg"]'),
-(28, 2, '30R-89014', 'Trắng', 'Available', 5000000, 35000000, '["https://example.com/sclass1.jpg","https://example.com/sclass2.jpg"]'),
-(29, 3, '30S-90125', 'Bạc', 'Available', 3800000, 27000000, '["https://example.com/bmw5-1.jpg"]'),
+(27, 1, '30Q-78903', 'Đen', 'Available', 3500000, 25000000, '["30q78903.webp"]'),
+(28, 2, '30R-89014', 'Trắng', 'Available', 5000000, 35000000, '["30r89014.jpg"]'),
+(29, 3, '30S-90125', 'Bạc', 'Available', 3800000, 27000000, '["30s90125.webp"]'),
 
 -- Rented vehicles (for active contracts)
-(1, 1, '30T-01235', 'Trắng', 'Rented', 500000, 3000000, '["https://example.com/vios4.jpg"]'),
-(5, 2, '30U-12348', 'Đen', 'Rented', 550000, 3500000, '["https://example.com/city3.jpg"]'),
-(9, 3, '30V-23459', 'Đỏ', 'Rented', 1150000, 7800000, '["https://example.com/mazda3-2.jpg"]'),
-(10, 4, '30W-34570', 'Xanh', 'Rented', 1600000, 11000000, '["https://example.com/cx5-3.jpg"]'),
-(27, 1, '30X-45681', 'Đen', 'Rented', 3500000, 25000000, '["https://example.com/eclass3.jpg"]'),
+(1, 1, '30T-01235', 'Trắng', 'Rented', 500000, 3000000, '["30t01235.webp"]'),
+(5, 2, '30U-12348', 'Đen', 'Rented', 550000, 3500000, '["30u12348.jpg"]'),
+(9, 3, '30V-23459', 'Đỏ', 'Rented', 1150000, 7800000, '["30v23459.webp"]'),
+(10, 4, '30W-34570', 'Xanh', 'Rented', 1600000, 11000000, '["30w34570.jpg"]'),
+(27, 1, '30X-45681', 'Đen', 'Rented', 3500000, 25000000, '["30x45681.webp"]'),
 
 -- Maintenance vehicles
-(3, 5, '30AB-11111', 'Đen', 'Maintenance', 1800000, 12000000, '["https://example.com/fortuner3.jpg"]'),
-(7, 6, '30AC-22222', 'Trắng', 'Maintenance', 1500000, 10000000, '["https://example.com/crv2.jpg"]'),
+(3, 5, '30AB-11111', 'Đen', 'Maintenance', 1800000, 12000000, '["30ab11111.jpg"]'),
+(7, 6, '30AC-22222', 'Trắng', 'Maintenance', 1500000, 10000000, '["30ac22222.webp"]'),
 
 -- Electric vehicles
-(24, 3, '30Y-56792', 'Trắng', 'Available', 800000, 5500000, '["https://example.com/vf5-1.jpg","https://example.com/vf5-2.jpg"]'),
-(25, 4, '30Z-67803', 'Đen', 'Available', 1400000, 9500000, '["https://example.com/vf8-1.jpg"]'),
-(26, 1, '30AA-78914', 'Xanh', 'Available', 1900000, 13000000, '["https://example.com/vf9-1.jpg","https://example.com/vf9-2.jpg"]');
+(24, 3, '30Y-56792', 'Trắng', 'Available', 800000, 5500000, '["30y56792.webp"]'),
+(25, 4, '30Z-67803', 'Đen', 'Available', 1400000, 9500000, '["30z67803.jpg"]'),
+(26, 1, '30AA-78914', 'Xanh', 'Available', 1900000, 13000000, '["30aa78914.webp"]');
 
 -- 7. BOOKINGS
 INSERT INTO bookings (customer_id, vehicle_id, pickup_location_id, return_location_id, start_date, end_date, total_days, status, created_at) VALUES

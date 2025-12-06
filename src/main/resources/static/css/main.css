@@ -1,3 +1,8 @@
+/* ===================================================================
+   MAIN.CSS - CSS chung cho toàn hệ thống
+   Sử dụng CSS Variables từ variables.css
+   =================================================================== */
+
 /* Global Styles */
 * {
     margin: 0;
@@ -8,22 +13,25 @@
 body {
     font-family: 'Arial', sans-serif;
     line-height: 1.6;
-    color: #333;
-    background-color: #f4f4f4;
+    color: var(--color-text);                    /* Sử dụng biến màu */
+    background-color: var(--color-background);   /* Sử dụng biến màu */
 }
 
 /* Container */
 .container {
-    max-width: 1200px;
+    max-width: var(--container-max);    /* 1200px */
     margin: 0 auto;
-    padding: 0 20px;
+    padding: 0 var(--spacing-lg);       /* 24px */
 }
 
 /* Header */
 header {
-    background-color: #333;
-    color: #fff;
-    padding: 1rem 0;
+    background-color: var(--color-secondary-dark);  /* Black theme */
+    color: var(--color-text-white);
+    padding: 0;
+    border: none;
+    box-shadow: none;
+    margin: 0;
 }
 
 /* Navigation */
@@ -34,96 +42,110 @@ nav ul {
 }
 
 nav a {
-    color: #fff;
+    color: var(--color-text-white);
     text-decoration: none;
-    padding: 0.5rem 1rem;
+    padding: var(--spacing-sm) var(--spacing-md);
+    transition: all var(--transition-base);
 }
 
 nav a:hover {
-    background-color: #555;
-    border-radius: 4px;
+    background-color: var(--color-primary);      /* Blue hover */
+    border-radius: var(--radius-sm);
 }
 
 /* Main Content */
 main {
     min-height: calc(100vh - 200px);
-    padding: 2rem 0;
+    padding: var(--spacing-xl) 0;
 }
 
 /* Footer */
 footer {
-    background-color: #333;
-    color: #fff;
+    background-color: var(--color-secondary-dark);  /* Black theme */
+    color: var(--color-text-white);
     text-align: center;
-    padding: 1rem 0;
-    margin-top: 2rem;
+    padding: var(--spacing-md) 0;
+    margin-top: var(--spacing-xl);
 }
 
 /* Cards */
 .card {
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    padding: 1.5rem;
-    margin-bottom: 1rem;
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-md);
 }
 
 /* Forms */
 .form-group {
-    margin-bottom: 1rem;
+    margin-bottom: var(--spacing-md);
 }
 
 .form-group label {
     display: block;
-    margin-bottom: 0.5rem;
+    margin-bottom: var(--spacing-sm);
     font-weight: bold;
+    color: var(--color-text);
 }
 
 .form-control {
     width: 100%;
-    padding: 0.5rem;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 1rem;
+    padding: var(--spacing-sm);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    font-size: var(--font-base);
+    transition: border-color var(--transition-base);
 }
 
-/* Buttons */
+.form-control:focus {
+    outline: none;
+    border-color: var(--color-primary);    /* Blue border khi focus */
+}
+
+/* Buttons - Theme Black & Blue */
 .btn {
     display: inline-block;
-    padding: 0.5rem 1.5rem;
+    padding: var(--spacing-sm) var(--spacing-lg);
     border: none;
-    border-radius: 4px;
+    border-radius: var(--radius-md);
     cursor: pointer;
     text-decoration: none;
-    font-size: 1rem;
-    transition: background-color 0.3s;
+    font-size: var(--font-base);
+    font-weight: 500;
+    transition: all var(--transition-base);
 }
 
+/* Primary Button - Blue */
 .btn-primary {
-    background-color: #007bff;
-    color: #fff;
+    background-color: var(--color-primary);        /* Blue */
+    color: var(--color-text-white);
 }
 
 .btn-primary:hover {
-    background-color: #0056b3;
+    background-color: var(--color-primary-dark);   /* Dark Blue */
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
 }
 
+/* Secondary Button - Dark */
 .btn-secondary {
-    background-color: #6c757d;
-    color: #fff;
+    background-color: var(--color-secondary);      /* Dark Gray */
+    color: var(--color-text-white);
 }
 
 .btn-secondary:hover {
-    background-color: #545b62;
+    background-color: var(--color-secondary-light);
 }
 
+/* Danger Button - Red */
 .btn-danger {
-    background-color: #dc3545;
-    color: #fff;
+    background-color: var(--color-error);
+    color: var(--color-text-white);
 }
 
 .btn-danger:hover {
-    background-color: #c82333;
+    background-color: #dc2626;
 }
 
 /* Tables */
@@ -156,25 +178,25 @@ th {
 
 /* Alert Messages */
 .alert {
-    padding: 1rem;
-    border-radius: 4px;
-    margin-bottom: 1rem;
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-md);
 }
 
 .alert-success {
-    background-color: #d4edda;
-    color: #155724;
-    border: 1px solid #c3e6cb;
+    background-color: #d1fae5;
+    color: #065f46;
+    border: 1px solid var(--color-success);
 }
 
 .alert-error {
-    background-color: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f5c6cb;
+    background-color: #fee2e2;
+    color: #991b1b;
+    border: 1px solid var(--color-error);
 }
 
 .alert-info {
-    background-color: #d1ecf1;
-    color: #0c5460;
-    border: 1px solid #bee5eb;
+    background-color: #dbeafe;
+    color: #1e40af;
+    border: 1px solid var(--color-info);
 }

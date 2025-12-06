@@ -4,8 +4,55 @@
     <meta charset="UTF-8">
 </head>
 <body>
-    <footer th:fragment="footer">
-        <div class="container">
+    <!-- ===== FOOTER COMPONENT =====
+         Footer chuyên nghiệp cho toàn hệ thống
+         Theme: Black & Blue từ variables.css
+         - Background: Black (#111827)
+         - Text: White (#ffffff)
+         - Links: Blue (#3b82f6)
+
+         CẤU TRÚC:
+         - 2 cột: Về chúng tôi | Liên hệ
+         - Copyright ở dưới cùng
+         - Responsive: trên mobile sẽ xếp dọc
+    -->
+    <footer th:fragment="footer" class="footer">
+        <div class="footer-content">
+            <!-- Cột 1: Về chúng tôi -->
+            <div class="footer-section">
+                <h3 class="footer-title">Về chúng tôi</h3>
+                <p class="footer-description">
+                    Car Rental System - Hệ thống cho thuê xe hàng đầu Việt Nam.
+                    Chúng tôi cung cấp dịch vụ thuê xe chất lượng cao với giá cả hợp lý.
+                </p>
+            </div>
+
+            <!-- Cột 2: Liên hệ -->
+            <div class="footer-section">
+                <h3 class="footer-title">Liên hệ</h3>
+                <ul class="footer-contact">
+                    <li>
+                        <span class="contact-icon">📍</span>
+                        <span>Địa chỉ: 123 Đường ABC, Quận XYZ, TP.HCM</span>
+                    </li>
+                    <li>
+                        <span class="contact-icon">📞</span>
+                        <span>Hotline: 1900-xxxx</span>
+                    </li>
+                    <li>
+                        <span class="contact-icon">✉️</span>
+                        <span>Email: support@carrental.com</span>
+                    </li>
+                    <li>
+                        <span class="contact-icon">⏰</span>
+                        <span>Giờ làm việc: 8:00 - 22:00 hàng ngày</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Copyright -->
+        <div class="footer-bottom">
             <p>&copy; 2025 Car Rental System. All rights reserved.</p>
         </div>
     </footer>

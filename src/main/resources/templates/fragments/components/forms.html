@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
 </head>
 <body>
+    <!-- ===== FORM COMPONENTS =====
+         Tất cả form controls sử dụng CSS Variables từ variables.css
+         Theme: Black & Blue
+         - Focus border = Blue (#3b82f6)
+         - Label color = Dark Gray (#1f2937)
+    -->
+
     <!-- Text Input -->
     <div th:fragment="input-text(label, name, value, required, placeholder)" class="form-group">
         <label th:for="${name}" th:text="${label}">Label</label>
