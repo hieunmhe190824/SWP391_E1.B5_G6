@@ -51,14 +51,19 @@ public class UserService {
         return userRepository.findByEmail(email).orElse(null);
     }
 
-    public User updateProfile(Long id, String fullName, String phone, String address) {
+    public User updateProfile(Long id, String fullName, String email, String phone, String address) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
+        // Check if email is being changed and if new email already exists
+        if (!user.getEmail().equalsIgnoreCase(email) && existsByEmail(email)) {
+            throw new IllegalArgumentException("Email đã được sử dụng bởi tài khoản khác");
+        }
+
         user.setFullName(fullName);
+        user.setEmail(email);
         user.setPhone(phone);
         user.setAddress(address);
-        // Note: Email should not be changed via profile update
 
         return userRepository.save(user);
     }
