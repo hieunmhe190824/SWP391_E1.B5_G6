@@ -1,4 +1,5 @@
 // Main JavaScript for Car Rental System
+console.log('main.js loaded!');
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
@@ -10,8 +11,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize modals if any
     initializeModals();
 
+    // Initialize delete confirmation modal
+    initializeDeleteModal();
+
     // Add confirmation to delete buttons
     addDeleteConfirmations();
+
+    // Initialize dropdown menu
+    initializeDropdown();
 });
 
 // Initialize tooltips
@@ -73,15 +80,112 @@ function closeModal() {
     });
 }
 
-// Add confirmation to delete actions
+// Add confirmation to delete actions using modal
 function addDeleteConfirmations() {
-    const deleteButtons = document.querySelectorAll('.btn-delete, .delete-action');
+    const deleteForms = document.querySelectorAll('form[data-delete-form]');
+    const deleteButtons = document.querySelectorAll('[data-delete-trigger]');
+    
+    // Handle forms with data-delete-form attribute
+    deleteForms.forEach(form => {
+        const submitButton = form.querySelector('button[type="submit"]');
+        if (submitButton) {
+            submitButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                const formId = form.id || 'deleteForm_' + Date.now();
+                if (!form.id) form.id = formId;
+                showDeleteModal(form);
+            });
+        }
+    });
+    
+    // Handle buttons with data-delete-trigger attribute
     deleteButtons.forEach(button => {
         button.addEventListener('click', function(e) {
-            if (!confirm('Are you sure you want to delete this item?')) {
-                e.preventDefault();
+            e.preventDefault();
+            const formId = this.getAttribute('data-delete-trigger');
+            const form = document.getElementById(formId) || this.closest('form');
+            if (form) {
+                showDeleteModal(form);
             }
         });
+    });
+}
+
+// Store current form being deleted
+let currentDeleteForm = null;
+
+// Show delete confirmation modal
+function showDeleteModal(form) {
+    const modal = document.getElementById('deleteConfirmModal');
+    if (!modal) {
+        console.error('Delete modal not found');
+        return;
+    }
+    
+    // Store form reference
+    currentDeleteForm = form;
+    
+    // Get custom message if available
+    const customMessage = form.getAttribute('data-delete-message') || 
+                         'Bạn có chắc chắn muốn xóa mục này? Hành động này không thể hoàn tác.';
+    
+    // Update modal message
+    const messageElement = modal.querySelector('.delete-modal-message');
+    if (messageElement) {
+        messageElement.textContent = customMessage;
+    }
+    
+    // Show modal
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden'; // Prevent background scrolling
+}
+
+// Close delete modal
+function closeDeleteModal() {
+    const modal = document.getElementById('deleteConfirmModal');
+    if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = ''; // Restore scrolling
+        currentDeleteForm = null;
+    }
+}
+
+// Initialize delete modal event listeners (called once on page load)
+function initializeDeleteModal() {
+    const modal = document.getElementById('deleteConfirmModal');
+    if (!modal) return;
+    
+    // Confirm button
+    const confirmBtn = modal.querySelector('.delete-modal-confirm');
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', function() {
+            if (currentDeleteForm) {
+                closeDeleteModal();
+                currentDeleteForm.submit();
+            }
+        });
+    }
+    
+    // Cancel button
+    const cancelBtn = modal.querySelector('.delete-modal-cancel');
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', closeDeleteModal);
+    }
+    
+    // Overlay click
+    const overlay = modal.querySelector('.delete-modal-overlay');
+    if (overlay) {
+        overlay.addEventListener('click', closeDeleteModal);
+    }
+    
+    // Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            const modal = document.getElementById('deleteConfirmModal');
+            if (modal && modal.classList.contains('active')) {
+                closeDeleteModal();
+            }
+        }
     });
 }
 
@@ -135,6 +239,53 @@ function showAlert(message, type = 'info') {
     }
 }
 
+// Initialize dropdown menu
+function initializeDropdown() {
+    // Wait a bit to ensure DOM is fully loaded
+    setTimeout(function() {
+        const dropdownToggle = document.getElementById('userDropdownToggle');
+        const dropdownMenu = document.getElementById('userDropdownMenu');
+
+        if (dropdownToggle && dropdownMenu) {
+            console.log('Dropdown initialized successfully');
+            
+            // Toggle dropdown when clicking on toggle
+            dropdownToggle.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('Toggle clicked, current state:', dropdownMenu.classList.contains('active'));
+                dropdownMenu.classList.toggle('active');
+                console.log('New state:', dropdownMenu.classList.contains('active'));
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                if (dropdownMenu && dropdownToggle) {
+                    const isClickInside = dropdownToggle.contains(e.target) || dropdownMenu.contains(e.target);
+                    if (!isClickInside && dropdownMenu.classList.contains('active')) {
+                        console.log('Clicking outside, closing dropdown');
+                        dropdownMenu.classList.remove('active');
+                    }
+                }
+            });
+
+            // Close dropdown when clicking on a menu item
+            const menuItems = dropdownMenu.querySelectorAll('a');
+            menuItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    console.log('Menu item clicked, closing dropdown');
+                    dropdownMenu.classList.remove('active');
+                });
+            });
+        } else {
+            console.error('Dropdown elements not found:', {
+                toggle: dropdownToggle,
+                menu: dropdownMenu
+            });
+        }
+    }, 100);
+}
+
 // Export functions for use in other scripts
 window.CarRental = {
     validateForm,
@@ -142,5 +293,7 @@ window.CarRental = {
     calculateTotalPrice,
     showAlert,
     openModal,
-    closeModal
+    closeModal,
+    showDeleteModal,
+    closeDeleteModal
 };

@@ -38,6 +38,7 @@ public class SecurityConfig {
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .requestMatchers("/staff/**").hasAnyRole("STAFF", "ADMIN")
                 .requestMatchers("/bookings/**", "/contracts/**", "/support/**").hasAnyRole("CUSTOMER", "STAFF", "ADMIN")
+                .requestMatchers("/profile/**").hasAnyRole("CUSTOMER", "STAFF", "ADMIN")
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
@@ -49,7 +50,10 @@ public class SecurityConfig {
             )
             .logout(logout -> logout
                 .logoutUrl("/auth/logout")
-                .logoutSuccessUrl("/home")
+                .logoutSuccessUrl("/?logout")
+                .invalidateHttpSession(true)
+                .clearAuthentication(true)
+                .deleteCookies("JSESSIONID")
                 .permitAll()
             );
 

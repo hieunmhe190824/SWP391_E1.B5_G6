@@ -95,7 +95,6 @@
     color: var(--color-text);
     font-weight: 700;
 }
-
 /* ===== LƯỚI HIỂN THỊ XE - Car Grid ===== */
 /* Sử dụng CSS Grid để tạo lưới tự động responsive */
 .car-grid {
@@ -215,11 +214,23 @@
         font-size: var(--font-2xl);      /* 24px */
     }
 
+    .section-dark-title {
+        font-size: var(--font-2xl);      /* 24px */
+    }
+
     .car-grid {
         grid-template-columns: 1fr;      /* 1 cột duy nhất trên mobile */
     }
 
     .search-box {
         padding: var(--spacing-lg);
+    }
+
+    .section-vehicles {
+        padding: var(--spacing-xl) var(--spacing-md);
+    }
+
+    .section-header-modern {
+        margin-bottom: var(--spacing-xl);
     }
 }

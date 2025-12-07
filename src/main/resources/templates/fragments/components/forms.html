@@ -99,6 +99,35 @@
                class="form-control" />
     </div>
 
+    <!-- Date Input (Date only) -->
+    <div th:fragment="input-date-only(label, name, value, required)" class="form-group">
+        <label th:for="${name}">
+            <span th:text="${label}">Label</span>
+            <span th:if="${required}" class="required-asterisk">*</span>
+        </label>
+        <input type="date"
+               th:id="${name}"
+               th:name="${name}"
+               th:value="${value}"
+               th:required="${required}"
+               class="form-control" />
+    </div>
+
+    <!-- File Upload Input -->
+    <div th:fragment="input-file(label, name, required, accept)" class="form-group">
+        <label th:for="${name}">
+            <span th:text="${label}">Label</span>
+            <span th:if="${required}" class="required-asterisk">*</span>
+        </label>
+        <input type="file"
+               th:id="${name}"
+               th:name="${name}"
+               th:accept="${accept}"
+               th:required="${required}"
+               class="form-control" />
+        <small class="form-text text-muted">Tối đa 10MB. Định dạng: JPG, PNG, PDF</small>
+    </div>
+
     <!-- Select Dropdown -->
     <div th:fragment="select(label, name, options, required)" class="form-group">
         <label th:for="${name}">

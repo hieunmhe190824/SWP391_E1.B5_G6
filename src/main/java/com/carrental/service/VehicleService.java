@@ -24,7 +24,9 @@ public class VehicleService {
     }
 
     public List<Vehicle> getAvailableVehicles() {
-        return vehicleRepository.findByStatus(VehicleStatus.Available);
+        // Sử dụng method với JOIN FETCH để load tất cả relationships (model, brand, location)
+        // Đảm bảo dữ liệu có sẵn khi render template, tránh LazyInitializationException
+        return vehicleRepository.findByStatusWithRelations(VehicleStatus.Available);
     }
 
     public List<Vehicle> getVehiclesByLocation(Long locationId) {

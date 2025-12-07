@@ -29,6 +29,29 @@ function checkEmailExists(email, emailElement) {
         });
 }
 
+// Check email exists for profile edit (loại trừ email hiện tại của user)
+function checkEmailExistsForProfile(email, emailElement) {
+    // Chỉ check nếu email hợp lệ
+    if (!validateEmail(email)) {
+        return;
+    }
+    
+    // Gọi API để check email đã tồn tại chưa (loại trừ email hiện tại)
+    fetch('/profile/check-email?email=' + encodeURIComponent(email))
+        .then(response => response.json())
+        .then(data => {
+            if (data.exists) {
+                showError(emailElement, 'Email này đã được sử dụng');
+            } else {
+                clearError(emailElement);
+            }
+        })
+        .catch(error => {
+            console.error('Error checking email:', error);
+            // Không hiển thị lỗi nếu API call thất bại để không làm gián đoạn UX
+        });
+}
+
 // Phone number validation
 // Kiểm tra số điện thoại phải là số có 10-11 chữ số, không được chữ cái và ký tự đặc biệt
 function validatePhone(phone) {
@@ -135,6 +158,50 @@ function validateRegistrationForm() {
         isValid = false;
     } else if (confirmPassword) {
         clearError(confirmPassword);
+    }
+
+    // Address - Có thể NULL trong DB, không cần validate null
+
+    return isValid;
+}
+
+// Profile edit form validation
+// Chỉ validate các field NOT NULL trong database: full_name, email, phone
+// address có thể NULL nên không cần validate null
+function validateProfileEditForm() {
+    let isValid = true;
+
+    // Full Name - NOT NULL trong DB (full_name)
+    const fullName = document.getElementById('fullName');
+    if (fullName && (!fullName.value || fullName.value.trim().length === 0)) {
+        showError(fullName, 'Vui lòng nhập họ và tên');
+        isValid = false;
+    } else if (fullName) {
+        clearError(fullName);
+    }
+
+    // Email - NOT NULL trong DB
+    const email = document.getElementById('email');
+    if (email && (!email.value || email.value.trim().length === 0)) {
+        showError(email, 'Vui lòng nhập email');
+        isValid = false;
+    } else if (email && !validateEmail(email.value)) {
+        showError(email, 'Email không hợp lệ');
+        isValid = false;
+    } else if (email) {
+        clearError(email);
+    }
+
+    // Phone - NOT NULL trong DB
+    const phone = document.getElementById('phone');
+    if (phone && (!phone.value || phone.value.trim().length === 0)) {
+        showError(phone, 'Vui lòng nhập số điện thoại');
+        isValid = false;
+    } else if (phone && !validatePhone(phone.value)) {
+        showError(phone, 'Số điện thoại phải có 10-11 chữ số');
+        isValid = false;
+    } else if (phone) {
+        clearError(phone);
     }
 
     // Address - Có thể NULL trong DB, không cần validate null
@@ -323,6 +390,96 @@ function setupRealTimeValidation() {
                 showError(confirmPassword, 'Mật khẩu xác nhận không khớp');
             } else if (confirmPassword.value) {
                 clearError(confirmPassword);
+            }
+        });
+    }
+
+    // Address - Có thể NULL trong DB, không cần validate null
+}
+
+// Real-time validation for profile edit form
+// Chỉ validate các field NOT NULL trong database
+function setupProfileEditValidation() {
+    const profileEditForm = document.getElementById('profileEditForm');
+    if (!profileEditForm) return;
+
+    // Full Name validation - NOT NULL trong DB (full_name)
+    const fullName = document.getElementById('fullName');
+    if (fullName) {
+        fullName.addEventListener('blur', function() {
+            if (!this.value || this.value.trim().length === 0) {
+                showError(this, 'Vui lòng nhập họ và tên');
+            } else {
+                clearError(this);
+            }
+        });
+    }
+
+    // Email validation - NOT NULL trong DB
+    const email = document.getElementById('email');
+    if (email) {
+        let emailCheckTimeout;
+        
+        // Real-time validation khi người dùng đang gõ
+        email.addEventListener('input', function() {
+            const emailValue = this.value.trim();
+            
+            // Clear timeout trước đó để debounce
+            clearTimeout(emailCheckTimeout);
+            
+            // Clear error trước
+            clearError(this);
+            
+            // Nếu email rỗng hoặc không hợp lệ, không check duplicate
+            if (!emailValue || !validateEmail(emailValue)) {
+                return;
+            }
+            
+            // Debounce: Đợi 500ms sau khi người dùng ngừng gõ mới check
+            emailCheckTimeout = setTimeout(function() {
+                checkEmailExistsForProfile(emailValue, email);
+            }, 500);
+        });
+        
+        // Validation khi blur (rời khỏi field)
+        email.addEventListener('blur', function() {
+            clearTimeout(emailCheckTimeout);
+            
+            if (!this.value || this.value.trim().length === 0) {
+                showError(this, 'Vui lòng nhập email');
+            } else if (!validateEmail(this.value)) {
+                showError(this, 'Email không hợp lệ');
+            } else {
+                // Check duplicate khi blur
+                checkEmailExistsForProfile(this.value.trim(), this);
+            }
+        });
+    }
+
+    // Phone validation - NOT NULL trong DB
+    const phone = document.getElementById('phone');
+    if (phone) {
+        // Ngăn chặn nhập chữ cái và ký tự đặc biệt (chỉ cho phép số, khoảng trắng và dấu gạch ngang)
+        phone.addEventListener('input', function(e) {
+            // Cho phép số, khoảng trắng và dấu gạch ngang (sẽ được loại bỏ khi validate)
+            this.value = this.value.replace(/[^0-9\s\-]/g, '');
+        });
+        
+        // Ngăn chặn paste chữ cái và ký tự đặc biệt
+        phone.addEventListener('paste', function(e) {
+            e.preventDefault();
+            const paste = (e.clipboardData || window.clipboardData).getData('text');
+            const cleaned = paste.replace(/[^0-9\s\-]/g, '');
+            this.value = cleaned;
+        });
+        
+        phone.addEventListener('blur', function() {
+            if (!this.value || this.value.trim().length === 0) {
+                showError(this, 'Vui lòng nhập số điện thoại');
+            } else if (!validatePhone(this.value)) {
+                showError(this, 'Số điện thoại phải có 10-11 chữ số, không được chứa chữ cái và ký tự đặc biệt');
+            } else {
+                clearError(this);
             }
         });
     }

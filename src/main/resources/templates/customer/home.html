@@ -25,6 +25,73 @@
     <!-- Component này chứa: logo, menu navigation, login/register -->
     <div th:replace="~{fragments/header :: header}"></div>
 
+    <!-- ===== THÔNG BÁO ĐĂNG XUẤT THÀNH CÔNG (TOAST NOTIFICATION) ===== -->
+    <div th:if="${param.logout}" class="toast-notification" id="logoutToast">
+        <div class="toast-content">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink: 0;">
+                <circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="2" fill="none"/>
+                <path d="M6 10l3 3 5-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>Bạn đã đăng xuất thành công!</span>
+        </div>
+    </div>
+    <style th:if="${param.logout}">
+        .toast-notification {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(16, 185, 129, 0.1);
+            z-index: 10000;
+            animation: slideInRight 0.3s ease-out;
+        }
+
+        .toast-content {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+    </style>
+    <script th:if="${param.logout}">
+        // Auto hide toast after 3 seconds
+        setTimeout(function() {
+            var toast = document.getElementById('logoutToast');
+            if (toast) {
+                toast.style.animation = 'slideOutRight 0.3s ease-out';
+                setTimeout(function() {
+                    toast.remove();
+                }, 300);
+            }
+        }, 3000);
+    </script>
+
     <!-- ===== PHẦN 1: HERO - Banner chào mừng ===== -->
     <section class="hero">
         <div class="page-container">
@@ -49,71 +116,29 @@
     </section>
 
     <!-- ===== PHẦN 2: DANH SÁCH XE - Vehicle Listing ===== -->
-    <!-- Gộp featuredVehicles và popularVehicles thành 1 danh sách -->
-    <section class="section" th:if="${vehicles != null and !vehicles.isEmpty()}">
+    <!-- Sử dụng component section-dark tái sử dụng với theme Black-Blue -->
+    <section th:if="${vehicles != null and !vehicles.isEmpty()}" class="section-dark" style="min-height: 100vh;">
         <div class="page-container">
-            <h2 class="section-title">Danh Sách Xe</h2>
+            <div class="section-dark-header">
+                <h2 class="section-dark-title">Danh Sách Xe</h2>
+                <p class="section-dark-description">Khám phá bộ sưu tập xe đa dạng với giá cả hợp lý</p>
+            </div>
 
-            <!-- Lưới hiển thị các xe (Grid Layout) -->
-            <div class="car-grid">
+            <!-- Lưới hiển thị các xe sử dụng component tái sử dụng -->
+            <div class="vehicle-grid-modern">
                 <!-- th:each lặp qua từng xe trong danh sách vehicles (tối đa 9 xe) -->
-                <div class="car-card" th:each="vehicle, iterStat : ${vehicles}" th:if="${iterStat.index < 9}">
-
-                    <!-- Hiển thị ảnh xe từ database -->
-                    <img class="car-image"
-                         th:src="${vehicle.firstImageUrl}"
-                         th:alt="${vehicle.model.brand.brandName + ' ' + vehicle.model.modelName}">
-
-                    <!-- Phần thông tin xe -->
-                    <div class="car-info">
-                        <!-- Tên xe = Hãng (Brand) + Tên Model -->
-                        <div class="car-name"
-                             th:text="${vehicle.model.brand.brandName + ' ' + vehicle.model.modelName}">
-                            Toyota Camry
-                        </div>
-
-                        <!-- Chi tiết: Năm sản xuất -->
-                        <div class="car-details"
-                             th:text="'Năm: ' + ${vehicle.model.year}">
-                            Năm: 2024
-                        </div>
-
-                        <!-- Chi tiết: Loại hộp số (Automatic/Manual) -->
-                        <div class="car-details"
-                             th:text="'Hộp số: ' + ${vehicle.model.transmission}">
-                            Hộp số: Automatic
-                        </div>
-
-                        <!-- Chi tiết: Số chỗ ngồi -->
-                        <div class="car-details"
-                             th:text="'Số chỗ: ' + ${vehicle.model.seats}">
-                            Số chỗ: 5
-                        </div>
-
-                        <!-- Chi tiết: Loại nhiên liệu (Gasoline/Diesel/Electric) -->
-                        <div class="car-details"
-                             th:text="'Nhiên liệu: ' + ${vehicle.model.fuelType}">
-                            Nhiên liệu: Gasoline
-                        </div>
-
-                        <!-- Giá thuê mỗi ngày (formatDecimal để định dạng số) -->
-                        <div class="car-price"
-                             th:text="${#numbers.formatDecimal(vehicle.dailyRate, 0, 'POINT', 0, 'POINT')} + ' VNĐ/ngày'">
-                            500,000 VNĐ/ngày
-                        </div>
-
-                        <!-- Nút xem chi tiết - Link đến trang chi tiết xe -->
-                        <a class="btn btn-primary"
-                           th:href="@{/vehicles/{id}(id=${vehicle.id})}">
-                            Xem Chi Tiết
-                        </a>
-                    </div>
+                <div th:each="vehicle, iterStat : ${vehicles}" th:if="${iterStat.index < 9}">
+                    <div th:replace="~{fragments/components/cards :: vehicle-card-modern(${vehicle})}"></div>
                 </div>
             </div>
 
             <!-- Nút xem tất cả xe - Link đến trang danh sách tất cả xe -->
-            <div class="text-center" style="margin-top: 40px;">
-                <a class="btn btn-primary btn-large" th:href="@{/vehicles}">
+            <div class="section-dark-footer">
+                <a class="btn btn-primary btn-large btn-icon" th:href="@{/vehicles}">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M10 3.33334C5.39763 3.33334 1.66667 6.66667 1.66667 10C1.66667 13.3333 5.39763 16.6667 10 16.6667C14.6024 16.6667 18.3333 13.3333 18.3333 10C18.3333 6.66667 14.6024 3.33334 10 3.33334Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M10 12.5C11.3807 12.5 12.5 11.3807 12.5 10C12.5 8.61929 11.3807 7.5 10 7.5C8.61929 7.5 7.5 8.61929 7.5 10C7.5 11.3807 8.61929 12.5 10 12.5Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
                     Xem Tất Cả Xe
                 </a>
             </div>
@@ -123,5 +148,9 @@
     <!-- ===== FOOTER - Sử dụng component footer từ fragments ===== -->
     <!-- Component này chứa: copyright, thông tin liên hệ -->
     <div th:replace="~{fragments/footer :: footer}"></div>
+
+    <!-- ===== JAVASCRIPT FILES ===== -->
+    <script th:src="@{/js/main.js}"></script>
+    <script th:src="@{/js/validation.js}"></script>
 </body>
 </html>

@@ -2,12 +2,14 @@ package com.carrental.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "user_documents")
 public class UserDocument {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "document_id")
     private Long id;
 
     @ManyToOne
@@ -15,20 +17,35 @@ public class UserDocument {
     private User user;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "document_type", nullable = false)
     private DocumentType documentType;
 
-    @Column(nullable = false)
+    @Column(name = "document_number", nullable = false, length = 50)
     private String documentNumber;
 
-    private LocalDate issueDate;
+    @Column(name = "image_url", length = 255)
+    private String imageUrl;
 
+    @Column(name = "expiry_date")
     private LocalDate expiryDate;
 
-    private String documentImageUrl;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false)
+    private DocumentStatus status;
+
+    @ManyToOne
+    @JoinColumn(name = "verified_by")
+    private User verifiedBy;
+
+    @Column(name = "created_at", updatable = false, insertable = false)
+    private LocalDateTime createdAt;
 
     public enum DocumentType {
-        CITIZEN_ID, PASSPORT, DRIVING_LICENSE
+        ID_Card, Driver_License
+    }
+
+    public enum DocumentStatus {
+        Pending, Approved, Rejected
     }
 
     // Getters and Setters
@@ -64,14 +81,6 @@ public class UserDocument {
         this.documentNumber = documentNumber;
     }
 
-    public LocalDate getIssueDate() {
-        return issueDate;
-    }
-
-    public void setIssueDate(LocalDate issueDate) {
-        this.issueDate = issueDate;
-    }
-
     public LocalDate getExpiryDate() {
         return expiryDate;
     }
@@ -80,11 +89,31 @@ public class UserDocument {
         this.expiryDate = expiryDate;
     }
 
-    public String getDocumentImageUrl() {
-        return documentImageUrl;
+    public String getImageUrl() {
+        return imageUrl;
     }
 
-    public void setDocumentImageUrl(String documentImageUrl) {
-        this.documentImageUrl = documentImageUrl;
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public DocumentStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(DocumentStatus status) {
+        this.status = status;
+    }
+
+    public User getVerifiedBy() {
+        return verifiedBy;
+    }
+
+    public void setVerifiedBy(User verifiedBy) {
+        this.verifiedBy = verifiedBy;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
     }
 }

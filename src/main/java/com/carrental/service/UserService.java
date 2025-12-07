@@ -38,6 +38,27 @@ public class UserService {
         user.setFullName(userDetails.getFullName());
         user.setEmail(userDetails.getEmail());
         user.setPhone(userDetails.getPhone());
+        user.setAddress(userDetails.getAddress());
+
+        return userRepository.save(user);
+    }
+
+    public User updateProfile(Long id, String fullName, String email, String phone, String address) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Check if email is being changed
+        if (!user.getEmail().equalsIgnoreCase(email)) {
+            // Check if new email already exists (excluding current user)
+            if (userRepository.existsByEmail(email)) {
+                throw new IllegalArgumentException("Email này đã được sử dụng");
+            }
+            user.setEmail(email);
+        }
+
+        user.setFullName(fullName);
+        user.setPhone(phone);
+        user.setAddress(address);
 
         return userRepository.save(user);
     }

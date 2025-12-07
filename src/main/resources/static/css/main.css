@@ -57,6 +57,7 @@ nav a:hover {
 main {
     min-height: calc(100vh - 200px);
     padding: var(--spacing-xl) 0;
+    background-color: var(--color-background);
 }
 
 /* Footer */
@@ -65,7 +66,6 @@ footer {
     color: var(--color-text-white);
     text-align: center;
     padding: var(--spacing-md) 0;
-    margin-top: var(--spacing-xl);
 }
 
 /* Cards */

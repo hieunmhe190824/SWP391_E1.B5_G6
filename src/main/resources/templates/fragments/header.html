@@ -49,12 +49,17 @@
 
                 <!-- User Menu - CHỈ hiển thị khi đã đăng nhập -->
                 <li sec:authorize="isAuthenticated()" class="nav-item-dropdown">
-                    <a href="#" class="nav-link">
-                        <span sec:authentication="name">User</span> ▾
+                    <a href="#" class="nav-link dropdown-toggle" id="userDropdownToggle">
+                        <span th:if="${currentUser != null}" th:text="${currentUser.fullName}">Full Name</span>
+                        <span th:if="${currentUser == null}" sec:authentication="name">User</span> ▾
                     </a>
-                    <ul class="dropdown-menu">
+                    <ul class="dropdown-menu" id="userDropdownMenu">
                         <li><a th:href="@{/profile}">Thông tin cá nhân</a></li>
-                        <li><a th:href="@{/logout}">Đăng xuất</a></li>
+                        <li>
+                            <form th:action="@{/auth/logout}" method="post">
+                                <button type="submit">Đăng xuất</button>
+                            </form>
+                        </li>
                     </ul>
                 </li>
 

@@ -1,30 +1,227 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile - Car Rental System</title>
-    <!-- CSS Variables - Theme Black & Blue -->
-    <link rel="stylesheet" th:href="@{/css/variables.css}">
-    <link rel="stylesheet" th:href="@{/css/main.css}">
-    <link rel="stylesheet" th:href="@{/css/components.css}">
-</head>
-<body>
-    <div th:replace="~{fragments/header :: header}"></div>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout('Quản lý hồ sơ - Car Rental System', ~{::content}, ~{::head})}">
 
-    <main class="container">
-        <h1>My Profile</h1>
+<th:block th:fragment="head">
+    <link rel="stylesheet" th:href="@{/css/profile.css}">
+</th:block>
 
-        <div class="card">
-            <h2>Personal Information</h2>
-            <p><strong>Username:</strong> <span th:text="${user.username}">username</span></p>
-            <p><strong>Full Name:</strong> <span th:text="${user.fullName}">Full Name</span></p>
-            <p><strong>Email:</strong> <span th:text="${user.email}">email@example.com</span></p>
-            <p><strong>Phone:</strong> <span th:text="${user.phoneNumber}">Phone Number</span></p>
-            <p><strong>Role:</strong> <span th:text="${user.role}">CUSTOMER</span></p>
+<div th:fragment="content">
+    <div class="page-container">
+        <!-- Flash Messages -->
+        <div th:if="${success}">
+            <div th:replace="~{fragments/components/messages :: success(${success})}"></div>
         </div>
-    </main>
+        <div th:if="${error}">
+            <div th:replace="~{fragments/components/messages :: error(${error})}"></div>
+        </div>
 
-    <div th:replace="~{fragments/footer :: footer}"></div>
-</body>
+        <div class="profile-page-content">
+            <!-- Personal Information Section -->
+            <div class="profile-section">
+                <div class="profile-section-header">
+                    <div class="profile-section-title">
+                        <h3>Thông tin cá nhân</h3>
+                        <p class="section-subtitle">Quản lý thông tin tài khoản của bạn</p>
+                    </div>
+                    <a th:href="@{/profile/edit}" class="btn btn-secondary btn-icon">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M11.333 2.00001C11.5084 1.82475 11.7163 1.68607 11.9441 1.59229C12.1719 1.49851 12.4151 1.45166 12.6663 1.45166C12.9176 1.45166 13.1608 1.49851 13.3886 1.59229C13.6164 1.68607 13.8243 1.82475 13.9997 2.00001C14.175 2.17527 14.3137 2.38318 14.4074 2.61098C14.5012 2.83878 14.5481 3.08198 14.5481 3.33334C14.5481 3.5847 14.5012 3.8279 14.4074 4.0557C14.3137 4.2835 14.175 4.49141 13.9997 4.66668L5.33301 13.3333L1.33301 14.6667L2.66634 10.6667L11.333 2.00001Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        Chỉnh sửa
+                    </a>
+                </div>
+
+                <div class="profile-main-content">
+                    <!-- Left: Avatar and Quick Info -->
+                    <div class="profile-sidebar">
+                        <div class="profile-avatar-card">
+                            <div class="profile-avatar">
+                                <svg width="80" height="80" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <circle cx="32" cy="32" r="32" fill="url(#gradient-avatar)"/>
+                                    <path d="M32 32C37.5228 32 42 27.5228 42 22C42 16.4772 37.5228 12 32 12C26.4772 12 22 16.4772 22 22C22 27.5228 26.4772 32 32 32Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M16 52C16 44 23 38 32 38C41 38 48 44 48 52" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <defs>
+                                        <linearGradient id="gradient-avatar" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+                                            <stop stop-color="#3b82f6"/>
+                                            <stop offset="1" stop-color="#1d4ed8"/>
+                                        </linearGradient>
+                                    </defs>
+                                </svg>
+                            </div>
+                            <h3 class="profile-name" th:text="${user.fullName}">Nguyễn Minh Tuấn</h3>
+                            <p class="profile-email" th:text="${user.email}">khachtrang1@gmail.com</p>
+                            <div class="profile-badges">
+                                <span class="role-badge" th:text="${user.role}">CUSTOMER</span>
+                                <span class="status-badge status-active" th:text="${user.status}">ACTIVE</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Detailed Information -->
+                    <div class="profile-details">
+                        <div class="profile-details-grid">
+                            <div class="detail-card">
+                                <div class="detail-icon">
+                                    <svg width="24" height="24" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M12.75 1.5C13.5784 1.5 14.25 2.17157 14.25 3V15C14.25 15.8284 13.5784 16.5 12.75 16.5H5.25C4.42157 16.5 3.75 15.8284 3.75 15V3C3.75 2.17157 4.42157 1.5 5.25 1.5H12.75Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                        <path d="M8.25 12.75H9.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </div>
+                                <div class="detail-content">
+                                    <div class="detail-label">Số điện thoại</div>
+                                    <div class="detail-value" th:text="${user.phone}">0945678901</div>
+                                </div>
+                            </div>
+
+                            <div class="detail-card detail-card-full">
+                                <div class="detail-icon">
+                                    <svg width="24" height="24" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M9 9.75C10.2426 9.75 11.25 8.74264 11.25 7.5C11.25 6.25736 10.2426 5.25 9 5.25C7.75736 5.25 6.75 6.25736 6.75 7.5C6.75 8.74264 7.75736 9.75 9 9.75Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                        <path d="M14.25 7.5C14.25 12.75 9 16.5 9 16.5C9 16.5 3.75 12.75 3.75 7.5C3.75 4.6 6.1 1.5 9 1.5C11.9 1.5 14.25 4.6 14.25 7.5Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </div>
+                                <div class="detail-content">
+                                    <div class="detail-label">Địa chỉ</div>
+                                    <div class="detail-value" th:text="${user.address ?: 'Chưa cập nhật'}">234 Phố Huế, Quận Hai Bà Trưng, Hà Nội</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Documents Section -->
+            <div class="profile-section">
+                <div class="profile-section-header">
+                    <div class="profile-section-title">
+                        <h3>Giấy tờ</h3>
+                        <p class="section-subtitle">Quản lý các giấy tờ tùy thân của bạn</p>
+                    </div>
+                    <a th:href="@{/profile/documents/add}" class="btn btn-primary btn-icon">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M8 3.33334V12.6667M3.33334 8H12.6667" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        Thêm giấy tờ
+                    </a>
+                </div>
+
+                <div th:if="${documents != null && !documents.isEmpty()}" class="documents-container">
+                    <div class="documents-grid">
+                        <div th:each="doc : ${documents}" class="document-card">
+                            <div class="document-card-header">
+                                <div class="document-type-wrapper">
+                                    <div class="document-type-icon">
+                                        <svg width="24" height="24" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M16.6667 2.5H3.33334C2.41286 2.5 1.66667 3.24619 1.66667 4.16667V15.8333C1.66667 16.7538 2.41286 17.5 3.33334 17.5H16.6667C17.5871 17.5 18.3333 16.7538 18.3333 15.8333V4.16667C18.3333 3.24619 17.5871 2.5 16.6667 2.5Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M6.66667 5.83334H13.3333M6.66667 10H13.3333M6.66667 14.1667H10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                    </div>
+                                    <div class="document-type-info">
+                                        <div class="document-type-name" th:text="${doc.documentType.name() == 'ID_Card' ? 'CMND/CCCD' : 'Giấy phép lái xe'}">Loại giấy tờ</div>
+                                        <div class="document-number" th:text="${doc.documentNumber}">Số giấy tờ</div>
+                                    </div>
+                                </div>
+                                <span class="document-status-badge"
+                                      th:classappend="${doc.status.name() == 'Approved'} ? 'status-approved' :
+                                                       (${doc.status.name() == 'Rejected'} ? 'status-rejected' : 'status-pending')">
+                                    <span th:text="${doc.status.name() == 'Approved' ? 'Đã duyệt' :
+                                                    (doc.status.name() == 'Rejected' ? 'Từ chối' : 'Chờ duyệt')}">Trạng thái</span>
+                                </span>
+                            </div>
+                            
+                            <div class="document-card-body">
+                                <div class="document-details">
+                                    <div class="document-detail-row" th:if="${doc.expiryDate}">
+                                        <div class="document-detail-label">
+                                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M12.6667 2.66667H3.33334C2.59667 2.66667 2 3.26334 2 4V13.3333C2 14.07 2.59667 14.6667 3.33334 14.6667H12.6667C13.4033 14.6667 14 14.07 14 13.3333V4C14 3.26334 13.4033 2.66667 12.6667 2.66667Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                                <path d="M10.6667 1.33334V4M5.33334 1.33334V4M2 6.66667H14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            </svg>
+                                            Ngày hết hạn
+                                        </div>
+                                        <div class="document-detail-value" th:text="${#temporals.format(doc.expiryDate, 'dd/MM/yyyy')}">-</div>
+                                    </div>
+                                    <div class="document-detail-row" th:if="${doc.verifiedBy}">
+                                        <div class="document-detail-label">
+                                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M8 8C9.47276 8 10.6667 6.80609 10.6667 5.33334C10.6667 3.86058 9.47276 2.66667 8 2.66667C6.52724 2.66667 5.33334 3.86058 5.33334 5.33334C5.33334 6.80609 6.52724 8 8 8Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                                <path d="M2.66667 13.3333C2.66667 11.1267 4.79334 9.33334 8 9.33334C11.2067 9.33334 13.3333 11.1267 13.3333 13.3333" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            </svg>
+                                            Người duyệt
+                                        </div>
+                                        <div class="document-detail-value" th:text="${doc.verifiedBy.fullName}">-</div>
+                                    </div>
+                                    <div class="document-detail-row" th:if="${doc.createdAt}">
+                                        <div class="document-detail-label">
+                                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M8 14.6667C11.6819 14.6667 14.6667 11.6819 14.6667 8C14.6667 4.3181 11.6819 1.33334 8 1.33334C4.3181 1.33334 1.33334 4.3181 1.33334 8C1.33334 11.6819 4.3181 14.6667 8 14.6667Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                                <path d="M8 4V8L10.6667 10.6667" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            </svg>
+                                            Ngày tạo
+                                        </div>
+                                        <div class="document-detail-value" th:text="${#temporals.format(doc.createdAt, 'dd/MM/yyyy HH:mm')}">-</div>
+                                    </div>
+                                </div>
+                                
+                                <div th:if="${doc.imageUrl}" class="document-image-section">
+                                    <div class="document-image-wrapper">
+                                        <img th:src="${doc.imageUrl}" alt="Document Image" class="document-image">
+                                        <div class="document-image-overlay">
+                                            <a th:href="${doc.imageUrl}" target="_blank" class="btn-view-image">
+                                                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M10 3.33334C5.39763 3.33334 1.66667 6.66667 1.66667 10C1.66667 13.3333 5.39763 16.6667 10 16.6667C14.6024 16.6667 18.3333 13.3333 18.3333 10C18.3333 6.66667 14.6024 3.33334 10 3.33334Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                                    <path d="M10 12.5C11.3807 12.5 12.5 11.3807 12.5 10C12.5 8.61929 11.3807 7.5 10 7.5C8.61929 7.5 7.5 8.61929 7.5 10C7.5 11.3807 8.61929 12.5 10 12.5Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                                </svg>
+                                                Xem ảnh
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="document-card-footer">
+                                <a th:href="@{/profile/documents/{id}/edit(id=${doc.id})}" class="btn btn-sm btn-secondary btn-icon">
+                                    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M11.333 2.00001C11.5084 1.82475 11.7163 1.68607 11.9441 1.59229C12.1719 1.49851 12.4151 1.45166 12.6663 1.45166C12.9176 1.45166 13.1608 1.49851 13.3886 1.59229C13.6164 1.68607 13.8243 1.82475 13.9997 2.00001C14.175 2.17527 14.3137 2.38318 14.4074 2.61098C14.5012 2.83878 14.5481 3.08198 14.5481 3.33334C14.5481 3.5847 14.5012 3.8279 14.4074 4.0557C14.3137 4.2835 14.175 4.49141 13.9997 4.66668L5.33301 13.3333L1.33301 14.6667L2.66634 10.6667L11.333 2.00001Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                    Sửa
+                                </a>
+                                <form th:id="'deleteDocForm_' + ${doc.id}" 
+                                      th:action="@{/profile/documents/{id}/delete(id=${doc.id})}" 
+                                      method="post" 
+                                      style="display: inline;" 
+                                      data-delete-form="true"
+                                      th:attr="data-delete-message='Bạn có chắc chắn muốn xóa giấy tờ này? Hành động này không thể hoàn tác.'">
+                                    <button type="submit" class="btn btn-sm btn-danger btn-icon">
+                                        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M2 4H14M12.6667 4V13.3333C12.6667 14 12 14.6667 11.3333 14.6667H4.66667C4 14.6667 3.33333 14 3.33333 13.3333V4M5.33333 4V2.66667C5.33333 2 6 1.33334 6.66667 1.33334H9.33333C10 1.33334 10.6667 2 10.6667 2.66667V4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M6.66667 7.33334V11.3333M9.33333 7.33334V11.3333" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                        Xóa
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div th:if="${documents == null || documents.isEmpty()}" class="empty-state">
+                    <div class="empty-state-icon">
+                        <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M42.6667 8H21.3333C18.3878 8 16 10.3878 16 13.3333V50.6667C16 53.6122 18.3878 56 21.3333 56H42.6667C45.6122 56 48 53.6122 48 50.6667V13.3333C48 10.3878 45.6122 8 42.6667 8Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M24 20H40M24 28H40M24 36H32" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <h3 class="empty-state-title">Chưa có giấy tờ</h3>
+                    <p class="empty-state-description">Bạn chưa có giấy tờ nào được đăng ký. Hãy thêm giấy tờ để sử dụng dịch vụ.</p>
+                    <a th:href="@{/profile/documents/add}" class="btn btn-primary">Thêm giấy tờ ngay</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Delete Confirmation Modal -->
+    <div th:replace="~{fragments/components/modals :: deleteConfirmModal}"></div>
+</div>
 </html>

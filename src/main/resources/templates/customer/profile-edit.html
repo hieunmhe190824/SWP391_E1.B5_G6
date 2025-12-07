@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout('Chỉnh sửa hồ sơ - Car Rental System', ~{::content}, ~{::extraCss})}">
+
+<th:block th:fragment="extraCss">
+    <link rel="stylesheet" th:href="@{/css/profile.css}">
+</th:block>
+
+<div th:fragment="content">
+    <section class="page-card">
+        <div class="page-container">
+            <div class="page-card-header">
+                <h2>Chỉnh sửa thông tin cá nhân</h2>
+                <p class="page-card-description">Cập nhật thông tin cá nhân của bạn</p>
+            </div>
+            <div class="page-card-body">
+                <!-- Flash Messages -->
+                <div th:if="${error}">
+                    <div th:replace="~{fragments/components/messages :: error(${error})}"></div>
+                </div>
+
+                <form id="profileEditForm" th:action="@{/profile/update}" method="post">
+                    <div class="form-row">
+                        <div class="form-col">
+                            <div th:replace="~{fragments/components/forms :: input-text('Họ và tên', 'fullName', ${user.fullName}, true, 'Nhập họ và tên đầy đủ')}"></div>
+                            <div th:replace="~{fragments/components/forms :: input-phone('Số điện thoại', 'phone', ${user.phone}, true, 'Nhập số điện thoại (10-11 chữ số)')}"></div>
+                        </div>
+                        <div class="form-col">
+                            <div th:replace="~{fragments/components/forms :: input-email('Email', 'email', ${user.email}, true, 'Nhập địa chỉ email')}"></div>
+                            <div class="form-group">
+                                <label>Vai trò:</label>
+                                <input type="text" th:value="${user.role}" class="form-control" disabled>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div th:replace="~{fragments/components/forms :: textarea('Địa chỉ', 'address', ${user.address}, false, 'Nhập địa chỉ của bạn')}"></div>
+
+                    <div class="form-button">
+                        <button th:replace="~{fragments/components/buttons :: btn-submit('Cập nhật')}"></button>
+                        <a th:href="@{/profile}" class="btn btn-secondary" style="margin-left: 0.5rem;">Hủy</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script th:src="@{/js/validation.js}"></script>
+<script>
+    // Setup validation for profile edit form
+    document.addEventListener('DOMContentLoaded', function() {
+        setupProfileEditValidation();
+
+        const profileEditForm = document.getElementById('profileEditForm');
+        if (profileEditForm) {
+            profileEditForm.addEventListener('submit', function(e) {
+                if (!validateProfileEditForm()) {
+                    e.preventDefault();
+                }
+            });
+        }
+    });
+</script>
+</html>
