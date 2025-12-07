@@ -37,10 +37,10 @@
 - Mô tả: Tạo đặt xe mới, chọn thời gian, địa điểm, submit giấy tờ
 - Gộp: Schedule rental + Submit documents
 
- UC07: Review Booking
+ UC07: Approve/Reject Booking
 - Roles: Staff
 - Mô tả: Xem yêu cầu đặt xe, kiểm tra giấy tờ, phê duyệt hoặc từ chối
-- Gộp: Check documents + Approve/Reject
+- Gộp: Check documents + 
 
  UC08: Cancel Booking
 - Roles: Customer, Staff

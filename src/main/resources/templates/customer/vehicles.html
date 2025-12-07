@@ -3,29 +3,219 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Available Vehicles - Car Rental System</title>
+    <title>Danh Sách Xe - Thuê Xe</title>
     <!-- CSS Variables - Theme Black & Blue -->
     <link rel="stylesheet" th:href="@{/css/variables.css}">
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <link rel="stylesheet" th:href="@{/css/components.css}">
+    <link rel="stylesheet" th:href="@{/css/vehicles.css}">
 </head>
 <body>
+    <!-- Header -->
     <div th:replace="~{fragments/header :: header}"></div>
 
-    <main class="container">
-        <h1>Available Vehicles</h1>
-
-        <div class="grid">
-            <div th:each="vehicle : ${vehicles}">
-                <div th:replace="~{fragments/components/cards :: vehicle-card(${vehicle})}"></div>
+    <!-- Main Content -->
+    <main class="vehicles-page">
+        <div class="page-container vehicles-container">
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1>Danh Sách Xe Có Sẵn</h1>
+                <p>Tìm kiếm và lọc xe phù hợp với nhu cầu của bạn</p>
             </div>
-        </div>
 
-        <div th:if="${#lists.isEmpty(vehicles)}" class="card">
-            <p style="text-align: center;">No vehicles available at the moment. Please check back later.</p>
+            <!-- Search & Filter Section -->
+            <div class="search-filter-section">
+                <form th:action="@{/vehicles}" method="get" class="filter-form">
+                    <!-- Search Box -->
+                    <div class="search-box-container">
+                        <div class="search-input-wrapper">
+                            <svg class="search-icon" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M9 17C13.4183 17 17 13.4183 17 9C17 4.58172 13.4183 1 9 1C4.58172 1 1 4.58172 1 9C1 13.4183 4.58172 17 9 17Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M19 19L14.65 14.65" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <input type="text" 
+                                   name="keyword" 
+                                   th:value="${searchKeyword}"
+                                   placeholder="Tìm kiếm xe theo tên, hãng, biển số..."
+                                   class="search-input">
+                        </div>
+                    </div>
+
+                    <!-- Filter Options -->
+                    <div class="filter-grid">
+                        <!-- Brand Filter -->
+                        <div class="filter-item">
+                            <label for="brandId">Hãng xe</label>
+                            <select name="brandId" id="brandId" class="filter-select">
+                                <option value="">Tất cả hãng</option>
+                                <option th:each="brand : ${brands}" 
+                                        th:value="${brand.id}"
+                                        th:text="${brand.brandName}"
+                                        th:selected="${selectedBrandId != null && selectedBrandId == brand.id}">
+                                    Brand
+                                </option>
+                            </select>
+                        </div>
+
+                        <!-- Category Filter -->
+                        <div class="filter-item">
+                            <label for="category">Loại xe</label>
+                            <select name="category" id="category" class="filter-select">
+                                <option value="">Tất cả loại</option>
+                                <option th:each="cat : ${categories}" 
+                                        th:value="${cat}"
+                                        th:text="${cat}"
+                                        th:selected="${selectedCategory != null && selectedCategory == cat}">
+                                    Category
+                                </option>
+                            </select>
+                        </div>
+
+                        <!-- Price Filter -->
+                        <div class="filter-item">
+                            <label for="maxPrice">Giá tối đa (VNĐ/ngày)</label>
+                            <select name="maxPrice" id="maxPrice" class="filter-select">
+                                <option value="">Tất cả mức giá</option>
+                                <option value="500000" th:selected="${selectedMaxPrice != null && selectedMaxPrice == 500000}">Dưới 500,000</option>
+                                <option value="700000" th:selected="${selectedMaxPrice != null && selectedMaxPrice == 700000}">Dưới 700,000</option>
+                                <option value="1000000" th:selected="${selectedMaxPrice != null && selectedMaxPrice == 1000000}">Dưới 1,000,000</option>
+                                <option value="1500000" th:selected="${selectedMaxPrice != null && selectedMaxPrice == 1500000}">Dưới 1,500,000</option>
+                                <option value="2000000" th:selected="${selectedMaxPrice != null && selectedMaxPrice == 2000000}">Dưới 2,000,000</option>
+                            </select>
+                        </div>
+
+                        <!-- Seats Filter -->
+                        <div class="filter-item">
+                            <label for="minSeats">Số chỗ ngồi</label>
+                            <select name="minSeats" id="minSeats" class="filter-select">
+                                <option value="">Tất cả</option>
+                                <option value="4" th:selected="${selectedMinSeats != null && selectedMinSeats == 4}">4+ chỗ</option>
+                                <option value="5" th:selected="${selectedMinSeats != null && selectedMinSeats == 5}">5+ chỗ</option>
+                                <option value="7" th:selected="${selectedMinSeats != null && selectedMinSeats == 7}">7+ chỗ</option>
+                            </select>
+                        </div>
+
+                        <!-- Transmission Filter -->
+                        <div class="filter-item">
+                            <label for="transmission">Hộp số</label>
+                            <select name="transmission" id="transmission" class="filter-select">
+                                <option value="">Tất cả</option>
+                                <option th:each="trans : ${transmissions}" 
+                                        th:value="${trans}"
+                                        th:text="${trans}"
+                                        th:selected="${selectedTransmission != null && selectedTransmission == trans}">
+                                    Transmission
+                                </option>
+                            </select>
+                        </div>
+
+                        <!-- Fuel Type Filter -->
+                        <div class="filter-item">
+                            <label for="fuelType">Nhiên liệu</label>
+                            <select name="fuelType" id="fuelType" class="filter-select">
+                                <option value="">Tất cả</option>
+                                <option th:each="fuel : ${fuelTypes}" 
+                                        th:value="${fuel}"
+                                        th:text="${fuel}"
+                                        th:selected="${selectedFuelType != null && selectedFuelType == fuel}">
+                                    Fuel Type
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Filter Actions -->
+                    <div class="filter-actions">
+                        <button type="submit" class="btn btn-primary btn-icon">
+                            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M8 16C12.4183 16 16 12.4183 16 8C16 3.58172 12.4183 0 8 0C3.58172 0 0 3.58172 0 8C0 12.4183 3.58172 16 8 16Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M18 18L13.65 13.65" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            Tìm kiếm
+                        </button>
+                        <a th:href="@{/vehicles}" class="btn btn-secondary btn-icon">
+                            <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M13.5 4.5L4.5 13.5M4.5 4.5L13.5 13.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            Xóa bộ lọc
+                        </a>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Results Summary -->
+            <div class="results-summary">
+                <p th:if="${vehicles != null && !vehicles.isEmpty()}">
+                    Tìm thấy <strong th:text="${totalElements}">0</strong> xe
+                    <span th:if="${totalPages > 1}">
+                        (Trang <span th:text="${currentPage + 1}">1</span> / <span th:text="${totalPages}">1</span>)
+                    </span>
+                </p>
+                <p th:if="${vehicles == null || vehicles.isEmpty()}">
+                    Không tìm thấy xe phù hợp. Vui lòng thử lại với tiêu chí khác.
+                </p>
+            </div>
+
+            <!-- Vehicle Grid -->
+            <div class="vehicle-grid-modern" th:if="${vehicles != null && !vehicles.isEmpty()}">
+                <div th:each="vehicle : ${vehicles}">
+                    <div th:replace="~{fragments/components/cards :: vehicle-card-modern(${vehicle})}"></div>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination-container" th:if="${totalPages > 1}">
+                <nav class="pagination">
+                    <!-- Previous Button -->
+                    <a th:href="@{/vehicles(brandId=${selectedBrandId}, category=${selectedCategory}, maxPrice=${selectedMaxPrice}, minSeats=${selectedMinSeats}, transmission=${selectedTransmission}, fuelType=${selectedFuelType}, keyword=${searchKeyword}, page=${currentPage > 0 ? currentPage - 1 : 0})}"
+                       class="pagination-btn"
+                       th:classappend="${currentPage == 0} ? 'disabled'"
+                       th:attr="onclick=${currentPage == 0} ? 'return false;' : ''">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M10 12L6 8L10 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        Trước
+                    </a>
+
+                    <!-- Page Numbers -->
+                    <div class="pagination-numbers">
+                        <a th:each="pageNum : ${#numbers.sequence(0, totalPages - 1)}"
+                           th:href="@{/vehicles(brandId=${selectedBrandId}, category=${selectedCategory}, maxPrice=${selectedMaxPrice}, minSeats=${selectedMinSeats}, transmission=${selectedTransmission}, fuelType=${selectedFuelType}, keyword=${searchKeyword}, page=${pageNum})}"
+                           class="pagination-number"
+                           th:classappend="${pageNum == currentPage} ? 'active'"
+                           th:text="${pageNum + 1}">
+                            1
+                        </a>
+                    </div>
+
+                    <!-- Next Button -->
+                    <a th:href="@{/vehicles(brandId=${selectedBrandId}, category=${selectedCategory}, maxPrice=${selectedMaxPrice}, minSeats=${selectedMinSeats}, transmission=${selectedTransmission}, fuelType=${selectedFuelType}, keyword=${searchKeyword}, page=${currentPage < totalPages - 1 ? currentPage + 1 : totalPages - 1})}"
+                       class="pagination-btn"
+                       th:classappend="${currentPage >= totalPages - 1} ? 'disabled'"
+                       th:attr="onclick=${currentPage >= totalPages - 1} ? 'return false;' : ''">
+                        Sau
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </a>
+                </nav>
+            </div>
+
+            <!-- Empty State -->
+            <div class="empty-state" th:if="${vehicles == null || vehicles.isEmpty()}">
+                <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M40 73.3333C58.4095 73.3333 73.3333 58.4095 73.3333 40C73.3333 21.5905 58.4095 6.66667 40 6.66667C21.5905 6.66667 6.66667 21.5905 6.66667 40C6.66667 58.4095 21.5905 73.3333 40 73.3333Z" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M40 26.6667V40" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M40 53.3333H40.0333" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <h3>Không tìm thấy xe</h3>
+                <p>Không có xe nào phù hợp với tiêu chí tìm kiếm của bạn.</p>
+                <a th:href="@{/vehicles}" class="btn btn-primary">Xem tất cả xe</a>
+            </div>
         </div>
     </main>
 
+    <!-- Footer -->
     <div th:replace="~{fragments/footer :: footer}"></div>
 </body>
 </html>

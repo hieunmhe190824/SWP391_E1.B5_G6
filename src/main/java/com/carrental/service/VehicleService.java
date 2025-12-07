@@ -6,6 +6,7 @@ import com.carrental.repository.VehicleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,6 +28,51 @@ public class VehicleService {
         // Sử dụng method với JOIN FETCH để load tất cả relationships (model, brand, location)
         // Đảm bảo dữ liệu có sẵn khi render template, tránh LazyInitializationException
         return vehicleRepository.findByStatusWithRelations(VehicleStatus.Available);
+    }
+    
+    /**
+     * UC04: Browse Vehicles - Tìm kiếm và lọc xe
+     * Tìm kiếm xe theo nhiều tiêu chí: brand, category, giá, số chỗ, transmission, fuel, keyword
+     */
+    public List<Vehicle> searchVehicles(
+            Long brandId,
+            String category,
+            BigDecimal maxPrice,
+            Integer minSeats,
+            String transmission,
+            String fuelType,
+            String searchKeyword) {
+        return vehicleRepository.searchVehicles(
+            VehicleStatus.Available,
+            brandId,
+            category,
+            maxPrice,
+            minSeats,
+            transmission,
+            fuelType,
+            searchKeyword
+        );
+    }
+    
+    /**
+     * Lấy danh sách các category có trong hệ thống để hiển thị trong filter
+     */
+    public List<String> getAllCategories() {
+        return vehicleRepository.findAllCategories();
+    }
+    
+    /**
+     * Lấy danh sách các loại transmission để hiển thị trong filter
+     */
+    public List<String> getAllTransmissions() {
+        return vehicleRepository.findAllTransmissions();
+    }
+    
+    /**
+     * Lấy danh sách các loại fuel type để hiển thị trong filter
+     */
+    public List<String> getAllFuelTypes() {
+        return vehicleRepository.findAllFuelTypes();
     }
 
     public List<Vehicle> getVehiclesByLocation(Long locationId) {

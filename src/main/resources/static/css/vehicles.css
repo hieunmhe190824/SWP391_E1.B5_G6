@@ -1,0 +1,410 @@
+/* ===================================================================
+   VEHICLES.CSS - Stylesheet cho trang danh sách xe với tìm kiếm và lọc
+   UC04: Browse Vehicles - View list + Search/Filter
+   =================================================================== */
+
+/* ===== PAGE LAYOUT ===== */
+.vehicles-page {
+    min-height: 100vh;
+    background: var(--section-dark-bg);
+    position: relative;
+    padding: 0 0 var(--spacing-3xl) 0; /* Chỉ padding bottom, padding trái/phải sẽ do page-container xử lý */
+}
+
+/* Top border gradient giống section-dark */
+.vehicles-page::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent 0%, var(--color-primary) 50%, transparent 100%);
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+/* Overlay gradient giống section-dark */
+.vehicles-page::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--section-dark-overlay);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.vehicles-page > * {
+    position: relative;
+    z-index: 1;
+}
+
+.vehicles-container {
+    margin-top: 0; /* Bỏ margin-top để không có khoảng trắng */
+    padding-top: var(--spacing-lg); /* Khoảng cách nhỏ với header */
+}
+
+/* Override page-container padding trong vehicles page để có khoảng cách rộng hơn */
+.vehicles-page .page-container {
+    padding-left: var(--spacing-2xl); /* 48px */
+    padding-right: var(--spacing-2xl); /* 48px */
+}
+
+/* ===== PAGE HEADER ===== */
+.page-header {
+    text-align: center;
+    margin-bottom: var(--spacing-3xl);
+    padding: var(--spacing-2xl) 0;
+}
+
+.page-header h1 {
+    font-size: var(--font-4xl);
+    font-weight: 700;
+    color: var(--color-text-white);
+    margin-bottom: var(--spacing-md);
+    text-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+.page-header p {
+    font-size: var(--font-lg);
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* ===== SEARCH & FILTER SECTION ===== */
+.search-filter-section {
+    background: var(--color-surface);
+    border-radius: var(--radius-lg); /* Giảm từ xl xuống lg */
+    padding: var(--spacing-xl); /* Giảm từ 2xl (48px) xuống xl (32px) */
+    box-shadow: var(--shadow-md); /* Giảm từ lg xuống md */
+    margin-bottom: var(--spacing-2xl); /* Giảm từ 3xl xuống 2xl */
+    border: 1px solid var(--color-border);
+    max-width: 100%; /* Đảm bảo không vượt quá container */
+}
+
+/* Search Box Container */
+.search-box-container {
+    margin-bottom: var(--spacing-lg); /* Giảm từ 2xl xuống lg */
+}
+
+.search-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-icon {
+    position: absolute;
+    left: var(--spacing-sm); /* Giảm từ md xuống sm */
+    color: var(--color-text-light);
+    pointer-events: none;
+    width: 18px; /* Giảm kích thước icon */
+    height: 18px;
+}
+
+.search-input {
+    width: 100%;
+    padding: 12px var(--spacing-md) 12px 40px; /* Giảm padding từ 16px xuống 12px, icon từ 48px xuống 40px */
+    font-size: var(--font-base);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-md); /* Giảm từ lg xuống md */
+    transition: all var(--transition-base);
+    background: var(--color-background);
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* Filter Grid */
+.filter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); /* Giảm minmax từ 200px xuống 180px */
+    gap: var(--spacing-md); /* Giảm từ lg xuống md */
+    margin-bottom: var(--spacing-lg); /* Giảm từ 2xl xuống lg */
+}
+
+.filter-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.filter-item label {
+    font-size: var(--font-xs); /* Giảm từ sm xuống xs */
+    font-weight: 600;
+    color: var(--color-text);
+    margin-bottom: var(--spacing-xs); /* Giảm từ sm xuống xs */
+}
+
+.filter-select {
+    padding: 10px var(--spacing-sm); /* Giảm padding từ md xuống nhỏ hơn */
+    font-size: var(--font-sm); /* Giảm từ base xuống sm */
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-background);
+    color: var(--color-text);
+    transition: all var(--transition-base);
+    cursor: pointer;
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.filter-select:hover {
+    border-color: var(--color-primary-light);
+}
+
+/* Filter Actions */
+.filter-actions {
+    display: flex;
+    gap: var(--spacing-sm); /* Giảm từ md xuống sm */
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: var(--spacing-md); /* Thêm margin-top nhỏ */
+}
+
+.filter-actions .btn {
+    min-width: 120px; /* Giảm từ 150px xuống 120px */
+    padding: var(--spacing-sm) var(--spacing-md); /* Giảm padding button */
+    font-size: var(--font-sm); /* Giảm font size */
+}
+
+/* Button with Icon */
+.btn-icon {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.btn-icon svg {
+    flex-shrink: 0;
+}
+
+/* ===== RESULTS SUMMARY ===== */
+.results-summary {
+    text-align: center;
+    margin-bottom: var(--spacing-2xl);
+    padding: var(--spacing-lg);
+}
+
+.results-summary p {
+    font-size: var(--font-lg);
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.results-summary strong {
+    color: var(--color-primary-light);
+    font-weight: 700;
+}
+
+/* ===== VEHICLE GRID ===== */
+.vehicle-grid-modern {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* 3 cột mỗi dòng */
+    gap: var(--spacing-2xl);
+    margin-bottom: var(--spacing-3xl);
+}
+
+/* ===== EMPTY STATE ===== */
+.empty-state {
+    text-align: center;
+    padding: var(--spacing-3xl);
+    background: rgba(31, 41, 55, 0.5); /* Dark background với transparency */
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-md);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.empty-state svg {
+    color: rgba(255, 255, 255, 0.5);
+    margin-bottom: var(--spacing-2xl);
+}
+
+.empty-state h3 {
+    font-size: var(--font-2xl);
+    color: var(--color-text-white);
+    margin-bottom: var(--spacing-md);
+    font-weight: 700;
+}
+
+.empty-state p {
+    font-size: var(--font-base);
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: var(--spacing-2xl);
+}
+
+.empty-state svg {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+/* Tablet: 2 cột */
+@media (max-width: 1024px) and (min-width: 769px) {
+    .vehicle-grid-modern {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--spacing-xl);
+    }
+}
+
+/* Mobile: 1 cột */
+@media (max-width: 768px) {
+    .page-header h1 {
+        font-size: var(--font-3xl);
+    }
+    
+    .page-header p {
+        font-size: var(--font-base);
+    }
+    
+    .search-filter-section {
+        padding: var(--spacing-lg);
+    }
+    
+    .filter-grid {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-md);
+    }
+    
+    .filter-actions {
+        flex-direction: column;
+    }
+    
+    .filter-actions .btn {
+        width: 100%;
+    }
+    
+    .vehicle-grid-modern {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-lg);
+    }
+}
+
+@media (max-width: 480px) {
+    .vehicles-page {
+        padding: var(--spacing-xl) 0;
+    }
+    
+    .page-header {
+        margin-bottom: var(--spacing-xl);
+        padding: var(--spacing-lg) 0;
+    }
+    
+    .search-filter-section {
+        margin-bottom: var(--spacing-xl);
+    }
+}
+
+/* ===== PAGINATION ===== */
+.pagination-container {
+    margin-top: var(--spacing-3xl);
+    display: flex;
+    justify-content: center;
+    padding: var(--spacing-2xl) 0;
+}
+
+.pagination {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.pagination-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-sm) var(--spacing-lg);
+    background: var(--color-surface);
+    color: var(--color-text);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    font-size: var(--font-sm);
+    font-weight: 600;
+    transition: all var(--transition-base);
+    cursor: pointer;
+}
+
+.pagination-btn:hover:not(.disabled) {
+    background: var(--color-primary);
+    color: var(--color-text-white);
+    border-color: var(--color-primary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.pagination-btn.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.pagination-btn svg {
+    flex-shrink: 0;
+}
+
+.pagination-numbers {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    flex-wrap: wrap;
+}
+
+.pagination-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    height: 40px;
+    padding: var(--spacing-sm);
+    background: var(--color-surface);
+    color: var(--color-text);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    font-size: var(--font-sm);
+    font-weight: 600;
+    transition: all var(--transition-base);
+    cursor: pointer;
+}
+
+.pagination-number:hover {
+    background: var(--color-primary-light);
+    color: var(--color-text-white);
+    border-color: var(--color-primary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+.pagination-number.active {
+    background: var(--color-primary);
+    color: var(--color-text-white);
+    border-color: var(--color-primary);
+    box-shadow: var(--shadow-md);
+}
+
+/* Responsive Pagination */
+@media (max-width: 768px) {
+    .pagination {
+        gap: var(--spacing-xs);
+    }
+    
+    .pagination-btn {
+        padding: var(--spacing-xs) var(--spacing-md);
+        font-size: var(--font-xs);
+    }
+    
+    .pagination-number {
+        min-width: 36px;
+        height: 36px;
+        font-size: var(--font-xs);
+    }
+}

@@ -34,53 +34,182 @@
 /* ===== FORM TÌM KIẾM - Search Box ===== */
 .search-box {
     background: var(--color-surface);     /* Màu trắng */
-    padding: var(--spacing-2xl);          /* 48px */
-    border-radius: var(--radius-xl);      /* 16px */
-    max-width: 500px;
+    padding: var(--spacing-xl);           /* Giảm từ 2xl (48px) xuống xl (32px) */
+    border-radius: var(--radius-lg);      /* Giảm từ xl xuống lg */
+    max-width: 1000px;                    /* Giảm từ 1100px xuống 1000px */
     margin: 0 auto;
-    box-shadow: var(--shadow-xl);
+    box-shadow: var(--shadow-md);         /* Giảm từ xl xuống md */
+}
+
+.search-form-home {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);               /* Giảm từ lg xuống md */
+}
+
+.search-form-title {
+    margin: 0;
+    margin-bottom: var(--spacing-sm);      /* Giảm từ md xuống sm */
+    font-size: var(--font-lg);             /* Giảm từ xl xuống lg */
+    color: var(--color-text);
+    text-align: center;
+    font-weight: 700;
+}
+
+/* Horizontal Grid Layout */
+.search-form-grid {
+    display: grid;
+    grid-template-columns: 2.5fr 2fr 1.5fr 1.5fr;
+    gap: var(--spacing-md);                /* Giảm từ lg xuống md */
+    align-items: end;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group-button {
+    display: flex;
+    flex-direction: column;
 }
 
 .search-box label {
     display: block;
-    margin-bottom: var(--spacing-sm);
-    font-weight: bold;
+    margin-bottom: var(--spacing-xs);      /* Giảm từ sm xuống xs */
+    font-weight: 600;
     color: var(--color-text);
+    font-size: var(--font-xs);             /* Giảm từ sm xuống xs */
+}
+
+.search-box .form-control {
+    width: 100%;
+    padding: 10px var(--spacing-md);       /* Giảm từ 14px xuống 10px */
+    font-size: var(--font-sm);             /* Giảm từ base xuống sm */
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-md);
+    transition: border-color var(--transition-base);
+    background: var(--color-background);
+    height: 40px;                          /* Giảm từ 48px xuống 40px */
+    box-sizing: border-box;
+    line-height: 1.5;
+    display: flex;
+    align-items: center;
+    color: var(--color-text);
+}
+
+.search-box .form-control::placeholder {
+    color: #9ca3af; /* Màu xám cho placeholder */
+    opacity: 1; /* Đảm bảo màu hiển thị đúng */
+}
+
+.search-box .form-control::-webkit-input-placeholder {
+    color: #9ca3af;
+}
+
+.search-box .form-control::-moz-placeholder {
+    color: #9ca3af;
+    opacity: 1;
+}
+
+.search-box .form-control:-ms-input-placeholder {
+    color: #9ca3af;
+}
+
+.search-box .form-control:focus {
+    outline: none;
+    border-color: var(--color-primary);  /* Blue border khi focus */
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 .search-box select {
     width: 100%;
-    padding: var(--spacing-md);
-    font-size: var(--font-base);
+    padding: 10px 35px 10px var(--spacing-md); /* Giảm padding từ 14px xuống 10px, icon từ 40px xuống 35px */
+    font-size: var(--font-sm);             /* Giảm từ base xuống sm */
     border: 2px solid var(--color-border);
     border-radius: var(--radius-md);
-    margin-bottom: var(--spacing-lg);
     transition: border-color var(--transition-base);
+    cursor: pointer;
+    box-sizing: border-box;
+    appearance: none;
+    height: 40px;                          /* Giảm từ 48px xuống 40px */
+    line-height: 1.5;
+    background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 6L11 1' stroke='%23374151' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right var(--spacing-sm) center; /* Giảm từ md xuống sm */
+    background-size: 10px;                 /* Giảm từ 12px xuống 10px */
+    display: flex;
+    align-items: center;
+    color: var(--color-text);
+}
+
+/* Màu xám cho option đầu tiên (placeholder) trong select */
+.search-box select option:first-child {
+    color: #9ca3af;
+}
+
+.search-box select option:not(:first-child) {
+    color: var(--color-text);
 }
 
 .search-box select:focus {
     outline: none;
     border-color: var(--color-primary);  /* Blue border khi focus */
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
-.search-box button {
+.btn-search {
     width: 100%;
-    padding: var(--spacing-md);
-    font-size: var(--font-lg);
+    height: 40px;                          /* Giảm từ 48px xuống 40px */
+    padding: var(--spacing-sm) var(--spacing-md); /* Giảm padding */
+    font-size: var(--font-sm);             /* Giảm từ base xuống sm */
     background-color: var(--color-primary);    /* Blue button */
     color: var(--color-text-white);
     border: none;
     border-radius: var(--radius-md);
     cursor: pointer;
-    font-weight: bold;
+    font-weight: 600;
     transition: all var(--transition-base);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-xs);                /* Giảm từ sm xuống xs */
+}
+
+.btn-search svg {
+    flex-shrink: 0;
+    width: 16px;                           /* Giảm kích thước icon */
+    height: 16px;
+}
+
+.btn-search span {
+    white-space: nowrap;
 }
 
 /* Hiệu ứng khi hover (di chuột vào) button */
-.search-box button:hover {
+.btn-search:hover {
     background-color: var(--color-primary-dark);  /* Dark Blue */
     transform: translateY(-2px);
     box-shadow: var(--shadow-lg);
+}
+
+/* Advanced Search Link */
+.advanced-search-link {
+    text-align: center;
+    margin-top: var(--spacing-sm);          /* Giảm từ md xuống sm */
+}
+
+.advanced-search-link a {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-size: var(--font-xs);              /* Giảm từ sm xuống xs */
+    font-weight: 600;
+    transition: color var(--transition-base);
+}
+
+.advanced-search-link a:hover {
+    color: var(--color-primary-dark);
+    text-decoration: underline;
 }
 
 /* ===== SECTION - Các phần nội dung ===== */
@@ -226,11 +355,41 @@
         padding: var(--spacing-lg);
     }
 
+    /* Form chuyển sang dọc trên mobile */
+    .search-form-grid {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-md);
+    }
+    
+    .form-group-button label {
+        display: none;
+    }
+
     .section-vehicles {
         padding: var(--spacing-xl) var(--spacing-md);
     }
 
     .section-header-modern {
         margin-bottom: var(--spacing-xl);
+    }
+}
+
+/* Tablet - 1 hàng 2 cột */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .search-form-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: var(--spacing-md);
+    }
+    
+    .form-group:first-child {
+        grid-column: 1 / -1;
+    }
+    
+    .form-group-button {
+        grid-column: 1 / -1;
+    }
+    
+    .form-group-button label {
+        display: none;
     }
 }
