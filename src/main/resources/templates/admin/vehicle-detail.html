@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết xe - Car Rental System</title>
+    
+    <!-- ===== CSS FILES ===== -->
+    <link rel="stylesheet" th:href="@{/css/variables.css}">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/admin-vehicles.css}">
+</head>
+<body>
+    <!-- ===== DASHBOARD LAYOUT ===== -->
+    <div class="dashboard-layout">
+        <!-- Sidebar -->
+        <aside th:replace="~{fragments/components/sidebar-admin :: sidebar-admin}"></aside>
+
+        <!-- Sidebar Overlay (Mobile) -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <!-- Main Content -->
+        <div class="dashboard-main">
+            <!-- Header -->
+            <header th:replace="~{fragments/components/dashboard-header :: dashboard-header}"></header>
+            
+            <!-- Page Content -->
+            <main class="dashboard-content">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div class="page-header-content">
+                    <h1 class="page-title">Chi tiết xe</h1>
+                    <p class="page-description" th:text="${vehicle.model.brand.brandName + ' ' + vehicle.model.modelName + ' - ' + vehicle.licensePlate}">
+                        Toyota Camry - 30A-12345
+                    </p>
+                </div>
+                <div class="page-header-actions">
+                    <a th:href="@{/admin/vehicles}" class="btn btn-secondary">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="19" y1="12" x2="5" y2="12"></line>
+                            <polyline points="12 19 5 12 12 5"></polyline>
+                        </svg>
+                        Quay lại
+                    </a>
+                    <a th:href="@{/admin/vehicles/{id}/edit(id=${vehicle.id})}" class="btn btn-primary">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                        Chỉnh sửa
+                    </a>
+                    <form th:action="@{/admin/vehicles/{id}/delete(id=${vehicle.id})}" 
+                          method="post"
+                          style="display: inline;"
+                          data-delete-form="true"
+                          th:data-delete-message="'Bạn có chắc chắn muốn xóa xe ' + ${vehicle.licensePlate} + '? Hành động này không thể hoàn tác.'">
+                        <button type="submit" class="btn btn-danger">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                            </svg>
+                            Xóa xe
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Flash Messages -->
+            <div th:if="${successMessage}" class="alert alert-success" role="alert">
+                <svg class="alert-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+                <span th:text="${successMessage}"></span>
+            </div>
+
+            <!-- Vehicle Detail Content -->
+            <div class="vehicle-detail-container">
+                <!-- Left Column: Image and Quick Actions -->
+                <div class="vehicle-detail-left">
+                    <!-- Vehicle Image -->
+                    <div class="vehicle-image-section">
+                        <div class="vehicle-image-main">
+                            <img th:src="${vehicle.firstImageUrl}"
+                                 th:alt="${vehicle.model.brand.brandName + ' ' + vehicle.model.modelName}"
+                                 onerror="this.style.display='none'">
+                        </div>
+                    </div>
+
+                    <!-- Quick Status Actions -->
+                    <div class="quick-actions-card">
+                        <h3 class="card-title">Cập nhật trạng thái</h3>
+                        <form th:action="@{/admin/vehicles/{id}/status(id=${vehicle.id})}" method="post">
+                            <div class="status-buttons">
+                                <button type="submit" name="status" value="Available" 
+                                        class="status-btn status-available"
+                                        th:disabled="${vehicle.status.name() == 'Available'}">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                    </svg>
+                                    Sẵn sàng
+                                </button>
+                                <button type="submit" name="status" value="Maintenance" 
+                                        class="status-btn status-maintenance"
+                                        th:disabled="${vehicle.status.name() == 'Maintenance'}">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path>
+                                    </svg>
+                                    Bảo trì
+                                </button>
+                                <button type="submit" name="status" value="Rented" 
+                                        class="status-btn status-rented"
+                                        th:disabled="${vehicle.status.name() == 'Rented'}">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <polyline points="12 6 12 12 16 14"></polyline>
+                                    </svg>
+                                    Đang thuê
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Right Column: Details -->
+                <div class="vehicle-detail-right">
+                    <!-- Basic Information -->
+                    <div class="detail-card">
+                        <div class="detail-card-header">
+                            <h2 class="detail-card-title">Thông tin cơ bản</h2>
+                            <span class="badge"
+                                  th:classappend="${vehicle.status.name() == 'Available' ? 'badge-success' : (vehicle.status.name() == 'Rented' ? 'badge-warning' : 'badge-secondary')}"
+                                  th:text="${vehicle.status.name()}">
+                                Available
+                            </span>
+                        </div>
+                        <div class="detail-grid">
+                            <div class="detail-item">
+                                <div class="detail-label">Biển số xe</div>
+                                <div class="detail-value" th:text="${vehicle.licensePlate}">30A-12345</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Màu sắc</div>
+                                <div class="detail-value" th:text="${vehicle.color ?: 'Chưa cập nhật'}">Trắng</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Hãng xe</div>
+                                <div class="detail-value" th:text="${vehicle.model.brand.brandName}">Toyota</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Model</div>
+                                <div class="detail-value" th:text="${vehicle.model.modelName}">Camry</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Năm sản xuất</div>
+                                <div class="detail-value" th:text="${vehicle.model.year}">2024</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Loại xe</div>
+                                <div class="detail-value">
+                                    <span class="badge badge-category" th:text="${vehicle.model.category}">Sedan</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Vehicle Specifications -->
+                    <div class="detail-card">
+                        <h2 class="detail-card-title">Thông số kỹ thuật</h2>
+                        <div class="detail-grid">
+                            <div class="detail-item">
+                                <div class="detail-label">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                        <circle cx="9" cy="7" r="4"></circle>
+                                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                    </svg>
+                                    Số chỗ ngồi
+                                </div>
+                                <div class="detail-value" th:text="${vehicle.model.seats + ' chỗ'}">5 chỗ</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <polyline points="12 6 12 12 16 14"></polyline>
+                                    </svg>
+                                    Hộp số
+                                </div>
+                                <div class="detail-value" th:text="${vehicle.model.transmission}">Automatic</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path>
+                                    </svg>
+                                    Nhiên liệu
+                                </div>
+                                <div class="detail-value" th:text="${vehicle.model.fuelType}">Gasoline</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Location Information -->
+                    <div class="detail-card">
+                        <h2 class="detail-card-title">Vị trí & Liên hệ</h2>
+                        <div class="detail-grid">
+                            <div class="detail-item detail-item-full">
+                                <div class="detail-label">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                        <circle cx="12" cy="10" r="3"></circle>
+                                    </svg>
+                                    Địa điểm
+                                </div>
+                                <div class="detail-value" th:text="${vehicle.location.locationName}">Chi nhánh Hoàn Kiếm</div>
+                            </div>
+                            <div class="detail-item detail-item-full">
+                                <div class="detail-label">Địa chỉ</div>
+                                <div class="detail-value" th:text="${vehicle.location.address + ', ' + vehicle.location.city}">
+                                    123 Phố Tràng Tiền, Hà Nội
+                                </div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                                    </svg>
+                                    Điện thoại
+                                </div>
+                                <div class="detail-value" th:text="${vehicle.location.phoneNumber ?: 'Chưa có'}">0241234567</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pricing Information -->
+                    <div class="detail-card">
+                        <h2 class="detail-card-title">Thông tin giá cả</h2>
+                        <div class="detail-grid">
+                            <div class="detail-item">
+                                <div class="detail-label">Giá thuê/ngày</div>
+                                <div class="detail-value detail-value-price">
+                                    <span th:text="${#numbers.formatDecimal(vehicle.dailyRate, 0, 'POINT', 0, 'POINT')} + ' ₫'">
+                                        500,000 ₫
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Tiền đặt cọc</div>
+                                <div class="detail-value detail-value-price">
+                                    <span th:text="${#numbers.formatDecimal(vehicle.depositAmount, 0, 'POINT', 0, 'POINT')} + ' ₫'">
+                                        3,000,000 ₫
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </main>
+
+            <!-- Footer -->
+            <footer th:replace="~{fragments/footer :: footer}"></footer>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div th:replace="~{fragments/components/modals :: deleteConfirmModal}"></div>
+
+    <!-- Scripts -->
+    <div th:replace="~{fragments/components/dashboard-header :: dashboard-scripts}"></div>
+    <script>
+        // Auto-hide flash messages after 3 seconds
+        document.addEventListener('DOMContentLoaded', function() {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                setTimeout(() => {
+                    alert.style.transition = 'opacity 0.5s ease-out';
+                    alert.style.opacity = '0';
+                    setTimeout(() => {
+                        alert.remove();
+                    }, 500);
+                }, 3000);
+            });
+
+            // Delete confirmation
+            const deleteForms = document.querySelectorAll('[data-delete-form="true"]');
+            const modal = document.getElementById('deleteConfirmModal');
+            
+            if (modal && deleteForms.length > 0) {
+                const cancelBtn = modal.querySelector('.delete-modal-cancel');
+                const confirmBtn = modal.querySelector('.delete-modal-confirm');
+                const overlay = modal.querySelector('.delete-modal-overlay');
+                let currentForm = null;
+
+                deleteForms.forEach(form => {
+                    form.addEventListener('submit', function(e) {
+                        e.preventDefault();
+                        currentForm = this;
+                        
+                        // Update message if custom message exists
+                        const customMessage = this.getAttribute('data-delete-message');
+                        if (customMessage) {
+                            modal.querySelector('.delete-modal-message').textContent = customMessage;
+                        }
+                        
+                        modal.classList.add('active');
+                    });
+                });
+
+                function closeModal() {
+                    modal.classList.remove('active');
+                    currentForm = null;
+                }
+
+                cancelBtn.addEventListener('click', closeModal);
+                overlay.addEventListener('click', closeModal);
+
+                confirmBtn.addEventListener('click', function() {
+                    if (currentForm) {
+                        currentForm.submit();
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

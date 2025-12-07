@@ -174,6 +174,8 @@ function validateBookingForm() {
 
 // Show error message
 function showError(element, message) {
+    // Remove existing error class
+    element.classList.remove('error');
     element.classList.add('error');
 
     // Remove existing error message
@@ -186,10 +188,6 @@ function showError(element, message) {
     const errorDiv = document.createElement('div');
     errorDiv.className = 'error-message';
     errorDiv.textContent = message;
-    errorDiv.style.color = 'red';
-    errorDiv.style.fontSize = '0.875rem';
-    errorDiv.style.marginTop = '0.25rem';
-
     element.parentElement.appendChild(errorDiv);
 }
 

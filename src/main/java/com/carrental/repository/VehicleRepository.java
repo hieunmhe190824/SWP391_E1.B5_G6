@@ -9,17 +9,29 @@ import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
     List<Vehicle> findByStatus(VehicleStatus status);
     List<Vehicle> findByLocationId(Long locationId);
+
+    /**
+     * Lấy xe theo ID với tất cả relationships được load (model, brand, location)
+     * Sử dụng JOIN FETCH để tránh LazyInitializationException
+     */
+    @Query("SELECT v FROM Vehicle v " +
+           "LEFT JOIN FETCH v.model m " +
+           "LEFT JOIN FETCH m.brand b " +
+           "LEFT JOIN FETCH v.location l " +
+           "WHERE v.id = :id")
+    Optional<Vehicle> findByIdWithRelations(@Param("id") Long id);
     
     /**
      * Lấy danh sách xe có sẵn với tất cả relationships được load (model, brand, location)
      * Sử dụng JOIN FETCH để tránh N+1 query problem và đảm bảo dữ liệu có sẵn khi render template
      */
-    @Query("SELECT DISTINCT v FROM Vehicle v " +
+    @Query("SELECT v FROM Vehicle v " +
            "LEFT JOIN FETCH v.model m " +
            "LEFT JOIN FETCH m.brand b " +
            "LEFT JOIN FETCH v.location l " +
@@ -31,11 +43,11 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
      * UC04: Browse Vehicles - Search & Filter
      * Hỗ trợ tìm kiếm theo: brand, category, giá tối đa, số chỗ ngồi, transmission, fuel type
      */
-    @Query("SELECT DISTINCT v FROM Vehicle v " +
+    @Query("SELECT v FROM Vehicle v " +
            "LEFT JOIN FETCH v.model m " +
            "LEFT JOIN FETCH m.brand b " +
            "LEFT JOIN FETCH v.location l " +
-           "WHERE v.status = :status " +
+           "WHERE (:status IS NULL OR v.status = :status) " +
            "AND (:brandId IS NULL OR b.id = :brandId) " +
            "AND (:category IS NULL OR m.category = :category) " +
            "AND (:maxPrice IS NULL OR v.dailyRate <= :maxPrice) " +
@@ -71,4 +83,26 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
      */
     @Query("SELECT DISTINCT m.fuelType FROM VehicleModel m ORDER BY m.fuelType")
     List<String> findAllFuelTypes();
+    
+    /**
+     * Lấy tất cả xe với relationships được load (model, brand, location)
+     * Dùng cho admin/staff để xem tất cả xe bất kể status
+     */
+    @Query("SELECT v FROM Vehicle v " +
+           "LEFT JOIN FETCH v.model m " +
+           "LEFT JOIN FETCH m.brand b " +
+           "LEFT JOIN FETCH v.location l " +
+           "ORDER BY v.id DESC")
+    List<Vehicle> findAllWithRelations();
+    
+    /**
+     * Kiểm tra biển số xe đã tồn tại chưa
+     */
+    boolean existsByLicensePlate(String licensePlate);
+    
+    /**
+     * Kiểm tra biển số xe đã tồn tại chưa (trừ xe đang chỉnh sửa)
+     */
+    @Query("SELECT CASE WHEN COUNT(v) > 0 THEN true ELSE false END FROM Vehicle v WHERE v.licensePlate = :licensePlate AND v.id != :vehicleId")
+    boolean existsByLicensePlateAndIdNot(@Param("licensePlate") String licensePlate, @Param("vehicleId") Long vehicleId);
 }

@@ -49,6 +49,17 @@ public class VehicleController {
             @RequestParam(defaultValue = "0") int page,
             Model model) {
         
+        // Validate page number (không cho page âm)
+        if (page < 0) {
+            page = 0;
+        }
+        
+        // Chuẩn hóa các tham số empty string thành null
+        category = (category != null && category.trim().isEmpty()) ? null : category;
+        transmission = (transmission != null && transmission.trim().isEmpty()) ? null : transmission;
+        fuelType = (fuelType != null && fuelType.trim().isEmpty()) ? null : fuelType;
+        keyword = (keyword != null && keyword.trim().isEmpty()) ? null : keyword;
+        
         // Tạo Pageable: 9 xe mỗi trang (3 dòng x 3 card)
         int pageSize = 9;
         Pageable pageable = PageRequest.of(page, pageSize);
@@ -57,7 +68,7 @@ public class VehicleController {
         List<Vehicle> allVehicles;
         if (brandId != null || category != null || maxPrice != null || 
             minSeats != null || transmission != null || fuelType != null || 
-            (keyword != null && !keyword.trim().isEmpty())) {
+            keyword != null) {
             // Có filter/search -> sử dụng search method
             allVehicles = vehicleService.searchVehicles(
                 brandId, category, maxPrice, minSeats, 
@@ -70,7 +81,13 @@ public class VehicleController {
         
         // Thực hiện phân trang thủ công (vì searchVehicles trả về List, không phải Page)
         int totalElements = allVehicles.size();
-        int totalPages = (int) Math.ceil((double) totalElements / pageSize);
+        int totalPages = totalElements > 0 ? (int) Math.ceil((double) totalElements / pageSize) : 0;
+        
+        // Validate page number (không cho vượt quá totalPages)
+        if (page >= totalPages && totalPages > 0) {
+            page = totalPages - 1;
+        }
+        
         int start = page * pageSize;
         int end = Math.min(start + pageSize, totalElements);
         

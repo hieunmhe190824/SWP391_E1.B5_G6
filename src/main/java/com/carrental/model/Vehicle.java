@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "vehicles")
@@ -215,5 +216,20 @@ public class Vehicle {
             return formatImageUrl(imageUrl);
         }
         return "/images/vehicle-placeholder.jpg";
+    }
+
+    // ========== EQUALS & HASHCODE ==========
+    // Cần thiết để stream().distinct() hoạt động đúng
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Vehicle vehicle = (Vehicle) o;
+        return Objects.equals(id, vehicle.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }

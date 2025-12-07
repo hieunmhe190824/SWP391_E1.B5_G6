@@ -1,33 +1,70 @@
 package com.carrental.service;
 
 import com.carrental.model.Vehicle;
+import com.carrental.model.VehicleModel;
+import com.carrental.model.Location;
 import com.carrental.model.Vehicle.VehicleStatus;
 import com.carrental.repository.VehicleRepository;
+import com.carrental.repository.VehicleModelRepository;
+import com.carrental.repository.LocationRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class VehicleService {
 
     @Autowired
     private VehicleRepository vehicleRepository;
+    
+    @Autowired
+    private VehicleModelRepository vehicleModelRepository;
+    
+    @Autowired
+    private LocationRepository locationRepository;
+    
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    
+    // Đường dẫn lưu ảnh
+    private static final String UPLOAD_DIR = "src/main/resources/static/images/";
 
     public List<Vehicle> getAllVehicles() {
-        return vehicleRepository.findAll();
+        List<Vehicle> vehicles = vehicleRepository.findAllWithRelations();
+        // Remove duplicates caused by JOIN FETCH (keep unique by ID)
+        return vehicles.stream()
+                .distinct()
+                .collect(Collectors.toList());
     }
 
     public Optional<Vehicle> getVehicleById(Long id) {
-        return vehicleRepository.findById(id);
+        // Sử dụng findByIdWithRelations để load tất cả relationships
+        // Tránh LazyInitializationException khi render template
+        return vehicleRepository.findByIdWithRelations(id);
     }
 
     public List<Vehicle> getAvailableVehicles() {
         // Sử dụng method với JOIN FETCH để load tất cả relationships (model, brand, location)
         // Đảm bảo dữ liệu có sẵn khi render template, tránh LazyInitializationException
-        return vehicleRepository.findByStatusWithRelations(VehicleStatus.Available);
+        List<Vehicle> vehicles = vehicleRepository.findByStatusWithRelations(VehicleStatus.Available);
+        // Remove duplicates caused by JOIN FETCH
+        return vehicles.stream()
+                .distinct()
+                .collect(Collectors.toList());
     }
     
     /**
@@ -42,7 +79,7 @@ public class VehicleService {
             String transmission,
             String fuelType,
             String searchKeyword) {
-        return vehicleRepository.searchVehicles(
+        List<Vehicle> vehicles = vehicleRepository.searchVehicles(
             VehicleStatus.Available,
             brandId,
             category,
@@ -52,6 +89,35 @@ public class VehicleService {
             fuelType,
             searchKeyword
         );
+        // Remove duplicates caused by JOIN FETCH
+        return vehicles.stream()
+                .distinct()
+                .collect(Collectors.toList());
+    }
+    
+    /**
+     * UC05: Manage Vehicles - Admin tìm kiếm tất cả xe (không chỉ Available)
+     */
+    public List<Vehicle> searchAllVehicles(
+            Long brandId,
+            String category,
+            VehicleStatus status,
+            String searchKeyword) {
+        // Sử dụng query có điều kiện
+        List<Vehicle> vehicles = vehicleRepository.searchVehicles(
+            status,
+            brandId,
+            category,
+            null, // maxPrice
+            null, // minSeats
+            null, // transmission
+            null, // fuelType
+            searchKeyword
+        );
+        // Remove duplicates caused by JOIN FETCH
+        return vehicles.stream()
+                .distinct()
+                .collect(Collectors.toList());
     }
     
     /**
@@ -78,35 +144,234 @@ public class VehicleService {
     public List<Vehicle> getVehiclesByLocation(Long locationId) {
         return vehicleRepository.findByLocationId(locationId);
     }
+    
+    /**
+     * UC05: Manage Vehicles - Lấy tất cả vehicle models
+     */
+    public List<VehicleModel> getAllVehicleModels() {
+        return vehicleModelRepository.findAllWithBrand();
+    }
+    
+    /**
+     * UC05: Manage Vehicles - Lấy tất cả locations
+     */
+    public List<Location> getAllLocations() {
+        return locationRepository.findAll();
+    }
 
-    public Vehicle createVehicle(Vehicle vehicle) {
-        vehicle.setStatus(VehicleStatus.Available);
+    /**
+     * UC05: Manage Vehicles - Tạo xe mới
+     */
+    @Transactional
+    public Vehicle createVehicle(Vehicle vehicle, List<MultipartFile> imageFiles) throws IOException {
+        // Validate license plate
+        if (vehicle.getLicensePlate() == null || vehicle.getLicensePlate().trim().isEmpty()) {
+            throw new IllegalArgumentException("Biển số xe không được để trống");
+        }
+        
+        // Check duplicate license plate
+        if (vehicleRepository.existsByLicensePlate(vehicle.getLicensePlate().trim())) {
+            throw new IllegalArgumentException("Biển số xe " + vehicle.getLicensePlate() + " đã tồn tại trong hệ thống");
+        }
+        
+        // Validate model và location
+        if (vehicle.getModel() == null || vehicle.getModel().getId() == null) {
+            throw new IllegalArgumentException("Vui lòng chọn mẫu xe");
+        }
+        if (vehicle.getLocation() == null || vehicle.getLocation().getId() == null) {
+            throw new IllegalArgumentException("Vui lòng chọn địa điểm");
+        }
+        
+        // Validate daily rate
+        if (vehicle.getDailyRate() == null || vehicle.getDailyRate().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Giá thuê phải lớn hơn 0");
+        }
+        
+        // Validate deposit amount
+        if (vehicle.getDepositAmount() == null || vehicle.getDepositAmount().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Tiền đặt cọc phải lớn hơn 0");
+        }
+        
+        // Validate deposit > daily rate
+        if (vehicle.getDepositAmount().compareTo(vehicle.getDailyRate()) <= 0) {
+            throw new IllegalArgumentException("Tiền đặt cọc phải lớn hơn giá thuê/ngày");
+        }
+        
+        // Load model và location từ database
+        VehicleModel model = vehicleModelRepository.findById(vehicle.getModel().getId())
+            .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy mẫu xe"));
+        Location location = locationRepository.findById(vehicle.getLocation().getId())
+            .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy địa điểm"));
+        
+        vehicle.setModel(model);
+        vehicle.setLocation(location);
+        
+        // Set status mặc định là Available
+        if (vehicle.getStatus() == null) {
+            vehicle.setStatus(VehicleStatus.Available);
+        }
+        
+        // Upload và lưu ảnh
+        if (imageFiles != null && !imageFiles.isEmpty()) {
+            List<String> imageUrls = uploadImages(imageFiles);
+            vehicle.setImages(convertListToJson(imageUrls));
+        }
+        
         return vehicleRepository.save(vehicle);
     }
 
-    public Vehicle updateVehicle(Long id, Vehicle vehicleDetails) {
+    /**
+     * UC05: Manage Vehicles - Cập nhật thông tin xe
+     */
+    @Transactional
+    public Vehicle updateVehicle(Long id, Vehicle vehicleDetails, List<MultipartFile> imageFiles) throws IOException {
         Vehicle vehicle = vehicleRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Vehicle not found"));
+                .orElseThrow(() -> new RuntimeException("Vehicle not found with id: " + id));
 
-        vehicle.setModel(vehicleDetails.getModel());
-        vehicle.setLocation(vehicleDetails.getLocation());
-        vehicle.setLicensePlate(vehicleDetails.getLicensePlate());
-        vehicle.setDailyRate(vehicleDetails.getDailyRate());
-        vehicle.setStatus(vehicleDetails.getStatus());
-        vehicle.setDepositAmount(vehicleDetails.getDepositAmount());
-        vehicle.setImages(vehicleDetails.getImages());
+        // Validate and check duplicate license plate (if changed)
+        if (vehicleDetails.getLicensePlate() != null && 
+            !vehicleDetails.getLicensePlate().trim().isEmpty() &&
+            !vehicleDetails.getLicensePlate().equals(vehicle.getLicensePlate())) {
+            
+            if (vehicleRepository.existsByLicensePlateAndIdNot(vehicleDetails.getLicensePlate().trim(), id)) {
+                throw new IllegalArgumentException("Biển số xe " + vehicleDetails.getLicensePlate() + " đã tồn tại trong hệ thống");
+            }
+            vehicle.setLicensePlate(vehicleDetails.getLicensePlate());
+        }
+
+        // Cập nhật model nếu có
+        if (vehicleDetails.getModel() != null && vehicleDetails.getModel().getId() != null) {
+            VehicleModel model = vehicleModelRepository.findById(vehicleDetails.getModel().getId())
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy mẫu xe"));
+            vehicle.setModel(model);
+        }
+        
+        // Cập nhật location nếu có
+        if (vehicleDetails.getLocation() != null && vehicleDetails.getLocation().getId() != null) {
+            Location location = locationRepository.findById(vehicleDetails.getLocation().getId())
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy địa điểm"));
+            vehicle.setLocation(location);
+        }
+        
+        // Cập nhật các trường khác
+        if (vehicleDetails.getColor() != null) {
+            vehicle.setColor(vehicleDetails.getColor());
+        }
+        if (vehicleDetails.getDailyRate() != null) {
+            if (vehicleDetails.getDailyRate().compareTo(BigDecimal.ZERO) <= 0) {
+                throw new IllegalArgumentException("Giá thuê phải lớn hơn 0");
+            }
+            vehicle.setDailyRate(vehicleDetails.getDailyRate());
+        }
+        if (vehicleDetails.getDepositAmount() != null) {
+            if (vehicleDetails.getDepositAmount().compareTo(BigDecimal.ZERO) <= 0) {
+                throw new IllegalArgumentException("Tiền đặt cọc phải lớn hơn 0");
+            }
+            if (vehicleDetails.getDepositAmount().compareTo(vehicle.getDailyRate()) <= 0) {
+                throw new IllegalArgumentException("Tiền đặt cọc phải lớn hơn giá thuê/ngày");
+            }
+            vehicle.setDepositAmount(vehicleDetails.getDepositAmount());
+        }
+        if (vehicleDetails.getStatus() != null) {
+            vehicle.setStatus(vehicleDetails.getStatus());
+        }
+        
+        // Upload ảnh mới nếu có
+        if (imageFiles != null && !imageFiles.isEmpty()) {
+            List<String> imageUrls = uploadImages(imageFiles);
+            vehicle.setImages(convertListToJson(imageUrls));
+        }
 
         return vehicleRepository.save(vehicle);
     }
 
+    /**
+     * UC05: Manage Vehicles - Xóa xe
+     */
+    @Transactional
     public void deleteVehicle(Long id) {
+        Vehicle vehicle = vehicleRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Vehicle not found with id: " + id));
+        
+        // Kiểm tra xe có đang được thuê hay không
+        if (vehicle.getStatus() == VehicleStatus.Rented) {
+            throw new IllegalStateException("Cannot delete vehicle that is currently rented");
+        }
+        
         vehicleRepository.deleteById(id);
     }
 
+    /**
+     * UC05: Manage Vehicles - Cập nhật trạng thái xe
+     */
+    @Transactional
     public Vehicle updateVehicleStatus(Long id, VehicleStatus status) {
         Vehicle vehicle = vehicleRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Vehicle not found"));
+                .orElseThrow(() -> new RuntimeException("Vehicle not found with id: " + id));
         vehicle.setStatus(status);
         return vehicleRepository.save(vehicle);
+    }
+    
+    /**
+     * Check if license plate exists (for duplicate validation)
+     */
+    public boolean checkLicensePlateExists(String licensePlate, Long vehicleId) {
+        if (licensePlate == null || licensePlate.trim().isEmpty()) {
+            return false;
+        }
+        
+        String trimmedPlate = licensePlate.trim();
+        
+        if (vehicleId != null) {
+            // Edit mode: check if license plate exists excluding current vehicle
+            return vehicleRepository.existsByLicensePlateAndIdNot(trimmedPlate, vehicleId);
+        } else {
+            // Create mode: check if license plate exists
+            return vehicleRepository.existsByLicensePlate(trimmedPlate);
+        }
+    }
+    
+    /**
+     * Upload nhiều ảnh và trả về danh sách URL
+     */
+    private List<String> uploadImages(List<MultipartFile> files) throws IOException {
+        List<String> imageUrls = new ArrayList<>();
+        
+        // Tạo thư mục nếu chưa có
+        Path uploadPath = Paths.get(UPLOAD_DIR);
+        if (!Files.exists(uploadPath)) {
+            Files.createDirectories(uploadPath);
+        }
+        
+        for (MultipartFile file : files) {
+            if (file.isEmpty()) {
+                continue;
+            }
+            
+            // Tạo tên file unique
+            String originalFilename = file.getOriginalFilename();
+            String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+            String newFilename = UUID.randomUUID().toString() + extension;
+            
+            // Lưu file
+            Path filePath = uploadPath.resolve(newFilename);
+            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+            
+            // Thêm tên file vào list (không cần đường dẫn đầy đủ)
+            imageUrls.add(newFilename);
+        }
+        
+        return imageUrls;
+    }
+    
+    /**
+     * Convert List<String> thành JSON array string
+     */
+    private String convertListToJson(List<String> list) {
+        try {
+            return objectMapper.writeValueAsString(list);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Error converting list to JSON", e);
+        }
     }
 }
