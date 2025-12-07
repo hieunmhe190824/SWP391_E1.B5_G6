@@ -4,17 +4,39 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Car Rental System</title>
-    <!-- CSS Variables - Theme Black & Blue -->
+    
+    <!-- ===== CSS FILES ===== -->
     <link rel="stylesheet" th:href="@{/css/variables.css}">
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <link rel="stylesheet" th:href="@{/css/components.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
 </head>
 <body>
-    <div th:replace="~{fragments/navbar :: admin-nav}"></div>
+    <!-- ===== DASHBOARD LAYOUT =====
+         Sử dụng layout-admin từ dashboard-layout.html
+         pageTitle: Tiêu đề trang
+         content: Nội dung chính (phần ::main bên dưới)
+    -->
+    <div th:replace="~{fragments/dashboard-layout :: layout-admin(pageTitle='Dashboard', content=~{::main})}">
+        <main>
+            <!-- ===== EMPTY STATE - Nội dung để trống để triển khai sau =====
+                 Đây là placeholder, sẽ được thay thế bằng nội dung thực tế sau
+            -->
+            <div class="dashboard-empty-state">
+                <svg class="dashboard-empty-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="14" width="7" height="7"></rect>
+                    <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
+                <h2 class="dashboard-empty-title">Admin Dashboard</h2>
+                <p class="dashboard-empty-description">
+                    Dashboard content will be implemented here.<br>
+                    This includes statistics, charts, recent activities, and quick actions.
+                </p>
+            </div>
 
-    <main class="container">
-        <h1>Admin Dashboard</h1>
-
+            <!-- ===== PHẦN NÀY CÓ THỂ BỎ COMMENT ĐỂ TRIỂN KHAI SAU =====
         <div class="stats-grid">
             <div class="stat-card">
                 <h3 th:text="${totalUsers}">0</h3>
@@ -51,8 +73,8 @@
                 </div>
             </div>
         </section>
+            -->
     </main>
-
-    <div th:replace="~{fragments/footer :: footer}"></div>
+    </div>
 </body>
 </html>

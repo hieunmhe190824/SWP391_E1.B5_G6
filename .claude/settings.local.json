@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(.mvnw.cmd clean:*)"
-    ],
-    "deny": [],
-    "ask": []
-  }
-}

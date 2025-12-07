@@ -37,53 +37,5 @@
     <button th:fragment="btn-submit(text)" type="submit" class="btn btn-primary">
         <span th:text="${text}">Submit</span>
     </button>
-
-    <!-- Primary Button with Icon -->
-    <th:block th:fragment="btn-primary-icon(text, href, icon)">
-        <a th:href="${href}" class="btn btn-primary btn-icon">
-            <th:block th:replace="${icon}"></th:block>
-            <span th:text="${text}"></span>
-        </a>
-    </th:block>
-
-    <!-- Secondary Button with Icon -->
-    <th:block th:fragment="btn-secondary-icon(text, href, icon)">
-        <a th:href="${href}" class="btn btn-secondary btn-icon">
-            <th:block th:replace="${icon}"></th:block>
-            <span th:text="${text}"></span>
-        </a>
-    </th:block>
-
-    <!-- Danger Button with Icon -->
-    <th:block th:fragment="btn-danger-icon(text, href, icon)">
-        <a th:href="${href}" class="btn btn-danger btn-icon">
-            <th:block th:replace="${icon}"></th:block>
-            <span th:text="${text}"></span>
-        </a>
-    </th:block>
-
-    <!-- Small Primary Button with Icon -->
-    <th:block th:fragment="btn-primary-sm-icon(text, href, icon)">
-        <a th:href="${href}" class="btn btn-sm btn-primary btn-icon">
-            <th:block th:replace="${icon}"></th:block>
-            <span th:text="${text}"></span>
-        </a>
-    </th:block>
-
-    <!-- Small Secondary Button with Icon -->
-    <th:block th:fragment="btn-secondary-sm-icon(text, href, icon)">
-        <a th:href="${href}" class="btn btn-sm btn-secondary btn-icon">
-            <th:block th:replace="${icon}"></th:block>
-            <span th:text="${text}"></span>
-        </a>
-    </th:block>
-
-    <!-- Small Danger Button with Icon -->
-    <th:block th:fragment="btn-danger-sm-icon(text, href, icon)">
-        <button type="submit" class="btn btn-sm btn-danger btn-icon">
-            <th:block th:replace="${icon}"></th:block>
-            <span th:text="${text}"></span>
-        </button>
-    </th:block>
 </body>
 </html>

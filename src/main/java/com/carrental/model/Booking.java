@@ -36,15 +36,45 @@ public class Booking {
     @Column(name = "total_days", nullable = false)
     private Integer totalDays;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Transient
     private BookingStatus status;
+
+    @Column(name = "status", nullable = false)
+    private String statusString;
 
     @Column(name = "created_at", nullable = false, insertable = false, updatable = false)
     private LocalDateTime createdAt;
 
     public enum BookingStatus {
-        PENDING, APPROVED, REJECTED, CANCELLED
+        PENDING("Pending"),
+        APPROVED("Approved"),
+        REJECTED("Rejected"),
+        CANCELLED("Cancelled");
+
+        private final String value;
+
+        BookingStatus(String value) {
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        // Phương thức để parse từ database value (hỗ trợ cả uppercase và capitalized)
+        public static BookingStatus fromValue(String value) {
+            if (value == null) {
+                return null;
+            }
+            // Chuẩn hóa về uppercase để so sánh
+            String upperValue = value.toUpperCase();
+            for (BookingStatus status : BookingStatus.values()) {
+                if (status.name().equals(upperValue)) {
+                    return status;
+                }
+            }
+            throw new IllegalArgumentException("Unknown booking status: " + value);
+        }
     }
 
     // Getters and Setters
@@ -113,11 +143,19 @@ public class Booking {
     }
 
     public BookingStatus getStatus() {
+        // Khi get status, convert từ string sang enum
+        if (status == null && statusString != null) {
+            status = BookingStatus.fromValue(statusString);
+        }
         return status;
     }
 
     public void setStatus(BookingStatus status) {
         this.status = status;
+        // Khi set status, cũng update statusString để lưu vào DB
+        if (status != null) {
+            this.statusString = status.getValue();
+        }
     }
 
     public LocalDateTime getCreatedAt() {

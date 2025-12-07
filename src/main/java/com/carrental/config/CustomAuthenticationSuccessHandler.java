@@ -24,23 +24,23 @@ public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationS
                                        Authentication authentication) throws IOException, ServletException {
         
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
-        String redirectUrl = "/home"; // Default redirect
+        String redirectUrl = "/"; // Default redirect
         
-        // Kiểm tra role của user
+        // Kiểm tra role của user và redirect đến trang phù hợp
         for (GrantedAuthority authority : authorities) {
             String role = authority.getAuthority();
             
-            if (role.equals("ROLE_CUSTOMER")) {
-                // Customer luôn redirect đến trang home
-                redirectUrl = "/home";
-                break;
-            } else if (role.equals("ROLE_ADMIN")) {
-                // Admin có thể redirect đến dashboard (nếu có) hoặc home
-                redirectUrl = "/home"; // Có thể thay đổi thành "/admin/dashboard" nếu có
+            if (role.equals("ROLE_ADMIN")) {
+                // Admin redirect đến Admin Dashboard
+                redirectUrl = "/admin/dashboard";
                 break;
             } else if (role.equals("ROLE_STAFF")) {
-                // Staff có thể redirect đến dashboard (nếu có) hoặc home
-                redirectUrl = "/home"; // Có thể thay đổi thành "/staff/dashboard" nếu có
+                // Staff redirect đến Staff Dashboard
+                redirectUrl = "/staff/dashboard";
+                break;
+            } else if (role.equals("ROLE_CUSTOMER")) {
+                // Customer redirect đến trang home
+                redirectUrl = "/";
                 break;
             }
         }
