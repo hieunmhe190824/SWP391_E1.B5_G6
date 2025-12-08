@@ -31,24 +31,22 @@ public class VehicleService {
 
     @Autowired
     private VehicleRepository vehicleRepository;
-    
+
     @Autowired
     private VehicleModelRepository vehicleModelRepository;
-    
+
     @Autowired
     private LocationRepository locationRepository;
-    
+
     private final ObjectMapper objectMapper = new ObjectMapper();
-    
-    // Đường dẫn lưu ảnh
-    private static final String UPLOAD_DIR = "src/main/resources/static/images/";
+
+    // Đường dẫn lưu ảnh - sử dụng thư mục ngoài classpath để tránh vấn đề với DevTools
+    // Thư mục này sẽ được Spring Boot tự động serve như static resource
+    private static final String UPLOAD_DIR = "uploads/images/";
 
     public List<Vehicle> getAllVehicles() {
-        List<Vehicle> vehicles = vehicleRepository.findAllWithRelations();
-        // Remove duplicates caused by JOIN FETCH (keep unique by ID)
-        return vehicles.stream()
-                .distinct()
-                .collect(Collectors.toList());
+        // DISTINCT is now handled in the JPQL query itself
+        return vehicleRepository.findAllWithRelations();
     }
 
     public Optional<Vehicle> getVehicleById(Long id) {
@@ -168,12 +166,12 @@ public class VehicleService {
         if (vehicle.getLicensePlate() == null || vehicle.getLicensePlate().trim().isEmpty()) {
             throw new IllegalArgumentException("Biển số xe không được để trống");
         }
-        
+
         // Check duplicate license plate
         if (vehicleRepository.existsByLicensePlate(vehicle.getLicensePlate().trim())) {
             throw new IllegalArgumentException("Biển số xe " + vehicle.getLicensePlate() + " đã tồn tại trong hệ thống");
         }
-        
+
         // Validate model và location
         if (vehicle.getModel() == null || vehicle.getModel().getId() == null) {
             throw new IllegalArgumentException("Vui lòng chọn mẫu xe");
@@ -181,42 +179,43 @@ public class VehicleService {
         if (vehicle.getLocation() == null || vehicle.getLocation().getId() == null) {
             throw new IllegalArgumentException("Vui lòng chọn địa điểm");
         }
-        
+
         // Validate daily rate
         if (vehicle.getDailyRate() == null || vehicle.getDailyRate().compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Giá thuê phải lớn hơn 0");
         }
-        
+
         // Validate deposit amount
         if (vehicle.getDepositAmount() == null || vehicle.getDepositAmount().compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Tiền đặt cọc phải lớn hơn 0");
         }
-        
+
         // Validate deposit > daily rate
         if (vehicle.getDepositAmount().compareTo(vehicle.getDailyRate()) <= 0) {
             throw new IllegalArgumentException("Tiền đặt cọc phải lớn hơn giá thuê/ngày");
         }
-        
+
         // Load model và location từ database
         VehicleModel model = vehicleModelRepository.findById(vehicle.getModel().getId())
             .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy mẫu xe"));
         Location location = locationRepository.findById(vehicle.getLocation().getId())
             .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy địa điểm"));
-        
+
         vehicle.setModel(model);
         vehicle.setLocation(location);
-        
+
         // Set status mặc định là Available
         if (vehicle.getStatus() == null) {
             vehicle.setStatus(VehicleStatus.Available);
         }
-        
+
         // Upload và lưu ảnh
         if (imageFiles != null && !imageFiles.isEmpty()) {
             List<String> imageUrls = uploadImages(imageFiles);
             vehicle.setImages(convertListToJson(imageUrls));
         }
-        
+
+        // Save the vehicle
         return vehicleRepository.save(vehicle);
     }
 
@@ -282,6 +281,7 @@ public class VehicleService {
             vehicle.setImages(convertListToJson(imageUrls));
         }
 
+        // Save the vehicle
         return vehicleRepository.save(vehicle);
     }
 

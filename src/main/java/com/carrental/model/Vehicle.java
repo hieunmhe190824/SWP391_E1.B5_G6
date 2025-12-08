@@ -132,7 +132,7 @@ public class Vehicle {
      * Lấy URL ảnh đầu tiên từ mảng JSON images
      * Trả về ảnh placeholder nếu không có ảnh nào
      * Hỗ trợ cả định dạng JSON array và tên file đơn giản
-     * 
+     *
      * @return Đường dẫn ảnh đầu tiên hoặc ảnh placeholder
      */
     public String getFirstImageUrl() {
@@ -140,9 +140,9 @@ public class Vehicle {
         if (images == null || images.trim().isEmpty()) {
             return "/images/vehicle-placeholder.jpg";
         }
-        
+
         String trimmedImages = images.trim();
-        
+
         // Nếu là mảng JSON, parse nó
         if (trimmedImages.startsWith("[")) {
             try {
@@ -161,7 +161,7 @@ public class Vehicle {
             // Nếu chỉ là tên file hoặc chuỗi đơn giản, sử dụng trực tiếp
             return formatImageUrl(trimmedImages);
         }
-        
+
         return "/images/vehicle-placeholder.jpg";
     }
     

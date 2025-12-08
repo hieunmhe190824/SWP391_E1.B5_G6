@@ -87,8 +87,9 @@ public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
     /**
      * Lấy tất cả xe với relationships được load (model, brand, location)
      * Dùng cho admin/staff để xem tất cả xe bất kể status
+     * DISTINCT is used to avoid duplicate results from JOIN FETCH
      */
-    @Query("SELECT v FROM Vehicle v " +
+    @Query("SELECT DISTINCT v FROM Vehicle v " +
            "LEFT JOIN FETCH v.model m " +
            "LEFT JOIN FETCH m.brand b " +
            "LEFT JOIN FETCH v.location l " +
