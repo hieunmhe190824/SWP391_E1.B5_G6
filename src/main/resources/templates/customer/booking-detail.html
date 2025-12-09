@@ -506,16 +506,23 @@
                     ← Quay lại
                 </a>
 
-                <form th:if="${booking.status.name() == 'PENDING'}"
+                <!-- Show cancel button for Pending or Approved bookings -->
+                <form th:if="${booking.status.name() == 'PENDING' or booking.status.name() == 'APPROVED'}"
                       th:action="@{/bookings/{id}/cancel(id=${booking.id})}"
                       method="post"
-                      style="display: inline;"
-                      onsubmit="return confirm('Bạn có chắc muốn hủy đơn đặt xe này?');">
+                      data-delete-form="true"
+                      data-confirm-title="Xác nhận hủy đơn"
+                      data-confirm-message="Bạn có chắc muốn hủy đơn đặt xe này? Hành động này không thể hoàn tác."
+                      data-confirm-button="Hủy đơn"
+                      style="display: inline;">
                     <button type="submit" class="btn btn-danger">Hủy đơn</button>
                 </form>
             </div>
         </div>
     </main>
+
+    <!-- Cancel Confirmation Modal -->
+    <div th:replace="~{fragments/components/modals :: deleteConfirmModal}"></div>
 
     <!-- Footer -->
     <div th:replace="~{fragments/footer :: footer}"></div>
@@ -523,6 +530,67 @@
     <!-- JavaScript Files -->
     <script th:src="@{/js/main.js}"></script>
     <script th:src="@{/js/validation.js}"></script>
+    
+    <script>
+        // Delete/Cancel Confirmation Modal Handler
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('deleteConfirmModal');
+            const modalTitle = modal.querySelector('.delete-modal-title');
+            const modalMessage = modal.querySelector('.delete-modal-message');
+            const modalConfirmBtn = modal.querySelector('.delete-modal-confirm');
+            const modalCancelBtn = modal.querySelector('.delete-modal-cancel');
+            const modalOverlay = modal.querySelector('.delete-modal-overlay');
+            let currentForm = null;
+
+            // Handle all forms with data-delete-form attribute
+            document.querySelectorAll('form[data-delete-form="true"]').forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    currentForm = this;
+
+                    // Customize modal content based on data attributes
+                    const title = this.dataset.confirmTitle || 'Xác nhận xóa';
+                    const message = this.dataset.confirmMessage || 'Bạn có chắc chắn muốn xóa mục này? Hành động này không thể hoàn tác.';
+                    const confirmBtnText = this.dataset.confirmButton || 'Xóa';
+
+                    modalTitle.textContent = title;
+                    modalMessage.textContent = message;
+                    modalConfirmBtn.textContent = confirmBtnText;
+
+                    // Show modal
+                    modal.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                });
+            });
+
+            // Confirm button click
+            modalConfirmBtn.addEventListener('click', function() {
+                if (currentForm) {
+                    currentForm.submit();
+                }
+                closeModal();
+            });
+
+            // Cancel button click
+            modalCancelBtn.addEventListener('click', closeModal);
+
+            // Overlay click
+            modalOverlay.addEventListener('click', closeModal);
+
+            // ESC key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && modal.classList.contains('active')) {
+                    closeModal();
+                }
+            });
+
+            function closeModal() {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+                currentForm = null;
+            }
+        });
+    </script>
 </body>
 </html>
 
