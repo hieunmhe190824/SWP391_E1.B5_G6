@@ -135,12 +135,6 @@
                                         <div class="document-number" th:text="${doc.documentNumber}">Số giấy tờ</div>
                                     </div>
                                 </div>
-                                <span class="document-status-badge"
-                                      th:classappend="${doc.status.name() == 'Approved'} ? 'status-approved' :
-                                                       (${doc.status.name() == 'Rejected'} ? 'status-rejected' : 'status-pending')">
-                                    <span th:text="${doc.status.name() == 'Approved' ? 'Đã duyệt' :
-                                                    (doc.status.name() == 'Rejected' ? 'Từ chối' : 'Chờ duyệt')}">Trạng thái</span>
-                                </span>
                             </div>
                             
                             <div class="document-card-body">

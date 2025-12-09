@@ -180,17 +180,7 @@ public class DashboardController {
         model.addAttribute("bookings", bookingService.getAllBookings());
         return "staff/dashboard";
     }
-    
-    /**
-     * Staff - Quản lý bookings
-     * GET /staff/bookings
-     */
-    @GetMapping("/staff/bookings")
-    public String staffManageBookings(Model model) {
-        model.addAttribute("bookings", bookingService.getAllBookings());
-        return "staff/bookings";
-    }
-    
+
     /**
      * Staff - Quản lý support tickets
      * GET /staff/support

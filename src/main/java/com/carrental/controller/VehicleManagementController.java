@@ -1,13 +1,14 @@
 package com.carrental.controller;
 
 import com.carrental.model.Vehicle;
-import com.carrental.model.VehicleModel;
 import com.carrental.model.VehicleBrand;
-import com.carrental.model.Location;
 import com.carrental.model.Vehicle.VehicleStatus;
 import com.carrental.repository.VehicleBrandRepository;
 import com.carrental.service.VehicleService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -17,7 +18,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +40,39 @@ public class VehicleManagementController {
 
     @Autowired
     private VehicleBrandRepository vehicleBrandRepository;
+    
+    // ========================================
+    // HELPER METHOD - Detect template prefix based on URL path
+    // ========================================
+    private String getTemplatePrefix(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        logger.info("Request path: {}", path);
+        
+        if (path.startsWith("/staff/")) {
+            logger.info("Returning staff template");
+            return "staff";
+        } else if (path.startsWith("/admin/")) {
+            logger.info("Returning admin template");
+            return "admin";
+        }
+        
+        // Default to admin if path doesn't match
+        logger.warn("Path doesn't match /staff/ or /admin/, defaulting to admin");
+        return "admin";
+    }
+    
+    private String getRedirectPrefix(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        
+        if (path.startsWith("/staff/")) {
+            return "/staff";
+        } else if (path.startsWith("/admin/")) {
+            return "/admin";
+        }
+        
+        // Default to admin if path doesn't match
+        return "/admin";
+    }
     
     // ========================================
     // SHARED METHOD - Danh sách xe
@@ -152,8 +185,14 @@ public class VehicleManagementController {
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "0") int page,
-            Model model) {
-        return listVehicles(brandId, category, status, keyword, page, model);
+            Model model,
+            HttpServletRequest request) {
+        logger.info("=== ADMIN VEHICLES ROUTE CALLED ===");
+        listVehicles(brandId, category, status, keyword, page, model);
+        String templatePrefix = getTemplatePrefix(request);
+        String finalTemplate = templatePrefix + "/vehicles";
+        logger.info("Returning template: {}", finalTemplate);
+        return finalTemplate;
     }
     
     /**
@@ -335,8 +374,15 @@ public class VehicleManagementController {
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "0") int page,
-            Model model) {
-        return listVehicles(brandId, category, status, keyword, page, model);
+            Model model,
+            HttpServletRequest request) {
+        logger.info("=== STAFF VEHICLES ROUTE CALLED ===");
+        // Call shared method but return template based on URL path
+        listVehicles(brandId, category, status, keyword, page, model);
+        String templatePrefix = getTemplatePrefix(request);
+        String finalTemplate = templatePrefix + "/vehicles";
+        logger.info("Returning template: {}", finalTemplate);
+        return finalTemplate;
     }
     
     /**
@@ -355,13 +401,14 @@ public class VehicleManagementController {
     }
 
     @GetMapping("/staff/vehicles/create")
-    public String showCreateFormStaff(Model model) {
+    public String showCreateFormStaff(Model model, HttpServletRequest request) {
         model.addAttribute("vehicle", new Vehicle());
         model.addAttribute("vehicleModels", vehicleService.getAllVehicleModels());
         model.addAttribute("locations", vehicleService.getAllLocations());
         model.addAttribute("statuses", VehicleStatus.values());
         model.addAttribute("isEdit", false);
-        return "admin/vehicle-form";
+        String templatePrefix = getTemplatePrefix(request);
+        return templatePrefix + "/vehicle-form";
     }
 
     @PostMapping("/staff/vehicles/create")
@@ -369,12 +416,16 @@ public class VehicleManagementController {
             @ModelAttribute Vehicle vehicle,
             @RequestParam(value = "imageFiles", required = false) List<MultipartFile> imageFiles,
             RedirectAttributes redirectAttributes,
-            Model model) {
+            Model model,
+            HttpServletRequest request) {
+        String templatePrefix = getTemplatePrefix(request);
+        String redirectPrefix = getRedirectPrefix(request);
+        
         try {
             Vehicle savedVehicle = vehicleService.createVehicle(vehicle, imageFiles);
             redirectAttributes.addFlashAttribute("successMessage", 
                 "Xe " + savedVehicle.getLicensePlate() + " đã được tạo thành công!");
-            return "redirect:/staff/vehicles";
+            return "redirect:" + redirectPrefix + "/vehicles";
         } catch (IOException e) {
             logger.error("Error uploading images", e);
             model.addAttribute("errorMessage", "Lỗi khi upload ảnh: " + e.getMessage());
@@ -383,7 +434,7 @@ public class VehicleManagementController {
             model.addAttribute("locations", vehicleService.getAllLocations());
             model.addAttribute("statuses", VehicleStatus.values());
             model.addAttribute("isEdit", false);
-            return "admin/vehicle-form";
+            return templatePrefix + "/vehicle-form";
         } catch (IllegalArgumentException e) {
             logger.error("Validation error", e);
             model.addAttribute("errorMessage", e.getMessage());
@@ -392,7 +443,7 @@ public class VehicleManagementController {
             model.addAttribute("locations", vehicleService.getAllLocations());
             model.addAttribute("statuses", VehicleStatus.values());
             model.addAttribute("isEdit", false);
-            return "admin/vehicle-form";
+            return templatePrefix + "/vehicle-form";
         } catch (Exception e) {
             logger.error("Unexpected error", e);
             model.addAttribute("errorMessage", "Có lỗi xảy ra: " + e.getMessage());
@@ -401,20 +452,21 @@ public class VehicleManagementController {
             model.addAttribute("locations", vehicleService.getAllLocations());
             model.addAttribute("statuses", VehicleStatus.values());
             model.addAttribute("isEdit", false);
-            return "admin/vehicle-form";
+            return templatePrefix + "/vehicle-form";
         }
     }
 
     @GetMapping("/staff/vehicles/{id}")
-    public String viewVehicleDetailStaff(@PathVariable Long id, Model model) {
+    public String viewVehicleDetailStaff(@PathVariable Long id, Model model, HttpServletRequest request) {
         Vehicle vehicle = vehicleService.getVehicleById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy xe với ID: " + id));
         model.addAttribute("vehicle", vehicle);
-        return "admin/vehicle-detail";
+        String templatePrefix = getTemplatePrefix(request);
+        return templatePrefix + "/vehicle-detail";
     }
 
     @GetMapping("/staff/vehicles/{id}/edit")
-    public String showEditFormStaff(@PathVariable Long id, Model model) {
+    public String showEditFormStaff(@PathVariable Long id, Model model, HttpServletRequest request) {
         Vehicle vehicle = vehicleService.getVehicleById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy xe với ID: " + id));
         
@@ -423,7 +475,8 @@ public class VehicleManagementController {
         model.addAttribute("locations", vehicleService.getAllLocations());
         model.addAttribute("statuses", VehicleStatus.values());
         model.addAttribute("isEdit", true);
-        return "admin/vehicle-form";
+        String templatePrefix = getTemplatePrefix(request);
+        return templatePrefix + "/vehicle-form";
     }
 
     @PostMapping("/staff/vehicles/{id}/edit")
@@ -432,12 +485,16 @@ public class VehicleManagementController {
             @ModelAttribute Vehicle vehicle,
             @RequestParam(value = "imageFiles", required = false) List<MultipartFile> imageFiles,
             RedirectAttributes redirectAttributes,
-            Model model) {
+            Model model,
+            HttpServletRequest request) {
+        String templatePrefix = getTemplatePrefix(request);
+        String redirectPrefix = getRedirectPrefix(request);
+        
         try {
             Vehicle updatedVehicle = vehicleService.updateVehicle(id, vehicle, imageFiles);
             redirectAttributes.addFlashAttribute("successMessage", 
                 "Xe " + updatedVehicle.getLicensePlate() + " đã được cập nhật thành công!");
-            return "redirect:/staff/vehicles/" + id;
+            return "redirect:" + redirectPrefix + "/vehicles/" + id;
         } catch (IOException e) {
             logger.error("Error uploading images", e);
             model.addAttribute("errorMessage", "Lỗi khi upload ảnh: " + e.getMessage());
@@ -446,7 +503,7 @@ public class VehicleManagementController {
             model.addAttribute("locations", vehicleService.getAllLocations());
             model.addAttribute("statuses", VehicleStatus.values());
             model.addAttribute("isEdit", true);
-            return "admin/vehicle-form";
+            return templatePrefix + "/vehicle-form";
         } catch (IllegalArgumentException e) {
             logger.error("Validation error", e);
             model.addAttribute("errorMessage", e.getMessage());
@@ -455,7 +512,7 @@ public class VehicleManagementController {
             model.addAttribute("locations", vehicleService.getAllLocations());
             model.addAttribute("statuses", VehicleStatus.values());
             model.addAttribute("isEdit", true);
-            return "admin/vehicle-form";
+            return templatePrefix + "/vehicle-form";
         } catch (Exception e) {
             logger.error("Unexpected error", e);
             model.addAttribute("errorMessage", "Có lỗi xảy ra: " + e.getMessage());
@@ -464,12 +521,14 @@ public class VehicleManagementController {
             model.addAttribute("locations", vehicleService.getAllLocations());
             model.addAttribute("statuses", VehicleStatus.values());
             model.addAttribute("isEdit", true);
-            return "admin/vehicle-form";
+            return templatePrefix + "/vehicle-form";
         }
     }
 
     @PostMapping("/staff/vehicles/{id}/delete")
-    public String deleteVehicleStaff(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    public String deleteVehicleStaff(@PathVariable Long id, RedirectAttributes redirectAttributes, HttpServletRequest request) {
+        String redirectPrefix = getRedirectPrefix(request);
+        
         try {
             Vehicle vehicle = vehicleService.getVehicleById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy xe với ID: " + id));
@@ -485,14 +544,17 @@ public class VehicleManagementController {
             redirectAttributes.addFlashAttribute("errorMessage", 
                 "Lỗi khi xóa xe: " + e.getMessage());
         }
-        return "redirect:/staff/vehicles";
+        return "redirect:" + redirectPrefix + "/vehicles";
     }
 
     @PostMapping("/staff/vehicles/{id}/status")
     public String updateVehicleStatusStaff(
             @PathVariable Long id,
             @RequestParam String status,
-            RedirectAttributes redirectAttributes) {
+            RedirectAttributes redirectAttributes,
+            HttpServletRequest request) {
+        String redirectPrefix = getRedirectPrefix(request);
+        
         try {
             VehicleStatus vehicleStatus = VehicleStatus.valueOf(status);
             Vehicle updatedVehicle = vehicleService.updateVehicleStatus(id, vehicleStatus);
@@ -504,6 +566,6 @@ public class VehicleManagementController {
         } catch (RuntimeException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
-        return "redirect:/staff/vehicles/" + id;
+        return "redirect:" + redirectPrefix + "/vehicles/" + id;
     }
 }

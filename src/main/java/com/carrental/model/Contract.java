@@ -48,15 +48,18 @@ public class Contract {
     @Column(name = "deposit_amount", nullable = false)
     private java.math.BigDecimal depositAmount;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Convert(converter = ContractStatusConverter.class)
+    @Column(name = "status", nullable = false, length = 20)
     private ContractStatus status;
 
     @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
 
     public enum ContractStatus {
-        ACTIVE, COMPLETED, CANCELLED
+        PENDING_PAYMENT,  // Contract created, waiting for customer deposit payment
+        ACTIVE,           // Deposit paid, contract is active
+        COMPLETED,        // Rental completed
+        CANCELLED         // Contract cancelled
     }
 
     // Getters and Setters

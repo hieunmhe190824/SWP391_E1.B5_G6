@@ -5,7 +5,6 @@ import com.carrental.model.VehicleBrand;
 import com.carrental.repository.VehicleBrandRepository;
 import com.carrental.service.VehicleService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
@@ -62,7 +61,6 @@ public class VehicleController {
         
         // Tạo Pageable: 9 xe mỗi trang (3 dòng x 3 card)
         int pageSize = 9;
-        Pageable pageable = PageRequest.of(page, pageSize);
         
         // Tìm kiếm xe theo các tiêu chí
         List<Vehicle> allVehicles;

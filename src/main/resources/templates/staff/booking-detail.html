@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi Tiết Đơn Đặt Xe - Car Rental System</title>
+    <!-- CSS Variables - Theme Black & Blue -->
+    <link rel="stylesheet" th:href="@{/css/variables.css}">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <style>
+        /* Dark Theme Styling */
+        body {
+            background: var(--section-dark-bg) !important;
+        }
+
+        .dashboard-content {
+            background: var(--section-dark-bg) !important;
+        }
+
+        .booking-detail-page {
+            padding: 2rem;
+            min-height: 100vh;
+            background: transparent;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .header-left {
+            flex: 1;
+        }
+
+        .page-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--color-text-white);
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+        }
+
+        .page-subtitle {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.875rem;
+        }
+
+        .booking-status {
+            padding: 0.5rem 1rem;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-pending {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+        }
+
+        .status-approved {
+            background: rgba(34, 197, 94, 0.1);
+            color: #22c55e;
+        }
+
+        .status-rejected {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        .status-cancelled {
+            background: rgba(107, 114, 128, 0.1);
+            color: #6b7280;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 968px) {
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .detail-card {
+            background: rgba(31, 41, 55, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--color-text-white);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--color-primary);
+        }
+
+        .info-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--color-text-white);
+            margin-bottom: 1rem;
+        }
+
+        .info-row {
+            display: grid;
+            grid-template-columns: 150px 1fr;
+            gap: 1rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.875rem;
+        }
+
+        .info-value {
+            color: var(--color-text-white);
+            font-weight: 500;
+        }
+
+        .vehicle-preview {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            background: rgba(17, 24, 39, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .vehicle-image {
+            width: 120px;
+            height: 90px;
+            object-fit: cover;
+            border-radius: 6px;
+        }
+
+        .vehicle-info {
+            flex: 1;
+        }
+
+        .vehicle-name {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--color-text-white);
+            margin-bottom: 0.5rem;
+        }
+
+        .vehicle-detail {
+            font-size: 0.875rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 0.25rem;
+        }
+
+        .documents-grid {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .document-card {
+            padding: 1rem;
+            background: rgba(17, 24, 39, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+        }
+
+        .document-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .document-type {
+            font-weight: 600;
+            color: var(--color-text-white);
+        }
+
+        .document-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .document-number {
+            font-size: 0.875rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 0.5rem;
+        }
+
+        .document-image {
+            width: 100%;
+            max-height: 300px;
+            object-fit: contain;
+            border-radius: 6px;
+            background: rgba(17, 24, 39, 0.8);
+            cursor: pointer;
+            display: block;
+            margin-top: 0.75rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0.5rem;
+        }
+
+        .document-image:hover {
+            border-color: var(--color-primary);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+        }
+
+        .document-image-container {
+            margin-top: 0.75rem;
+            min-height: 200px;
+        }
+
+        .document-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem 2rem;
+            background: rgba(17, 24, 39, 0.5);
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            min-height: 200px;
+        }
+
+        .document-placeholder svg {
+            color: rgba(255, 255, 255, 0.3);
+            margin-bottom: 1rem;
+        }
+
+        .placeholder-text {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.875rem;
+            margin: 0;
+        }
+
+        .cost-summary {
+            background: rgba(17, 24, 39, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+
+        .cost-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .cost-total {
+            border-top: 2px solid rgba(255, 255, 255, 0.1);
+            margin-top: 0.5rem;
+            padding-top: 1rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--color-primary);
+        }
+
+        .action-section {
+            background: rgba(31, 41, 55, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .btn-approve {
+            flex: 1;
+            padding: 0.75rem;
+            background: #22c55e;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-approve:hover {
+            background: #16a34a;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+        }
+
+        .btn-reject {
+            flex: 1;
+            padding: 0.75rem;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-reject:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--color-text-white);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-back:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: var(--color-primary);
+            color: var(--color-primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .alert-warning {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid #f59e0b;
+            color: #f59e0b;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .alert-success {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid #22c55e;
+            color: #22c55e;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid #ef4444;
+            color: #ef4444;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Dashboard Layout -->
+    <div th:replace="~{fragments/dashboard-layout :: layout(~{::main})}">
+        <main class="booking-detail-page">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div class="header-left">
+                    <h1 class="page-title" th:text="'Đơn đặt xe #' + ${booking.id}">Booking #1</h1>
+                    <p class="page-subtitle">
+                        <span th:text="'Khách hàng: ' + ${booking.customer.fullName}">Customer</span>
+                        •
+                        <span th:text="'Ngày tạo: ' + ${#temporals.format(booking.createdAt, 'dd/MM/yyyy HH:mm')}">
+                            Created Date
+                        </span>
+                    </p>
+                </div>
+                <span class="booking-status" th:classappend="${'status-' + booking.status.name().toLowerCase()}"
+                    th:text="${booking.status.value}">
+                    Status
+                </span>
+            </div>
+
+            <!-- Messages -->
+            <div th:if="${successMessage}" class="alert alert-success" style="margin-bottom: 1.5rem;">
+                <span th:text="${successMessage}">Success message</span>
+            </div>
+
+            <div th:if="${errorMessage}" class="alert alert-error" style="margin-bottom: 1.5rem;">
+                <span th:text="${errorMessage}">Error message</span>
+            </div>
+
+            <!-- Detail Grid -->
+            <div class="detail-grid">
+                <!-- Left Column: Booking Details -->
+                <div>
+                    <!-- Customer Information -->
+                    <div class="detail-card">
+                        <h2 class="card-title">Thông tin khách hàng</h2>
+
+                        <div class="info-row">
+                            <span class="info-label">Họ tên:</span>
+                            <span class="info-value" th:text="${booking.customer.fullName}">Customer Name</span>
+                        </div>
+
+                        <div class="info-row">
+                            <span class="info-label">Email:</span>
+                            <span class="info-value" th:text="${booking.customer.email}">Email</span>
+                        </div>
+
+                        <div class="info-row">
+                            <span class="info-label">Số điện thoại:</span>
+                            <span class="info-value" th:text="${booking.customer.phone}">Phone</span>
+                        </div>
+                    </div>
+
+                    <!-- Vehicle Information -->
+                    <div class="detail-card" style="margin-top: 1.5rem;">
+                        <h2 class="card-title">Thông tin xe</h2>
+
+                        <div class="vehicle-preview">
+                            <img th:src="${booking.vehicle.firstImageUrl}"
+                                th:alt="${booking.vehicle.model.brand.brandName}" class="vehicle-image">
+                            <div class="vehicle-info">
+                                <div class="vehicle-name"
+                                    th:text="${booking.vehicle.model.brand.brandName + ' ' + booking.vehicle.model.modelName}">
+                                    Vehicle Name
+                                </div>
+                                <div class="vehicle-detail" th:text="'Biển số: ' + ${booking.vehicle.licensePlate}">
+                                    License Plate
+                                </div>
+                                <div class="vehicle-detail" th:text="'Năm: ' + ${booking.vehicle.model.year}">Year</div>
+                                <div class="vehicle-detail" th:text="'Loại: ' + ${booking.vehicle.model.category}">
+                                    Category
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Booking Information -->
+                    <div class="detail-card" style="margin-top: 1.5rem;">
+                        <h2 class="card-title">Thông tin đặt xe</h2>
+
+                        <div class="info-row">
+                            <span class="info-label">Ngày nhận xe:</span>
+                            <span class="info-value"
+                                th:text="${#temporals.format(booking.startDate, 'dd/MM/yyyy HH:mm')}">
+                                Start Date
+                            </span>
+                        </div>
+
+                        <div class="info-row">
+                            <span class="info-label">Ngày trả xe:</span>
+                            <span class="info-value"
+                                th:text="${#temporals.format(booking.endDate, 'dd/MM/yyyy HH:mm')}">
+                                End Date
+                            </span>
+                        </div>
+
+                        <div class="info-row">
+                            <span class="info-label">Số ngày thuê:</span>
+                            <span class="info-value" th:text="${booking.totalDays} + ' ngày'">Total Days</span>
+                        </div>
+
+                        <div class="info-row">
+                            <span class="info-label">Điểm nhận xe:</span>
+                            <span class="info-value">
+                                <div th:text="${booking.pickupLocation.locationName}">Pickup Location</div>
+                                <div style="font-size: 0.875rem; color: var(--color-text-secondary); margin-top: 0.25rem;"
+                                    th:text="${booking.pickupLocation.address}">
+                                    Address
+                                </div>
+                            </span>
+                        </div>
+
+                        <div class="info-row">
+                            <span class="info-label">Điểm trả xe:</span>
+                            <span class="info-value">
+                                <div th:text="${booking.returnLocation.locationName}">Return Location</div>
+                                <div style="font-size: 0.875rem; color: var(--color-text-secondary); margin-top: 0.25rem;"
+                                    th:text="${booking.returnLocation.address}">
+                                    Address
+                                </div>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Documents -->
+                    <div class="detail-card" style="margin-top: 1.5rem;">
+                        <h2 class="card-title">Giấy tờ đính kèm</h2>
+
+                        <div class="documents-grid" th:if="${documents != null and !documents.isEmpty()}">
+                            <div class="document-card" th:each="doc : ${documents}">
+                                <div class="document-header">
+                                    <span class="document-type"
+                                        th:text="${doc.documentType.name() == 'ID_Card' ? 'CMND/CCCD' : 'Bằng lái xe'}">
+                                        Document Type
+                                    </span>
+                                    <span class="document-status"
+                                        th:classappend="${doc.status.name() == 'Approved' ? 'status-approved' : 'status-pending'}"
+                                        th:text="${doc.status.name() == 'Approved' ? 'Đã duyệt' : 'Chờ duyệt'}">
+                                        Status
+                                    </span>
+                                </div>
+                                <div class="document-number" th:text="'Số: ' + ${doc.documentNumber}">
+                                    Document Number
+                                </div>
+
+                                <!-- Document Image or Placeholder -->
+                                <div class="document-image-container">
+                                    <img th:if="${doc.imageUrl != null and !doc.imageUrl.isEmpty()}"
+                                        th:src="${doc.imageUrl}" th:alt="${doc.documentType}" class="document-image"
+                                        onclick="window.open(this.src, '_blank')"
+                                        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+
+                                    <!-- Placeholder when no image or load error -->
+                                    <div class="document-placeholder"
+                                        th:style="${doc.imageUrl == null or doc.imageUrl.isEmpty()} ? 'display: flex;' : 'display: none;'">
+                                        <svg width="64" height="64" viewBox="0 0 64 64" fill="none"
+                                            xmlns="http://www.w3.org/2000/svg">
+                                            <path
+                                                d="M42.6667 8H21.3333C18.3878 8 16 10.3878 16 13.3333V50.6667C16 53.6122 18.3878 56 21.3333 56H42.6667C45.6122 56 48 53.6122 48 50.6667V13.3333C48 10.3878 45.6122 8 42.6667 8Z"
+                                                stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                                stroke-linejoin="round" />
+                                            <path d="M24 20H40M24 28H40M24 36H32" stroke="currentColor" stroke-width="2"
+                                                stroke-linecap="round" stroke-linejoin="round" />
+                                        </svg>
+                                        <p class="placeholder-text">Chưa có ảnh</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div th:if="${documents == null or documents.isEmpty()}" class="alert alert-warning">
+                            ⚠️ Chưa có giấy tờ đính kèm
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Cost & Actions -->
+                <div>
+                    <!-- Cost Summary -->
+                    <div class="detail-card">
+                        <h2 class="card-title">Chi phí</h2>
+
+                        <div class="cost-summary">
+                            <div class="cost-row">
+                                <span>Giá thuê / ngày</span>
+                                <span
+                                    th:text="${#numbers.formatDecimal(booking.vehicle.dailyRate, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                                    Daily Rate
+                                </span>
+                            </div>
+
+                            <div class="cost-row">
+                                <span>Số ngày thuê</span>
+                                <span th:text="${booking.totalDays} + ' ngày'">Total Days</span>
+                            </div>
+
+                            <div class="cost-row">
+                                <span>Tổng tiền thuê</span>
+                                <span
+                                    th:text="${#numbers.formatDecimal(booking.vehicle.dailyRate * booking.totalDays, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                                    Rental Fee
+                                </span>
+                            </div>
+
+                            <div class="cost-row">
+                                <span>Tiền cọc</span>
+                                <span
+                                    th:text="${#numbers.formatDecimal(booking.vehicle.depositAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                                    Deposit
+                                </span>
+                            </div>
+
+                            <div class="cost-row cost-total">
+                                <span>Tổng cộng</span>
+                                <span
+                                    th:text="${#numbers.formatDecimal(booking.vehicle.dailyRate * booking.totalDays + booking.vehicle.depositAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                                    Total Amount
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Section (Only for Pending bookings) -->
+            <div class="action-section" th:if="${booking.status.name() == 'PENDING'}">
+                <h3 class="card-title">Xử lý đơn đặt xe</h3>
+
+                <div class="action-buttons">
+                    <form id="approveForm" th:action="@{/staff/bookings/{id}/approve(id=${booking.id})}" method="post"
+                        style="flex: 1;">
+                        <button type="button" class="btn-approve" onclick="showApproveModal()">✓ Duyệt đơn</button>
+                    </form>
+
+                    <form id="rejectForm" th:action="@{/staff/bookings/{id}/reject(id=${booking.id})}" method="post"
+                        style="flex: 1;">
+                        <button type="button" class="btn-reject" onclick="showRejectModal()">✗ Từ chối</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Back Button -->
+            <div style="margin-top: 2rem;">
+                <a th:href="@{/staff/bookings}" class="btn-back">← Quay lại danh sách</a>
+            </div>
+        </main>
+    </div>
+
+    <!-- Approve Confirmation Modal -->
+    <div id="approveModal" class="delete-modal">
+        <div class="delete-modal-overlay"></div>
+        <div class="delete-modal-content">
+            <div class="delete-modal-header">
+                <svg class="delete-modal-icon" width="48" height="48" viewBox="0 0 24 24" fill="none"
+                    xmlns="http://www.w3.org/2000/svg" style="stroke: #22c55e;">
+                    <path
+                        d="M9 11L12 14L22 4M21 12V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H16"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                <h3 class="delete-modal-title">Xác nhận duyệt đơn</h3>
+            </div>
+            <div class="delete-modal-body">
+                <p class="delete-modal-message">Bạn có chắc chắn muốn duyệt đơn đặt xe này? Hệ thống sẽ tự động tạo hợp
+                    đồng và gửi cho khách hàng.</p>
+            </div>
+            <div class="delete-modal-footer">
+                <button type="button" class="btn btn-secondary delete-modal-cancel"
+                    onclick="closeApproveModal()">Hủy</button>
+                <button type="button" class="btn btn-primary" onclick="confirmApprove()"
+                    style="background: #22c55e; border-color: #22c55e;">Xác nhận duyệt</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reject Confirmation Modal -->
+    <div id="rejectModal" class="delete-modal">
+        <div class="delete-modal-overlay"></div>
+        <div class="delete-modal-content">
+            <div class="delete-modal-header">
+                <svg class="delete-modal-icon" width="48" height="48" viewBox="0 0 24 24" fill="none"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M12 9V13M12 17H12.01M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                </svg>
+                <h3 class="delete-modal-title">Xác nhận từ chối</h3>
+            </div>
+            <div class="delete-modal-body">
+                <p class="delete-modal-message">Bạn có chắc chắn muốn từ chối đơn đặt xe này? Hành động này không thể
+                    hoàn tác.</p>
+            </div>
+            <div class="delete-modal-footer">
+                <button type="button" class="btn btn-secondary delete-modal-cancel"
+                    onclick="closeRejectModal()">Hủy</button>
+                <button type="button" class="btn btn-danger" onclick="confirmReject()">Xác nhận từ chối</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Modal functions
+        function showApproveModal() {
+            document.getElementById('approveModal').classList.add('active');
+        }
+
+        function closeApproveModal() {
+            document.getElementById('approveModal').classList.remove('active');
+        }
+
+        function confirmApprove() {
+            document.getElementById('approveForm').submit();
+        }
+
+        function showRejectModal() {
+            document.getElementById('rejectModal').classList.add('active');
+        }
+
+        function closeRejectModal() {
+            document.getElementById('rejectModal').classList.remove('active');
+        }
+
+        function confirmReject() {
+            document.getElementById('rejectForm').submit();
+        }
+
+        // Close modal when clicking overlay
+        document.querySelectorAll('.delete-modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', function () {
+                this.parentElement.classList.remove('active');
+            });
+        });
+
+        // Close modal with ESC key
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.delete-modal.active').forEach(modal => {
+                    modal.classList.remove('active');
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>

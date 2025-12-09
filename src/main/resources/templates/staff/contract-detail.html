@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi Tiết Hợp Đồng - Car Rental System</title>
+    <!-- CSS Variables - Theme Black & Blue -->
+    <link rel="stylesheet" th:href="@{/css/variables.css}">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <style>
+        .contract-detail-page {
+            padding: 2rem;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .header-left {
+            flex: 1;
+        }
+
+        .page-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--color-text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .page-subtitle {
+            color: var(--color-text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .contract-status {
+            padding: 0.5rem 1rem;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-pending_payment {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+        }
+
+        .status-active {
+            background: rgba(34, 197, 94, 0.1);
+            color: #22c55e;
+        }
+
+        .status-completed {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+
+        .status-cancelled {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 968px) {
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .detail-card {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--color-text-primary);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--color-primary);
+        }
+
+        .info-row {
+            display: grid;
+            grid-template-columns: 180px 1fr;
+            gap: 1rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            color: var(--color-text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .info-value {
+            color: var(--color-text-primary);
+            font-weight: 500;
+        }
+
+        .vehicle-preview {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--color-background);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .vehicle-image {
+            width: 120px;
+            height: 90px;
+            object-fit: cover;
+            border-radius: 6px;
+        }
+
+        .vehicle-info {
+            flex: 1;
+        }
+
+        .vehicle-name {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--color-text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .vehicle-detail {
+            font-size: 0.875rem;
+            color: var(--color-text-secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        .cost-summary {
+            background: var(--color-background);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+
+        .cost-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .cost-row:last-child {
+            border-bottom: none;
+        }
+
+        .cost-total {
+            margin-top: 0.5rem;
+            padding-top: 1rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--color-primary);
+            border-top: 2px solid var(--color-border);
+        }
+
+        .payment-info {
+            background: var(--color-background);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .payment-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            background: var(--color-surface);
+            border-radius: 6px;
+            margin-bottom: 0.75rem;
+        }
+
+        .payment-status-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+        }
+
+        .payment-status-icon.paid {
+            background: rgba(34, 197, 94, 0.1);
+            color: #22c55e;
+        }
+
+        .payment-status-icon.pending {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+        }
+
+        .action-section {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .btn-print {
+            flex: 1;
+            padding: 0.75rem;
+            background: var(--color-primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .btn-print:hover {
+            background: var(--color-primary-dark);
+        }
+
+        .btn-cancel {
+            padding: 0.75rem 1.5rem;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-cancel:hover {
+            background: #dc2626;
+        }
+
+        .btn-back {
+            padding: 0.75rem 1.5rem;
+            background: transparent;
+            color: var(--color-text-secondary);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-back:hover {
+            border-color: var(--color-text-primary);
+            color: var(--color-text-primary);
+        }
+
+        .alert {
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+
+        .alert-success {
+            background: rgba(34, 197, 94, 0.1);
+            color: #22c55e;
+            border: 1px solid rgba(34, 197, 94, 0.2);
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .alert-info {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .contract-terms {
+            background: var(--color-background);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .terms-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .terms-list li {
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+            color: var(--color-text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .terms-list li:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: var(--color-primary);
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Dashboard Layout -->
+    <div th:replace="~{fragments/dashboard-layout :: layout(~{::main})}">
+        <main class="contract-detail-page">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div class="header-left">
+                    <h1 class="page-title" th:text="'Hợp đồng ' + ${contract.contractNumber}">Contract #CT-001</h1>
+                    <p class="page-subtitle">
+                        <span th:text="'Khách hàng: ' + ${contract.booking.customer.fullName}">Customer</span>
+                        •
+                        <span th:text="'Ngày tạo: ' + ${#temporals.format(contract.createdAt, 'dd/MM/yyyy HH:mm')}">
+                            Created Date
+                        </span>
+                    </p>
+                </div>
+                <span class="contract-status" th:classappend="${'status-' + contract.status.name().toLowerCase()}"
+                    th:text="${contract.status.value}">
+                    Status
+                </span>
+            </div>
+
+            <!-- Messages -->
+            <div th:if="${successMessage}" class="alert alert-success">
+                <span th:text="${successMessage}">Success message</span>
+            </div>
+
+            <div th:if="${errorMessage}" class="alert alert-error">
+                <span th:text="${errorMessage}">Error message</span>
+            </div>
+
+            <!-- Detail Grid -->
+            <div class="detail-grid">
+                <!-- Left Column: Contract Details -->
+                <div>
+                    <!-- Contract Information -->
+                    <div class="detail-card">
+                        <h2 class="card-title">Thông tin hợp đồng</h2>
+
+                        <div class="info-row">
+                            <span class="info-label">Số hợp đồng:</span>
+                            <span class="info-value" th:text="${contract.contractNumber}">CT-001</span>
+                        </div>
+
+                        <div class="info-row">
+                            <span class="info-label">Mã đơn đặt xe:</span>
+                            <span class="info-value">
+                                <a th:href="@{/staff/bookings/{id}(id=${contract.booking.id})}"
+                                    style="color: var(--color-primary); text-decoration: none;"
+                                    th:text="'#' + ${contract.booking.id}">
+                                    #123
+                                </a>
+                            </span>
+                        </div>
+
+                        <div class="info-row">
+                            <span class="info-label">Ngày tạo hợp đồng:</span>
+                            <span class="info-value"
+                                th:text="${#temporals.format(contract.createdAt, 'dd/MM/yyyy HH:mm')}">
+                                Created Date
+                            </span>
+                        </div>
+
+                        <div class="info-row">
+                            <span class="info-label">Nhân viên tạo:</span>
+                            <span class="info-value" th:text="${contract.createdBy.fullName}">Staff Name</span>
+                        </div>
+
+                        <div class="info-row">
+                            <span class="info-label">Trạng thái:</span>
+                            <span class="info-value">
+                                <span class="contract-status"
+                                    th:classappend="${'status-' + contract.status.name().toLowerCase()}"
+                                    th:text="${contract.status.value}">
+                                    Status
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Customer Information -->
+                    <div class="detail-card" style="margin-top: 1.5rem;">
+                        <h2 class="card-title">Thông tin khách hàng</h2>
+
+                        <div class="info-row">
+                            <span class="info-label">Họ tên:</span>
+                            <span class="info-value" th:text="${contract.booking.customer.fullName}">Customer
+                                Name</span>
+                        </div>
+
+                        <div class="info-row">
+                            <span class="info-label">Email:</span>
+                            <span class="info-value" th:text="${contract.booking.customer.email}">Email</span>
+                        </div>
+
+                        <div class="info-row">
+                            <span class="info-label">Số điện thoại:</span>
+                            <span class="info-value" th:text="${contract.booking.customer.phone}">Phone</span>
+                        </div>
+
+                        <div class="info-row">
+                            <span class="info-label">Địa chỉ:</span>
+                            <span class="info-value"
+                                th:text="${contract.booking.customer.address ?: 'Chưa cập nhật'}">Address</span>
+                        </div>
+                    </div>
+
+                    <!-- Vehicle Information -->
+                    <div class="detail-card" style="margin-top: 1.5rem;">
+                        <h2 class="card-title">Thông tin xe</h2>
+
+                        <div class="vehicle-preview">
+                            <img th:src="${contract.booking.vehicle.firstImageUrl}"
+                                th:alt="${contract.booking.vehicle.model.brand.brandName}" class="vehicle-image">
+                            <div class="vehicle-info">
+                                <div class="vehicle-name"
+                                    th:text="${contract.booking.vehicle.model.brand.brandName + ' ' + contract.booking.vehicle.model.modelName}">
+                                    Vehicle Name
+                                </div>
+                                <div class="vehicle-detail"
+                                    th:text="'Biển số: ' + ${contract.booking.vehicle.licensePlate}">
+                                    License Plate
+                                </div>
+                                <div class="vehicle-detail" th:text="'Năm: ' + ${contract.booking.vehicle.model.year}">
+                                    Year</div>
+                                <div class="vehicle-detail"
+                                    th:text="'Loại: ' + ${contract.booking.vehicle.model.category}">
+                                    Category
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Rental Information -->
+                    <div class="detail-card" style="margin-top: 1.5rem;">
+                        <h2 class="card-title">Thông tin thuê xe</h2>
+
+                        <div class="info-row">
+                            <span class="info-label">Ngày nhận xe:</span>
+                            <span class="info-value"
+                                th:text="${#temporals.format(contract.booking.startDate, 'dd/MM/yyyy HH:mm')}">
+                                Start Date
+                            </span>
+                        </div>
+
+                        <div class="info-row">
+                            <span class="info-label">Ngày trả xe:</span>
+                            <span class="info-value"
+                                th:text="${#temporals.format(contract.booking.endDate, 'dd/MM/yyyy HH:mm')}">
+                                End Date
+                            </span>
+                        </div>
+
+                        <div class="info-row">
+                            <span class="info-label">Số ngày thuê:</span>
+                            <span class="info-value" th:text="${contract.booking.totalDays} + ' ngày'">Total Days</span>
+                        </div>
+
+                        <div class="info-row">
+                            <span class="info-label">Điểm nhận xe:</span>
+                            <span class="info-value">
+                                <div th:text="${contract.booking.pickupLocation.locationName}">Pickup Location</div>
+                                <div style="font-size: 0.875rem; color: var(--color-text-secondary); margin-top: 0.25rem;"
+                                    th:text="${contract.booking.pickupLocation.address}">
+                                    Address
+                                </div>
+                            </span>
+                        </div>
+
+                        <div class="info-row">
+                            <span class="info-label">Điểm trả xe:</span>
+                            <span class="info-value">
+                                <div th:text="${contract.booking.returnLocation.locationName}">Return Location</div>
+                                <div style="font-size: 0.875rem; color: var(--color-text-secondary); margin-top: 0.25rem;"
+                                    th:text="${contract.booking.returnLocation.address}">
+                                    Address
+                                </div>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Contract Terms -->
+                    <div class="detail-card" style="margin-top: 1.5rem;">
+                        <h2 class="card-title">Điều khoản hợp đồng</h2>
+
+                        <div class="contract-terms">
+                            <ul class="terms-list">
+                                <li>Khách hàng cam kết sử dụng xe đúng mục đích và tuân thủ luật giao thông</li>
+                                <li>Tiền cọc sẽ được giữ trong 14 ngày sau khi trả xe để kiểm tra vi phạm giao thông
+                                </li>
+                                <li>Khách hàng chịu trách nhiệm về mọi hư hỏng xảy ra trong thời gian thuê xe</li>
+                                <li>Phí phạt trễ hạn sẽ được tính theo quy định của công ty</li>
+                                <li>Khách hàng phải trả xe đúng địa điểm và thời gian đã thỏa thuận</li>
+                                <li>Mọi tranh chấp sẽ được giải quyết theo pháp luật Việt Nam</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Cost & Payment -->
+                <div>
+                    <!-- Cost Summary -->
+                    <div class="detail-card">
+                        <h2 class="card-title">Chi phí</h2>
+
+                        <div class="cost-summary">
+                            <div class="cost-row">
+                                <span>Giá thuê / ngày</span>
+                                <span
+                                    th:text="${#numbers.formatDecimal(contract.booking.vehicle.dailyRate, 0, 'COMMA', 0, 'POINT')} + ' ₫'">
+                                    Daily Rate
+                                </span>
+                            </div>
+
+                            <div class="cost-row">
+                                <span>Số ngày thuê</span>
+                                <span th:text="${contract.booking.totalDays} + ' ngày'">Total Days</span>
+                            </div>
+
+                            <div class="cost-row">
+                                <span>Tổng tiền thuê</span>
+                                <span
+                                    th:text="${#numbers.formatDecimal(contract.rentalAmount, 0, 'COMMA', 0, 'POINT')} + ' ₫'">
+                                    Rental Fee
+                                </span>
+                            </div>
+
+                            <div class="cost-row">
+                                <span>Tiền cọc</span>
+                                <span
+                                    th:text="${#numbers.formatDecimal(contract.depositAmount, 0, 'COMMA', 0, 'POINT')} + ' ₫'">
+                                    Deposit
+                                </span>
+                            </div>
+
+                            <div class="cost-row cost-total">
+                                <span>Tổng cộng</span>
+                                <span
+                                    th:text="${#numbers.formatDecimal(contract.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' ₫'">
+                                    Total Amount
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Payment Information -->
+                        <div class="payment-info">
+                            <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 1rem;">Thông tin thanh toán
+                            </h3>
+
+                            <div class="payment-status">
+                                <div class="payment-status-icon"
+                                    th:classappend="${contract.depositPaid ? 'paid' : 'pending'}">
+                                    <span th:text="${contract.depositPaid ? '✓' : '○'}">○</span>
+                                </div>
+                                <div>
+                                    <div style="font-weight: 600; font-size: 0.875rem;">Tiền cọc</div>
+                                    <div style="font-size: 0.75rem; color: var(--color-text-secondary);"
+                                        th:text="${contract.depositPaid ? 'Đã thanh toán' : 'Chưa thanh toán'}">
+                                        Status
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="payment-status">
+                                <div class="payment-status-icon"
+                                    th:classappend="${contract.rentalPaid ? 'paid' : 'pending'}">
+                                    <span th:text="${contract.rentalPaid ? '✓' : '○'}">○</span>
+                                </div>
+                                <div>
+                                    <div style="font-weight: 600; font-size: 0.875rem;">Tiền thuê</div>
+                                    <div style="font-size: 0.75rem; color: var(--color-text-secondary);"
+                                        th:text="${contract.rentalPaid ? 'Đã thanh toán' : 'Chưa thanh toán'}">
+                                        Status
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="detail-card" style="margin-top: 1.5rem;">
+                        <h2 class="card-title">Thao tác nhanh</h2>
+
+                        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                            <a href="#" class="btn-print" onclick="window.print(); return false;">
+                                🖨️ In hợp đồng
+                            </a>
+                            <a href="#" class="btn-print" style="background: #3b82f6;">
+                                📥 Tải xuống PDF
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Section (Cancel Contract) -->
+            <div class="action-section"
+                th:if="${contract.status.name() == 'PENDING_PAYMENT' or contract.status.name() == 'ACTIVE'}">
+                <h3 class="card-title">Hủy hợp đồng</h3>
+                <p style="color: var(--color-text-secondary); margin-bottom: 1rem;">
+                    Chỉ hủy hợp đồng trong trường hợp đặc biệt. Hành động này không thể hoàn tác.
+                </p>
+
+                <form th:action="@{/staff/contracts/{id}/cancel(id=${contract.id})}" method="post"
+                    onsubmit="return confirm('Bạn có chắc muốn hủy hợp đồng này? Hành động này không thể hoàn tác.');">
+                    <button type="submit" class="btn-cancel">✗ Hủy hợp đồng</button>
+                </form>
+            </div>
+
+            <!-- Back Button -->
+            <div style="margin-top: 2rem;">
+                <a th:href="@{/staff/contracts}" class="btn-back">← Quay lại danh sách</a>
+            </div>
+        </main>
+    </div>
+</body>
+
+</html>

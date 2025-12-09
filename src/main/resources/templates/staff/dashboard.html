@@ -1,76 +1,105 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Staff Dashboard - Car Rental System</title>
-    
+
     <!-- ===== CSS FILES ===== -->
     <link rel="stylesheet" th:href="@{/css/variables.css}">
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <link rel="stylesheet" th:href="@{/css/components.css}">
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
 </head>
-<body>
-    <!-- ===== DASHBOARD LAYOUT =====
-         Sử dụng layout-staff từ dashboard-layout.html
-         pageTitle: Tiêu đề trang
-         content: Nội dung chính (phần ::main bên dưới)
-    -->
-    <div th:replace="~{fragments/dashboard-layout :: layout-staff(pageTitle='Dashboard', content=~{::main})}">
-        <main>
-            <!-- ===== EMPTY STATE - Nội dung để trống để triển khai sau =====
-                 Đây là placeholder, sẽ được thay thế bằng nội dung thực tế sau
-            -->
-            <div class="dashboard-empty-state">
-                <svg class="dashboard-empty-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="3" width="7" height="7"></rect>
-                    <rect x="14" y="3" width="7" height="7"></rect>
-                    <rect x="14" y="14" width="7" height="7"></rect>
-                    <rect x="3" y="14" width="7" height="7"></rect>
-                </svg>
-                <h2 class="dashboard-empty-title">Staff Dashboard</h2>
-                <p class="dashboard-empty-description">
-                    Dashboard content will be implemented here.<br>
-                    This includes pending bookings, active rentals, and tasks.
-                </p>
-            </div>
 
-            <!-- ===== PHẦN NÀY CÓ THỂ BỎ COMMENT ĐỂ TRIỂN KHAI SAU =====
-        <section>
-            <h2>Recent Bookings</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Customer</th>
-                        <th>Vehicle</th>
-                        <th>Start Date</th>
-                        <th>End Date</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr th:each="booking : ${bookings}">
-                        <td th:text="${booking.id}">1</td>
-                        <td th:text="${booking.customer.fullName}">Customer Name</td>
-                        <td th:text="${booking.vehicle.model.modelName}">Vehicle</td>
-                        <td th:text="${booking.startDate}">Start Date</td>
-                        <td th:text="${booking.endDate}">End Date</td>
-                        <td>
-                            <span th:class="'booking-status status-' + ${booking.status.name().toLowerCase()}"
-                                  th:text="${booking.status}">Status</span>
-                        </td>
-                        <td>
-                            <a th:href="@{/handovers/create(contractId=${booking.id})}" class="btn btn-primary">Handover</a>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </section>
-            -->
-    </main>
+<body>
+    <!-- ===== DASHBOARD LAYOUT ===== -->
+    <div class="dashboard-layout">
+        <!-- Sidebar -->
+        <aside th:replace="~{fragments/components/sidebar-staff :: sidebar-staff}"></aside>
+
+        <!-- Sidebar Overlay (Mobile) -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <!-- Main Content -->
+        <div class="dashboard-main">
+            <!-- Header -->
+            <header th:replace="~{fragments/components/dashboard-header :: dashboard-header}"></header>
+
+            <!-- Page Content -->
+            <main class="dashboard-content">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <div class="page-header-content">
+                        <h1 class="page-title">Staff Dashboard</h1>
+                        <p class="page-description">Tổng quan hệ thống quản lý thuê xe</p>
+                    </div>
+                </div>
+
+                <!-- Dashboard Empty State -->
+                <div class="dashboard-empty-state">
+                    <svg class="dashboard-empty-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="14" width="7" height="7"></rect>
+                        <rect x="3" y="14" width="7" height="7"></rect>
+                    </svg>
+                    <h2 class="dashboard-empty-title">Staff Dashboard</h2>
+                    <p class="dashboard-empty-description">
+                        Dashboard content will be implemented here.<br>
+                        This includes pending bookings, active rentals, and tasks.
+                    </p>
+                </div>
+
+                <!-- ===== FUTURE IMPLEMENTATION =====
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3 th:text="${totalBookings}">0</h3>
+                        <p>Total Bookings</p>
+                    </div>
+
+                    <div class="stat-card">
+                        <h3 th:text="${activeRentals}">0</h3>
+                        <p>Active Rentals</p>
+                    </div>
+
+                    <div class="stat-card">
+                        <h3 th:text="${pendingTasks}">0</h3>
+                        <p>Pending Tasks</p>
+                    </div>
+                </div>
+
+                <section style="margin-top: 2rem;">
+                    <h2>Recent Bookings</h2>
+                    <div class="grid">
+                        <div class="card">
+                            <h3>Manage Bookings</h3>
+                            <a th:href="@{/staff/bookings}" class="btn btn-primary">View Bookings</a>
+                        </div>
+
+                        <div class="card">
+                            <h3>Handovers</h3>
+                            <a th:href="@{/staff/handovers}" class="btn btn-primary">View Handovers</a>
+                        </div>
+
+                        <div class="card">
+                            <h3>Returns</h3>
+                            <a th:href="@{/staff/returns}" class="btn btn-primary">View Returns</a>
+                        </div>
+                    </div>
+                </section>
+                -->
+            </main>
+
+            <!-- Footer -->
+            <footer th:replace="~{fragments/footer :: footer}"></footer>
+        </div>
     </div>
+
+    <!-- Scripts -->
+    <div th:replace="~{fragments/components/dashboard-header :: dashboard-scripts}"></div>
 </body>
+
 </html>

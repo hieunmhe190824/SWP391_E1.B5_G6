@@ -3,6 +3,22 @@
    UC05: Manage Vehicles - Admin/Staff Interface
    =================================================================== */
 
+/* ===== VEHICLE FORM PAGE SPECIFIC OVERRIDES ===== */
+/* Force dark background for vehicle form pages */
+.vehicle-form-page {
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0;
+}
+
+body:has(.vehicle-form) .dashboard-content,
+.dashboard-content:has(.vehicle-form),
+.dashboard-content:has(.vehicle-form-page) {
+    background: var(--section-dark-bg) !important;
+    min-height: calc(100vh - 80px);
+}
+
 /* ===== PAGE HEADER ===== */
 .page-header {
     display: flex;
@@ -11,6 +27,18 @@
     margin-bottom: var(--spacing-3xl);
     flex-wrap: wrap;
     gap: var(--spacing-lg);
+    animation: fadeInUp 0.5s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .page-header-content {
@@ -20,13 +48,14 @@
 .page-title {
     font-size: var(--font-3xl);
     font-weight: 700;
-    color: var(--color-text);
+    color: var(--color-text-white);
     margin-bottom: var(--spacing-xs);
+    text-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
 }
 
 .page-description {
     font-size: var(--font-base);
-    color: var(--color-text-light);
+    color: rgba(255, 255, 255, 0.8);
 }
 
 .page-header-actions {
@@ -64,12 +93,13 @@
 
 /* ===== FILTER SECTION ===== */
 .filter-section {
-    background: var(--color-surface);
+    background: rgba(31, 41, 55, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
     border-radius: var(--radius-lg);
     padding: var(--spacing-2xl);
     margin-bottom: var(--spacing-3xl);
     box-shadow: var(--shadow-sm);
-    border: 1px solid var(--color-border);
 }
 
 .filter-form {
@@ -91,7 +121,7 @@
 .filter-label {
     font-size: var(--font-sm);
     font-weight: 600;
-    color: var(--color-text);
+    color: var(--color-text-white);
     margin-bottom: var(--spacing-xs);
 }
 
@@ -182,10 +212,10 @@
     align-items: center;
     gap: var(--spacing-xs);
     padding: var(--spacing-sm) var(--spacing-lg);
-    background: var(--color-surface);
-    border: 2px solid var(--color-border);
+    background: rgba(31, 41, 55, 0.5);
+    border: 2px solid rgba(255, 255, 255, 0.2);
     border-radius: var(--radius-md);
-    color: var(--color-text);
+    color: var(--color-text-white);
     font-size: var(--font-sm);
     font-weight: 600;
     cursor: pointer;
@@ -216,10 +246,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--color-surface);
-    border: 2px solid var(--color-border);
+    background: rgba(31, 41, 55, 0.5);
+    border: 2px solid rgba(255, 255, 255, 0.2);
     border-radius: var(--radius-md);
-    color: var(--color-text);
+    color: var(--color-text-white);
     font-size: var(--font-sm);
     font-weight: 600;
     cursor: pointer;
@@ -243,24 +273,29 @@
 .empty-state {
     padding: var(--spacing-6xl) var(--spacing-3xl);
     text-align: center;
-    color: var(--color-text-light);
+    background: rgba(31, 41, 55, 0.5);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-md);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
 }
 
 .empty-icon {
     margin: 0 auto var(--spacing-2xl);
-    color: var(--color-text-light);
+    color: rgba(255, 255, 255, 0.5);
 }
 
 .empty-state h3 {
     font-size: var(--font-2xl);
-    font-weight: 600;
-    color: var(--color-text);
+    font-weight: 700;
+    color: var(--color-text-white);
     margin-bottom: var(--spacing-md);
+    text-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
 }
 
 .empty-state p {
     font-size: var(--font-base);
-    color: var(--color-text-light);
+    color: rgba(255, 255, 255, 0.8);
     margin-bottom: var(--spacing-xl);
 }
 
@@ -310,7 +345,9 @@
 .stats-summary {
     margin-top: var(--spacing-2xl);
     padding: var(--spacing-lg);
-    background: var(--color-background);
+    background: rgba(31, 41, 55, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
     border-radius: var(--radius-md);
     display: flex;
     justify-content: center;
@@ -327,22 +364,24 @@
 
 .stat-label {
     font-size: var(--font-base);
-    color: var(--color-text-light);
+    color: rgba(255, 255, 255, 0.8);
 }
 
 .stat-value {
     font-size: var(--font-xl);
     font-weight: 700;
-    color: var(--color-primary);
+    color: var(--color-primary-light);
 }
 
 /* ===== FORM STYLES ===== */
 .form-container {
-    background: var(--color-surface);
+    background: rgba(31, 41, 55, 0.6) !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    backdrop-filter: blur(12px);
     border-radius: var(--radius-lg);
     padding: var(--spacing-3xl);
-    box-shadow: var(--shadow-sm);
-    border: 1px solid var(--color-border);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    animation: fadeInUp 0.6s ease-out;
 }
 
 .vehicle-form {
@@ -352,7 +391,7 @@
 .form-section {
     margin-bottom: var(--spacing-3xl);
     padding-bottom: var(--spacing-3xl);
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .form-section:last-of-type {
@@ -362,7 +401,7 @@
 .form-section-title {
     font-size: var(--font-2xl);
     font-weight: 600;
-    color: var(--color-text);
+    color: var(--color-text-white);
     margin-bottom: var(--spacing-2xl);
 }
 
@@ -380,7 +419,7 @@
 .form-group label {
     font-size: var(--font-sm);
     font-weight: 600;
-    color: var(--color-text);
+    color: var(--color-text-white);
     margin-bottom: var(--spacing-xs);
 }
 
@@ -392,9 +431,10 @@
 .form-control {
     padding: var(--spacing-md);
     font-size: var(--font-base);
-    border: 2px solid var(--color-border);
+    border: 2px solid rgba(255, 255, 255, 0.2);
     border-radius: var(--radius-md);
-    background: var(--color-background);
+    background: rgba(17, 24, 39, 0.8) !important;
+    color: var(--color-text-white) !important;
     transition: all var(--transition-base);
 }
 
@@ -404,10 +444,61 @@
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
 
+.form-control::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.form-control:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: rgba(17, 24, 39, 0.3);
+}
+
+select.form-control {
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.6)' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right var(--spacing-md) center;
+    background-size: 16px;
+    padding-right: calc(var(--spacing-md) * 3);
+    appearance: none;
+}
+
+select.form-control option {
+    background: var(--color-secondary-dark);
+    color: var(--color-text-white);
+    padding: var(--spacing-sm);
+}
+
 .form-help {
     font-size: var(--font-xs);
     color: var(--color-text-light);
     margin-top: var(--spacing-xs);
+}
+
+/* File Input Styling */
+input[type="file"].form-control {
+    padding: var(--spacing-sm);
+    cursor: pointer;
+}
+
+input[type="file"].form-control::file-selector-button {
+    padding: var(--spacing-sm) var(--spacing-lg);
+    background: var(--color-primary);
+    color: var(--color-text-white);
+    border: none;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-size: var(--font-sm);
+    font-weight: 600;
+    margin-right: var(--spacing-md);
+    transition: all var(--transition-base);
+}
+
+input[type="file"].form-control::file-selector-button:hover {
+    background: var(--color-primary-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
 /* Image Preview */
@@ -421,9 +512,9 @@
 .current-images-section {
     margin-bottom: var(--spacing-xl);
     padding: var(--spacing-lg);
-    background: var(--color-background);
+    background: rgba(17, 24, 39, 0.5);
     border-radius: var(--radius-md);
-    border: 1px solid var(--color-border);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .current-images-grid {
@@ -437,7 +528,7 @@
     position: relative;
     border-radius: var(--radius-md);
     overflow: hidden;
-    border: 2px solid var(--color-border);
+    border: 2px solid rgba(255, 255, 255, 0.2);
     box-shadow: var(--shadow-sm);
     transition: all var(--transition-base);
     aspect-ratio: 4/3;
@@ -552,10 +643,24 @@
 /* No current images message */
 .no-current-images {
     padding: var(--spacing-xl);
-    background: var(--color-background);
+    background: rgba(17, 24, 39, 0.5);
     border-radius: var(--radius-md);
-    border: 2px dashed var(--color-border);
+    border: 2px dashed rgba(255, 255, 255, 0.2);
     text-align: center;
+}
+
+/* Form Validation Error Styles */
+.form-control.error {
+    border-color: var(--color-danger);
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.error-message {
+    display: block;
+    font-size: var(--font-xs);
+    color: var(--color-danger);
+    margin-top: var(--spacing-xs);
+    font-weight: 500;
 }
 
 /* Form Actions */

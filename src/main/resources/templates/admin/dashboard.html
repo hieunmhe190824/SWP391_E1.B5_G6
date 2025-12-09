@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard - Car Rental System</title>
-    
+
     <!-- ===== CSS FILES ===== -->
     <link rel="stylesheet" th:href="@{/css/variables.css}">
     <link rel="stylesheet" th:href="@{/css/main.css}">
@@ -12,69 +13,90 @@
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
 </head>
 <body>
-    <!-- ===== DASHBOARD LAYOUT =====
-         Sử dụng layout-admin từ dashboard-layout.html
-         pageTitle: Tiêu đề trang
-         content: Nội dung chính (phần ::main bên dưới)
-    -->
-    <div th:replace="~{fragments/dashboard-layout :: layout-admin(pageTitle='Dashboard', content=~{::main})}">
-        <main>
-            <!-- ===== EMPTY STATE - Nội dung để trống để triển khai sau =====
-                 Đây là placeholder, sẽ được thay thế bằng nội dung thực tế sau
-            -->
-            <div class="dashboard-empty-state">
-                <svg class="dashboard-empty-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="3" width="7" height="7"></rect>
-                    <rect x="14" y="3" width="7" height="7"></rect>
-                    <rect x="14" y="14" width="7" height="7"></rect>
-                    <rect x="3" y="14" width="7" height="7"></rect>
-                </svg>
-                <h2 class="dashboard-empty-title">Admin Dashboard</h2>
-                <p class="dashboard-empty-description">
-                    Dashboard content will be implemented here.<br>
-                    This includes statistics, charts, recent activities, and quick actions.
-                </p>
-            </div>
+    <!-- ===== DASHBOARD LAYOUT ===== -->
+    <div class="dashboard-layout">
+        <!-- Sidebar -->
+        <aside th:replace="~{fragments/components/sidebar-admin :: sidebar-admin}"></aside>
 
-            <!-- ===== PHẦN NÀY CÓ THỂ BỎ COMMENT ĐỂ TRIỂN KHAI SAU =====
-        <div class="stats-grid">
-            <div class="stat-card">
-                <h3 th:text="${totalUsers}">0</h3>
-                <p>Total Users</p>
-            </div>
+        <!-- Sidebar Overlay (Mobile) -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-            <div class="stat-card">
-                <h3 th:text="${totalVehicles}">0</h3>
-                <p>Total Vehicles</p>
-            </div>
+        <!-- Main Content -->
+        <div class="dashboard-main">
+            <!-- Header -->
+            <header th:replace="~{fragments/components/dashboard-header :: dashboard-header}"></header>
 
-            <div class="stat-card">
-                <h3 th:text="${totalBookings}">0</h3>
-                <p>Total Bookings</p>
-            </div>
+            <!-- Page Content -->
+            <main class="dashboard-content">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <div class="page-header-content">
+                        <h1 class="page-title">Admin Dashboard</h1>
+                        <p class="page-description">Tổng quan hệ thống quản lý thuê xe</p>
+                    </div>
+                </div>
+
+                <!-- Dashboard Empty State -->
+                <div class="dashboard-empty-state">
+                    <svg class="dashboard-empty-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="3" width="7" height="7"></rect>
+                        <rect x="14" y="14" width="7" height="7"></rect>
+                        <rect x="3" y="14" width="7" height="7"></rect>
+                    </svg>
+                    <h2 class="dashboard-empty-title">Admin Dashboard</h2>
+                    <p class="dashboard-empty-description">
+                        Dashboard content will be implemented here.<br>
+                        This includes statistics, charts, recent activities, and quick actions.
+                    </p>
+                </div>
+
+                <!-- ===== FUTURE IMPLEMENTATION =====
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3 th:text="${totalUsers}">0</h3>
+                        <p>Total Users</p>
+                    </div>
+
+                    <div class="stat-card">
+                        <h3 th:text="${totalVehicles}">0</h3>
+                        <p>Total Vehicles</p>
+                    </div>
+
+                    <div class="stat-card">
+                        <h3 th:text="${totalBookings}">0</h3>
+                        <p>Total Bookings</p>
+                    </div>
+                </div>
+
+                <section style="margin-top: 2rem;">
+                    <h2>Quick Actions</h2>
+                    <div class="grid">
+                        <div class="card">
+                            <h3>Manage Users</h3>
+                            <a th:href="@{/admin/users}" class="btn btn-primary">View Users</a>
+                        </div>
+
+                        <div class="card">
+                            <h3>Manage Vehicles</h3>
+                            <a th:href="@{/admin/vehicles}" class="btn btn-primary">View Vehicles</a>
+                        </div>
+
+                        <div class="card">
+                            <h3>View Reports</h3>
+                            <a th:href="@{/admin/reports}" class="btn btn-primary">View Reports</a>
+                        </div>
+                    </div>
+                </section>
+                -->
+            </main>
+
+            <!-- Footer -->
+            <footer th:replace="~{fragments/footer :: footer}"></footer>
         </div>
-
-        <section style="margin-top: 2rem;">
-            <h2>Quick Actions</h2>
-            <div class="grid">
-                <div class="card">
-                    <h3>Manage Users</h3>
-                    <a th:href="@{/admin/users}" class="btn btn-primary">View Users</a>
-                </div>
-
-                <div class="card">
-                    <h3>Manage Vehicles</h3>
-                    <a th:href="@{/admin/vehicles}" class="btn btn-primary">View Vehicles</a>
-                </div>
-
-                <div class="card">
-                    <h3>View Reports</h3>
-                    <a th:href="@{/admin/reports}" class="btn btn-primary">View Reports</a>
-                </div>
-            </div>
-        </section>
-            -->
-    </main>
     </div>
+
+    <!-- Scripts -->
+    <div th:replace="~{fragments/components/dashboard-header :: dashboard-scripts}"></div>
 </body>
 </html>

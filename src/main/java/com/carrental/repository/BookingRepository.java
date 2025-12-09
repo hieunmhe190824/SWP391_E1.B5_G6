@@ -1,7 +1,6 @@
 package com.carrental.repository;
 
 import com.carrental.model.Booking;
-import com.carrental.model.Booking.BookingStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -23,11 +22,6 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
      * Find bookings by vehicle ID
      */
     List<Booking> findByVehicleId(Long vehicleId);
-
-    /**
-     * Find bookings by status
-     */
-    List<Booking> findByStatus(BookingStatus status);
 
     /**
      * Find booking by ID with all relationships loaded

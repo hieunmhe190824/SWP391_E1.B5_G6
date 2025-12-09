@@ -29,9 +29,6 @@ public class BookingService {
     private BookingDocumentRepository bookingDocumentRepository;
 
     @Autowired
-    private VehicleService vehicleService;
-
-    @Autowired
     private VehicleRepository vehicleRepository;
 
     @Autowired
@@ -39,9 +36,6 @@ public class BookingService {
 
     @Autowired
     private UserDocumentRepository userDocumentRepository;
-
-    @Autowired
-    private UserRepository userRepository;
 
     /**
      * Get all bookings with relationships loaded

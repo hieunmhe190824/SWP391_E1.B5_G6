@@ -33,9 +33,6 @@ public class BookingManagementController {
     private ContractService contractService;
 
     @Autowired
-    private UserDocumentService userDocumentService;
-
-    @Autowired
     private UserRepository userRepository;
 
     /**

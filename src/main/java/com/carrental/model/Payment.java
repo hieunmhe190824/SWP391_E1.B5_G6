@@ -34,19 +34,50 @@ public class Payment {
     @Column(name = "payment_date")
     private LocalDateTime paymentDate;
 
+    // Online payment gateway fields
+    @Column(name = "transaction_ref", unique = true, length = 50)
+    private String transactionRef;
+
+    @Column(name = "gateway_transaction_id", length = 50)
+    private String gatewayTransactionId;
+
+    @Column(name = "gateway_response_code", length = 10)
+    private String gatewayResponseCode;
+
+    @Column(name = "gateway_transaction_status", length = 10)
+    private String gatewayTransactionStatus;
+
+    @Column(name = "gateway_bank_code", length = 20)
+    private String gatewayBankCode;
+
+    @Column(name = "gateway_card_type", length = 20)
+    private String gatewayCardType;
+
+    @Column(name = "gateway_pay_date", length = 14)
+    private String gatewayPayDate;
+
+    @Column(name = "gateway_secure_hash", length = 255)
+    private String gatewaySecureHash;
+
+    @Column(name = "payment_url", columnDefinition = "TEXT")
+    private String paymentUrl;
+
     @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "updated_at", insertable = false, updatable = false)
+    private LocalDateTime updatedAt;
 
     public enum PaymentType {
         DEPOSIT, RENTAL, REFUND
     }
 
     public enum PaymentMethod {
-        CASH, CARD, TRANSFER
+        CASH, CARD, TRANSFER, ONLINE  // Added ONLINE for payment gateway
     }
 
     public enum PaymentStatus {
-        PENDING, COMPLETED, FAILED
+        PENDING, PROCESSING, COMPLETED, FAILED, CANCELLED  // Added PROCESSING and CANCELLED
     }
 
     // Getters and Setters
@@ -108,5 +139,81 @@ public class Payment {
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public String getTransactionRef() {
+        return transactionRef;
+    }
+
+    public void setTransactionRef(String transactionRef) {
+        this.transactionRef = transactionRef;
+    }
+
+    public String getGatewayTransactionId() {
+        return gatewayTransactionId;
+    }
+
+    public void setGatewayTransactionId(String gatewayTransactionId) {
+        this.gatewayTransactionId = gatewayTransactionId;
+    }
+
+    public String getGatewayResponseCode() {
+        return gatewayResponseCode;
+    }
+
+    public void setGatewayResponseCode(String gatewayResponseCode) {
+        this.gatewayResponseCode = gatewayResponseCode;
+    }
+
+    public String getGatewayTransactionStatus() {
+        return gatewayTransactionStatus;
+    }
+
+    public void setGatewayTransactionStatus(String gatewayTransactionStatus) {
+        this.gatewayTransactionStatus = gatewayTransactionStatus;
+    }
+
+    public String getGatewayBankCode() {
+        return gatewayBankCode;
+    }
+
+    public void setGatewayBankCode(String gatewayBankCode) {
+        this.gatewayBankCode = gatewayBankCode;
+    }
+
+    public String getGatewayCardType() {
+        return gatewayCardType;
+    }
+
+    public void setGatewayCardType(String gatewayCardType) {
+        this.gatewayCardType = gatewayCardType;
+    }
+
+    public String getGatewayPayDate() {
+        return gatewayPayDate;
+    }
+
+    public void setGatewayPayDate(String gatewayPayDate) {
+        this.gatewayPayDate = gatewayPayDate;
+    }
+
+    public String getGatewaySecureHash() {
+        return gatewaySecureHash;
+    }
+
+    public void setGatewaySecureHash(String gatewaySecureHash) {
+        this.gatewaySecureHash = gatewaySecureHash;
+    }
+
+    public String getPaymentUrl() {
+        return paymentUrl;
+    }
+
+    public void setPaymentUrl(String paymentUrl) {
+        this.paymentUrl = paymentUrl;
     }
 }

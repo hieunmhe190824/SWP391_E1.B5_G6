@@ -14,20 +14,20 @@
     <link rel="stylesheet" th:href="@{/css/admin-vehicles.css}">
 </head>
 <body>
-    <!-- ===== DASHBOARD LAYOUT ===== -->
-    <div class="dashboard-layout">
-        <!-- Sidebar -->
-        <aside th:replace="~{fragments/components/sidebar-admin :: sidebar-admin}"></aside>
-
-        <!-- Sidebar Overlay (Mobile) -->
+    <!-- ===== STAFF DASHBOARD LAYOUT ===== -->
+    <div class="dashboard-container">
+        <!-- Sidebar Overlay for mobile -->
         <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-        <!-- Main Content -->
+        <!-- Sidebar - STAFF ONLY -->
+        <aside th:replace="~{fragments/components/sidebar-staff :: sidebar-staff}"></aside>
+
+        <!-- Main Content Area -->
         <div class="dashboard-main">
-            <!-- Header -->
+            <!-- Dashboard Header -->
             <header th:replace="~{fragments/components/dashboard-header :: dashboard-header}"></header>
 
-            <!-- Page Content -->
+            <!-- Dashboard Content -->
             <main class="dashboard-content">
                 <!-- Page Header -->
                 <div class="page-header">
@@ -36,7 +36,7 @@
                         <p class="page-description">Nhập đầy đủ thông tin xe để thêm vào hệ thống</p>
                     </div>
                     <div class="page-header-actions">
-                        <a th:href="@{/admin/vehicles}" class="btn btn-secondary">
+                        <a th:href="@{/staff/vehicles}" class="btn btn-secondary">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <line x1="19" y1="12" x2="5" y2="12"></line>
                                 <polyline points="12 19 5 12 12 5"></polyline>
@@ -59,7 +59,7 @@
                 <!-- Form Container -->
                 <div class="form-container">
                     <form id="vehicleForm"
-                          th:action="${isEdit} ? @{/admin/vehicles/{id}/edit(id=${vehicle.id})} : @{/admin/vehicles/create}"
+                          th:action="${isEdit} ? @{/staff/vehicles/{id}/edit(id=${vehicle.id})} : @{/staff/vehicles/create}"
                           method="post"
                           enctype="multipart/form-data"
                           class="vehicle-form"
@@ -295,7 +295,7 @@
                                 </svg>
                                 <span th:text="${isEdit} ? 'Cập nhật' : 'Tạo mới'">Tạo mới</span>
                             </button>
-                            <a th:href="@{/admin/vehicles}" class="btn btn-secondary btn-lg">Hủy</a>
+                            <a th:href="@{/staff/vehicles}" class="btn btn-secondary btn-lg">Hủy</a>
                         </div>
                     </form>
                 </div>
@@ -304,10 +304,11 @@
             <!-- Footer -->
             <footer th:replace="~{fragments/footer :: footer}"></footer>
         </div>
+
+        <!-- Scripts -->
+        <div th:replace="~{fragments/components/dashboard-header :: dashboard-scripts}"></div>
     </div>
 
-    <!-- Scripts -->
-    <div th:replace="~{fragments/components/dashboard-header :: dashboard-scripts}"></div>
     <script>
         // ============================================
         // HELPER FUNCTIONS - Show/Clear Error Messages

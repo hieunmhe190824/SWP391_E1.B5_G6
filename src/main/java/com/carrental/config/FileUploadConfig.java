@@ -27,5 +27,10 @@ public class FileUploadConfig implements WebMvcConfigurer {
         registry.addResourceHandler("/images/**")
                 .addResourceLocations("file:uploads/images/")
                 .addResourceLocations("classpath:/static/images/");
+        
+        // Serve uploaded documents (ID cards, driver licenses, etc.)
+        registry.addResourceHandler("/uploads/**")
+                .addResourceLocations("file:uploads/")
+                .addResourceLocations("classpath:/static/uploads/");
     }
 }

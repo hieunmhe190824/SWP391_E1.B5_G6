@@ -1,136 +1,169 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hồ sơ của tôi - Car Rental System</title>
-    
-    <!-- CSS FILES -->
+
+    <!-- ===== CSS FILES ===== -->
     <link rel="stylesheet" th:href="@{/css/variables.css}">
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <link rel="stylesheet" th:href="@{/css/components.css}">
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
     <link rel="stylesheet" th:href="@{/css/profile.css}">
 </head>
+
 <body>
-    <div th:replace="~{fragments/dashboard-layout :: layout-admin(pageTitle='Hồ sơ của tôi', content=~{::main})}">
-        <main>
-    <div class="dashboard-content-wrapper">
-        <!-- Flash Messages -->
-        <div th:if="${success}">
-            <div th:replace="~{fragments/components/messages :: success(${success})}"></div>
-        </div>
-        <div th:if="${error}">
-            <div th:replace="~{fragments/components/messages :: error(${error})}"></div>
-        </div>
+    <!-- ===== DASHBOARD LAYOUT ===== -->
+    <div class="dashboard-layout">
+        <!-- Sidebar -->
+        <aside th:replace="~{fragments/components/sidebar-admin :: sidebar-admin}"></aside>
 
-        <div class="profile-page-content">
-            <!-- Personal Information Section -->
-            <div class="profile-section">
-                <div class="profile-section-header">
-                    <div class="profile-section-title">
-                        <h3>Thông tin cá nhân</h3>
-                        <p class="section-subtitle">Quản lý thông tin tài khoản của bạn</p>
-                    </div>
-                    <a th:href="@{/admin/profile/edit}" class="btn btn-secondary btn-icon">
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M11.333 2.00001C11.5084 1.82475 11.7163 1.68607 11.9441 1.59229C12.1719 1.49851 12.4151 1.45166 12.6663 1.45166C12.9176 1.45166 13.1608 1.49851 13.3886 1.59229C13.6164 1.68607 13.8243 1.82475 13.9997 2.00001C14.175 2.17527 14.3137 2.38318 14.4074 2.61098C14.5012 2.83878 14.5481 3.08198 14.5481 3.33334C14.5481 3.5847 14.5012 3.8279 14.4074 4.0557C14.3137 4.2835 14.175 4.49141 13.9997 4.66668L5.33301 13.3333L1.33301 14.6667L2.66634 10.6667L11.333 2.00001Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                        Chỉnh sửa
-                    </a>
+        <!-- Sidebar Overlay (Mobile) -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <!-- Main Content -->
+        <div class="dashboard-main">
+            <!-- Header -->
+            <header th:replace="~{fragments/components/dashboard-header :: dashboard-header}"></header>
+
+            <!-- Page Content -->
+            <main class="dashboard-content">
+                <!-- Flash Messages -->
+                <div th:if="${success}">
+                    <div th:replace="~{fragments/components/messages :: success(${success})}"></div>
+                </div>
+                <div th:if="${error}">
+                    <div th:replace="~{fragments/components/messages :: error(${error})}"></div>
                 </div>
 
-                <div class="profile-main-content">
-                    <!-- Left: Avatar and Quick Info -->
-                    <div class="profile-sidebar">
-                        <div class="profile-avatar-card">
-                            <div class="profile-avatar">
-                                <svg width="80" height="80" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <circle cx="32" cy="32" r="32" fill="url(#gradient-avatar)"/>
-                                    <path d="M32 32C37.5228 32 42 27.5228 42 22C42 16.4772 37.5228 12 32 12C26.4772 12 22 16.4772 22 22C22 27.5228 26.4772 32 32 32Z" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                    <path d="M16 52C16 44 23 38 32 38C41 38 48 44 48 52" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                    <defs>
-                                        <linearGradient id="gradient-avatar" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
-                                            <stop stop-color="#3b82f6"/>
-                                            <stop offset="1" stop-color="#1d4ed8"/>
-                                        </linearGradient>
-                                    </defs>
+                <!-- Profile Content -->
+                <div class="profile-page-content">
+                    <!-- Personal Information Section -->
+                    <div class="profile-section">
+                        <div class="profile-section-header">
+                            <div class="profile-section-title">
+                                <h3>Thông tin cá nhân</h3>
+                                <p class="section-subtitle">Quản lý thông tin tài khoản của bạn</p>
+                            </div>
+                            <a th:href="@{/admin/profile/edit}" class="btn btn-secondary btn-icon">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M11.333 2.00001C11.5084 1.82475 11.7163 1.68607 11.9441 1.59229C12.1719 1.49851 12.4151 1.45166 12.6663 1.45166C12.9176 1.45166 13.1608 1.49851 13.3886 1.59229C13.6164 1.68607 13.8243 1.82475 13.9997 2.00001C14.175 2.17527 14.3137 2.38318 14.4074 2.61098C14.5012 2.83878 14.5481 3.08198 14.5481 3.33334C14.5481 3.5847 14.5012 3.8279 14.4074 4.0557C14.3137 4.2835 14.175 4.49141 13.9997 4.66668L5.33301 13.3333L1.33301 14.6667L2.66634 10.6667L11.333 2.00001Z"
+                                        stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                                        stroke-linejoin="round" />
                                 </svg>
-                            </div>
-                            <h3 class="profile-name" th:text="${user.fullName}">Admin Name</h3>
-                            <p class="profile-email" th:text="${user.email}">admin@carrental.com</p>
-                            <div class="profile-badges">
-                                <span class="role-badge" th:text="${user.role}">ADMIN</span>
-                                <span class="status-badge status-active" th:text="${user.status}">ACTIVE</span>
-                            </div>
+                                Chỉnh sửa
+                            </a>
                         </div>
-                    </div>
 
-                    <!-- Right: Detailed Information -->
-                    <div class="profile-details">
-                        <div class="profile-details-grid">
-                            <div class="detail-card">
-                                <div class="detail-icon">
-                                    <svg width="24" height="24" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M12.75 1.5C13.5784 1.5 14.25 2.17157 14.25 3V15C14.25 15.8284 13.5784 16.5 12.75 16.5H5.25C4.42157 16.5 3.75 15.8284 3.75 15V3C3.75 2.17157 4.42157 1.5 5.25 1.5H12.75Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                        <path d="M8.25 12.75H9.75" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                    </svg>
-                                </div>
-                                <div class="detail-content">
-                                    <div class="detail-label">Số điện thoại</div>
-                                    <div class="detail-value" th:text="${user.phone}">0123456789</div>
+                        <div class="profile-main-content">
+                            <!-- Left: Avatar and Quick Info -->
+                            <div class="profile-sidebar">
+                                <div class="profile-avatar-card">
+                                    <div class="profile-avatar">
+                                        <svg width="80" height="80" viewBox="0 0 64 64" fill="none"
+                                            xmlns="http://www.w3.org/2000/svg">
+                                            <circle cx="32" cy="32" r="32" fill="url(#gradient-avatar)" />
+                                            <path
+                                                d="M32 32C37.5228 32 42 27.5228 42 22C42 16.4772 37.5228 12 32 12C26.4772 12 22 16.4772 22 22C22 27.5228 26.4772 32 32 32Z"
+                                                stroke="white" stroke-width="2" stroke-linecap="round"
+                                                stroke-linejoin="round" />
+                                            <path d="M16 52C16 44 23 38 32 38C41 38 48 44 48 52" stroke="white"
+                                                stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                                            <defs>
+                                                <linearGradient id="gradient-avatar" x1="0" y1="0" x2="64" y2="64"
+                                                    gradientUnits="userSpaceOnUse">
+                                                    <stop stop-color="#3b82f6" />
+                                                    <stop offset="1" stop-color="#1d4ed8" />
+                                                </linearGradient>
+                                            </defs>
+                                        </svg>
+                                    </div>
+                                    <h3 class="profile-name" th:text="${user.fullName}">Admin Name</h3>
+                                    <p class="profile-email" th:text="${user.email}">admin@carrental.com</p>
+                                    <div class="profile-badges">
+                                        <span class="role-badge" th:text="${user.role}">ADMIN</span>
+                                        <span class="status-badge status-active" th:text="${user.status}">ACTIVE</span>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div class="detail-card">
-                                <div class="detail-icon">
-                                    <svg width="24" height="24" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M2.25 3H15.75C16.5784 3 17.25 3.67157 17.25 4.5V13.5C17.25 14.3284 16.5784 15 15.75 15H2.25C1.42157 15 0.75 14.3284 0.75 13.5V4.5C0.75 3.67157 1.42157 3 2.25 3Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                        <path d="M17.25 4.5L9 9.75L0.75 4.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                    </svg>
-                                </div>
-                                <div class="detail-content">
-                                    <div class="detail-label">Email</div>
-                                    <div class="detail-value" th:text="${user.email}">admin@carrental.com</div>
-                                </div>
-                            </div>
+                            <!-- Right: Detailed Information -->
+                            <div class="profile-details">
+                                <div class="profile-details-grid">
+                                    <div class="detail-card">
+                                        <div class="detail-icon">
+                                            <svg width="24" height="24" viewBox="0 0 18 18" fill="none"
+                                                xmlns="http://www.w3.org/2000/svg">
+                                                <path
+                                                    d="M12.75 1.5C13.5784 1.5 14.25 2.17157 14.25 3V15C14.25 15.8284 13.5784 16.5 12.75 16.5H5.25C4.42157 16.5 3.75 15.8284 3.75 15V3C3.75 2.17157 4.42157 1.5 5.25 1.5H12.75Z"
+                                                    stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                                                    stroke-linejoin="round" />
+                                                <path d="M8.25 12.75H9.75" stroke="currentColor" stroke-width="1.5"
+                                                    stroke-linecap="round" stroke-linejoin="round" />
+                                            </svg>
+                                        </div>
+                                        <div class="detail-content">
+                                            <div class="detail-label">Số điện thoại</div>
+                                            <div class="detail-value" th:text="${user.phone}">0123456789</div>
+                                        </div>
+                                    </div>
 
-                            <div class="detail-card detail-card-full">
-                                <div class="detail-icon">
-                                    <svg width="24" height="24" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M9 9.75C10.2426 9.75 11.25 8.74264 11.25 7.5C11.25 6.25736 10.2426 5.25 9 5.25C7.75736 5.25 6.75 6.25736 6.75 7.5C6.75 8.74264 7.75736 9.75 9 9.75Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                        <path d="M14.25 7.5C14.25 12.75 9 16.5 9 16.5C9 16.5 3.75 12.75 3.75 7.5C3.75 4.6 6.1 1.5 9 1.5C11.9 1.5 14.25 4.6 14.25 7.5Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                                    </svg>
-                                </div>
-                                <div class="detail-content">
-                                    <div class="detail-label">Địa chỉ</div>
-                                    <div class="detail-value" th:text="${user.address ?: 'Chưa cập nhật'}">Chưa cập nhật</div>
+                                    <div class="detail-card">
+                                        <div class="detail-icon">
+                                            <svg width="24" height="24" viewBox="0 0 18 18" fill="none"
+                                                xmlns="http://www.w3.org/2000/svg">
+                                                <path
+                                                    d="M2.25 3H15.75C16.5784 3 17.25 3.67157 17.25 4.5V13.5C17.25 14.3284 16.5784 15 15.75 15H2.25C1.42157 15 0.75 14.3284 0.75 13.5V4.5C0.75 3.67157 1.42157 3 2.25 3Z"
+                                                    stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                                                    stroke-linejoin="round" />
+                                                <path d="M17.25 4.5L9 9.75L0.75 4.5" stroke="currentColor"
+                                                    stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+                                            </svg>
+                                        </div>
+                                        <div class="detail-content">
+                                            <div class="detail-label">Email</div>
+                                            <div class="detail-value" th:text="${user.email}">admin@carrental.com</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="detail-card detail-card-full">
+                                        <div class="detail-icon">
+                                            <svg width="24" height="24" viewBox="0 0 18 18" fill="none"
+                                                xmlns="http://www.w3.org/2000/svg">
+                                                <path
+                                                    d="M9 9.75C10.2426 9.75 11.25 8.74264 11.25 7.5C11.25 6.25736 10.2426 5.25 9 5.25C7.75736 5.25 6.75 6.25736 6.75 7.5C6.75 8.74264 7.75736 9.75 9 9.75Z"
+                                                    stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                                                    stroke-linejoin="round" />
+                                                <path
+                                                    d="M14.25 7.5C14.25 12.75 9 16.5 9 16.5C9 16.5 3.75 12.75 3.75 7.5C3.75 4.6 6.1 1.5 9 1.5C11.9 1.5 14.25 4.6 14.25 7.5Z"
+                                                    stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                                                    stroke-linejoin="round" />
+                                            </svg>
+                                        </div>
+                                        <div class="detail-content">
+                                            <div class="detail-label">Địa chỉ</div>
+                                            <div class="detail-value" th:text="${user.address ?: 'Chưa cập nhật'}">Chưa
+                                                cập nhật</div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </main>
 
+            <!-- Footer -->
+            <footer th:replace="~{fragments/footer :: footer}"></footer>
         </div>
     </div>
-        </main>
-    </div>
 
-    <script>
-        // Auto hide success and error messages after 3 seconds
-        document.addEventListener('DOMContentLoaded', function() {
-            const alerts = document.querySelectorAll('.alert-success, .alert-error');
-            alerts.forEach(function(alert) {
-                setTimeout(function() {
-                    alert.style.transition = 'opacity 0.5s ease-out';
-                    alert.style.opacity = '0';
-                    setTimeout(function() {
-                        alert.style.display = 'none';
-                    }, 500);
-                }, 3000);
-            });
-        });
-    </script>
+    <!-- Scripts -->
+    <div th:replace="~{fragments/components/dashboard-header :: dashboard-scripts}"></div>
 </body>
+
 </html>

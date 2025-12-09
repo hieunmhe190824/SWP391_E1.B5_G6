@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lịch Sử Đặt Xe - Car Rental System</title>
+    <!-- CSS Variables - Theme Black & Blue -->
+    <link rel="stylesheet" th:href="@{/css/variables.css}">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+    <style>
+        .my-bookings-page {
+            padding: 2rem 0;
+            background: var(--section-dark-bg);
+            min-height: calc(100vh - 200px);
+            position: relative;
+        }
+
+        /* Top border gradient */
+        .my-bookings-page::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent 0%, var(--color-primary) 50%, transparent 100%);
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+        }
+
+        /* Overlay gradient */
+        .my-bookings-page::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--section-dark-overlay);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .my-bookings-page > * {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .page-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding: var(--spacing-xl) var(--spacing-2xl);
+            background: rgba(31, 41, 55, 0.5);
+            border-radius: var(--radius-xl);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--color-text-white);
+            text-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+        }
+        
+        .filter-section {
+            background: rgba(31, 41, 55, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+        }
+        
+        .filter-group {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .filter-label {
+            font-weight: 600;
+            color: var(--color-text-white);
+        }
+        
+        .filter-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: transparent;
+            color: rgba(255, 255, 255, 0.7);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            font-size: 0.875rem;
+        }
+        
+        .filter-btn:hover {
+            border-color: var(--color-primary);
+            color: var(--color-primary);
+            background: rgba(59, 130, 246, 0.1);
+        }
+        
+        .filter-btn.active {
+            background: var(--color-primary);
+            color: white;
+            border-color: var(--color-primary);
+        }
+        
+        .bookings-list {
+            display: grid;
+            gap: 1.5rem;
+        }
+        
+        .booking-card {
+            background: rgba(31, 41, 55, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.2s;
+            backdrop-filter: blur(10px);
+        }
+        
+        .booking-card:hover {
+            border-color: var(--color-primary);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .booking-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .booking-id {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--color-text-white);
+        }
+        
+        .booking-status {
+            padding: 0.375rem 0.875rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-pending {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+        }
+        
+        .status-approved {
+            background: rgba(34, 197, 94, 0.1);
+            color: #22c55e;
+        }
+        
+        .status-rejected {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+        
+        .status-cancelled {
+            background: rgba(107, 114, 128, 0.1);
+            color: #6b7280;
+        }
+        
+        .booking-content {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: 1.5rem;
+        }
+        
+        @media (max-width: 768px) {
+            .booking-content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .vehicle-image {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        
+        .booking-details {
+            display: grid;
+            gap: 0.75rem;
+        }
+        
+        .detail-row {
+            display: grid;
+            grid-template-columns: 150px 1fr;
+            gap: 1rem;
+        }
+        
+        .detail-label {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.875rem;
+        }
+        
+        .detail-value {
+            color: var(--color-text-white);
+            font-weight: 500;
+        }
+        
+        .booking-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .btn-view {
+            padding: 0.5rem 1.5rem;
+            background: var(--color-primary);
+            color: white;
+            border: 1px solid var(--color-primary);
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        
+        .btn-view:hover {
+            background: var(--color-primary-dark);
+            border-color: var(--color-primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-cancel {
+            padding: 0.5rem 1.5rem;
+            background: transparent;
+            color: #ef4444;
+            border: 1px solid #ef4444;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-cancel:hover {
+            background: #ef4444;
+            color: white;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: rgba(31, 41, 55, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            backdrop-filter: blur(10px);
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .empty-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--color-text-white);
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-text {
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 1.5rem;
+        }
+
+        /* Alert Messages - Dark Theme */
+        .alert {
+            backdrop-filter: blur(10px);
+            border-radius: var(--radius-lg);
+        }
+
+        .alert-success {
+            background: rgba(34, 197, 94, 0.15) !important;
+            border: 1px solid rgba(34, 197, 94, 0.3) !important;
+            color: #86efac !important;
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.15) !important;
+            border: 1px solid rgba(239, 68, 68, 0.3) !important;
+            color: #fca5a5 !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <!-- Main Content -->
+    <main class="my-bookings-page">
+        <div class="page-container">
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1 class="page-title">Lịch Sử Đặt Xe</h1>
+            </div>
+
+            <!-- Messages -->
+            <div th:if="${successMessage}" class="alert alert-success" style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem; padding: 1rem 1.25rem; font-size: 1rem; line-height: 1.5;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink: 0;">
+                    <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span th:text="${successMessage}">Success message</span>
+            </div>
+
+            <div th:if="${errorMessage}" class="alert alert-error" style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem; padding: 1rem 1.25rem; font-size: 1rem; line-height: 1.5;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink: 0;">
+                    <path d="M12 8V12M12 16H12.01M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span th:text="${errorMessage}">Error message</span>
+            </div>
+
+            <!-- Filter Section -->
+            <div class="filter-section">
+                <div class="filter-group">
+                    <span class="filter-label">Lọc theo trạng thái:</span>
+                    <div class="filter-buttons">
+                        <a th:href="@{/bookings/my-bookings}"
+                           class="filter-btn"
+                           th:classappend="${selectedStatus == null ? 'active' : ''}">
+                            Tất cả
+                        </a>
+                        <a th:href="@{/bookings/my-bookings(status='Pending')}"
+                           class="filter-btn"
+                           th:classappend="${selectedStatus == 'Pending' ? 'active' : ''}">
+                            Chờ duyệt
+                        </a>
+                        <a th:href="@{/bookings/my-bookings(status='Approved')}"
+                           class="filter-btn"
+                           th:classappend="${selectedStatus == 'Approved' ? 'active' : ''}">
+                            Đã duyệt
+                        </a>
+                        <a th:href="@{/bookings/my-bookings(status='Rejected')}"
+                           class="filter-btn"
+                           th:classappend="${selectedStatus == 'Rejected' ? 'active' : ''}">
+                            Từ chối
+                        </a>
+                        <a th:href="@{/bookings/my-bookings(status='Cancelled')}"
+                           class="filter-btn"
+                           th:classappend="${selectedStatus == 'Cancelled' ? 'active' : ''}">
+                            Đã hủy
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bookings List -->
+            <div class="bookings-list" th:if="${bookings != null and !bookings.isEmpty()}">
+                <div class="booking-card" th:each="booking : ${bookings}">
+                    <!-- Booking Header -->
+                    <div class="booking-header">
+                        <div>
+                            <div class="booking-id" th:text="'Đơn đặt xe #' + ${booking.id}">Booking #1</div>
+                            <div style="font-size: 0.875rem; color: var(--color-text-secondary); margin-top: 0.25rem;">
+                                <span th:text="${#temporals.format(booking.createdAt, 'dd/MM/yyyy HH:mm')}">Created Date</span>
+                            </div>
+                        </div>
+                        <span class="booking-status"
+                              th:classappend="${'status-' + booking.status.name().toLowerCase()}"
+                              th:text="${booking.status.value}">
+                            Status
+                        </span>
+                    </div>
+
+                    <!-- Booking Content -->
+                    <div class="booking-content">
+                        <!-- Vehicle Image -->
+                        <div>
+                            <img th:src="${booking.vehicle.firstImageUrl}"
+                                 th:alt="${booking.vehicle.model.brand.brandName + ' ' + booking.vehicle.model.modelName}"
+                                 class="vehicle-image">
+                        </div>
+
+                        <!-- Booking Details -->
+                        <div class="booking-details">
+                            <div class="detail-row">
+                                <span class="detail-label">Xe:</span>
+                                <span class="detail-value"
+                                      th:text="${booking.vehicle.model.brand.brandName + ' ' + booking.vehicle.model.modelName}">
+                                    Vehicle Name
+                                </span>
+                            </div>
+
+                            <div class="detail-row">
+                                <span class="detail-label">Biển số:</span>
+                                <span class="detail-value" th:text="${booking.vehicle.licensePlate}">License Plate</span>
+                            </div>
+
+                            <div class="detail-row">
+                                <span class="detail-label">Thời gian thuê:</span>
+                                <span class="detail-value">
+                                    <span th:text="${#temporals.format(booking.startDate, 'dd/MM/yyyy HH:mm')}">Start</span>
+                                    →
+                                    <span th:text="${#temporals.format(booking.endDate, 'dd/MM/yyyy HH:mm')}">End</span>
+                                    (<span th:text="${booking.totalDays}">0</span> ngày)
+                                </span>
+                            </div>
+
+                            <div class="detail-row">
+                                <span class="detail-label">Điểm nhận:</span>
+                                <span class="detail-value" th:text="${booking.pickupLocation.locationName}">Pickup Location</span>
+                            </div>
+
+                            <div class="detail-row">
+                                <span class="detail-label">Điểm trả:</span>
+                                <span class="detail-value" th:text="${booking.returnLocation.locationName}">Return Location</span>
+                            </div>
+
+                            <div class="detail-row">
+                                <span class="detail-label">Tổng tiền:</span>
+                                <span class="detail-value" style="color: var(--color-primary); font-weight: 700;">
+                                    <span th:text="${#numbers.formatDecimal(booking.vehicle.dailyRate * booking.totalDays + booking.vehicle.depositAmount, 0, 'COMMA', 0, 'POINT')}">
+                                        Total
+                                    </span> VND
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Booking Actions -->
+                    <div class="booking-actions">
+                        <a th:href="@{/bookings/{id}(id=${booking.id})}" class="btn-view">
+                            Xem chi tiết
+                        </a>
+
+                        <!-- Show cancel button only for Pending or Approved bookings -->
+                        <form th:if="${booking.status.name() == 'PENDING' or booking.status.name() == 'APPROVED'}"
+                              th:action="@{/bookings/{id}/cancel(id=${booking.id})}"
+                              method="post"
+                              data-delete-form="true"
+                              data-confirm-title="Xác nhận hủy đơn"
+                              data-confirm-message="Bạn có chắc muốn hủy đơn đặt xe này? Hành động này không thể hoàn tác."
+                              data-confirm-button="Hủy đơn"
+                              style="display: inline;">
+                            <button type="submit" class="btn-cancel">Hủy đơn</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div class="empty-state" th:if="${bookings == null or bookings.isEmpty()}">
+                <div class="empty-icon">🚗</div>
+                <h2 class="empty-title">Chưa có đơn đặt xe nào</h2>
+                <p class="empty-text">Bạn chưa có đơn đặt xe nào. Hãy bắt đầu thuê xe ngay!</p>
+                <a th:href="@{/vehicles}" class="btn-view">Xem danh sách xe</a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Cancel Confirmation Modal -->
+    <div th:replace="~{fragments/components/modals :: deleteConfirmModal}"></div>
+
+    <!-- Footer -->
+    <div th:replace="~{fragments/footer :: footer}"></div>
+
+    <!-- JavaScript Files -->
+    <script th:src="@{/js/main.js}"></script>
+    <script th:src="@{/js/validation.js}"></script>
+    
+    <script>
+        // Delete/Cancel Confirmation Modal Handler
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('deleteConfirmModal');
+            const modalTitle = modal.querySelector('.delete-modal-title');
+            const modalMessage = modal.querySelector('.delete-modal-message');
+            const modalConfirmBtn = modal.querySelector('.delete-modal-confirm');
+            const modalCancelBtn = modal.querySelector('.delete-modal-cancel');
+            const modalOverlay = modal.querySelector('.delete-modal-overlay');
+            let currentForm = null;
+
+            // Handle all forms with data-delete-form attribute
+            document.querySelectorAll('form[data-delete-form="true"]').forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    currentForm = this;
+
+                    // Customize modal content based on data attributes
+                    const title = this.dataset.confirmTitle || 'Xác nhận xóa';
+                    const message = this.dataset.confirmMessage || 'Bạn có chắc chắn muốn xóa mục này? Hành động này không thể hoàn tác.';
+                    const confirmBtnText = this.dataset.confirmButton || 'Xóa';
+
+                    modalTitle.textContent = title;
+                    modalMessage.textContent = message;
+                    modalConfirmBtn.textContent = confirmBtnText;
+
+                    // Show modal
+                    modal.classList.add('active');
+                    document.body.style.overflow = 'hidden';
+                });
+            });
+
+            // Confirm button click
+            modalConfirmBtn.addEventListener('click', function() {
+                if (currentForm) {
+                    currentForm.submit();
+                }
+                closeModal();
+            });
+
+            // Cancel button click
+            modalCancelBtn.addEventListener('click', closeModal);
+
+            // Overlay click
+            modalOverlay.addEventListener('click', closeModal);
+
+            // ESC key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && modal.classList.contains('active')) {
+                    closeModal();
+                }
+            });
+
+            function closeModal() {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+                currentForm = null;
+            }
+
+            // Auto-hide success message after 3 seconds
+            const successAlert = document.querySelector('.alert-success');
+            if (successAlert) {
+                setTimeout(function() {
+                    successAlert.style.transition = 'opacity 0.5s ease-out';
+                    successAlert.style.opacity = '0';
+                    setTimeout(function() {
+                        successAlert.remove();
+                    }, 500);
+                }, 3000);
+            }
+        });
+    </script>
+</body>
+</html>
+

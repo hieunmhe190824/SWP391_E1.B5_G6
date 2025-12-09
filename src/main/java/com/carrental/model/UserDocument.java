@@ -116,4 +116,33 @@ public class UserDocument {
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
+
+    /**
+     * Get formatted image URL for display
+     * Ensures the URL is properly formatted for web access
+     */
+    public String getFormattedImageUrl() {
+        if (imageUrl == null || imageUrl.trim().isEmpty()) {
+            return null;
+        }
+        
+        String url = imageUrl.trim();
+        
+        // If already a full URL, return as is
+        if (url.startsWith("http://") || url.startsWith("https://")) {
+            return url;
+        }
+        
+        // If starts with /uploads/, keep as is (Spring Boot will serve it)
+        if (url.startsWith("/uploads/")) {
+            return url;
+        }
+        
+        // If doesn't start with /, add it
+        if (!url.startsWith("/")) {
+            return "/uploads/" + url;
+        }
+        
+        return url;
+    }
 }
