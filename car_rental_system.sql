@@ -1,10 +1,21 @@
 ﻿-- ===================================================================
 -- HỆ THỐNG THUÊ XE - DATABASE SCHEMA (MySQL 8.0+)
 -- ===================================================================
+--
+-- BOOKING AND CONTRACT WORKFLOW:
+-- 1. Customer creates booking and uploads documents (GPLX, CMND)
+-- 2. Staff reviews documents and approves/rejects booking
+-- 3. When approved, system automatically creates contract with PENDING_PAYMENT status
+-- 4. Contract is sent to customer for review
+-- 5. Customer confirms and pays fixed deposit of 50,000,000 VND
+-- 6. After payment, contract status changes to ACTIVE
+--
+-- FIXED DEPOSIT AMOUNT: 50,000,000 VND for all cars
+-- ===================================================================
 
 DROP DATABASE IF EXISTS car_rental_system;
-CREATE DATABASE car_rental_system 
-    CHARACTER SET utf8mb4 
+CREATE DATABASE car_rental_system
+    CHARACTER SET utf8mb4
     COLLATE utf8mb4_unicode_ci;
 
 USE car_rental_system;
@@ -91,7 +102,7 @@ CREATE TABLE vehicles (
     color VARCHAR(30),
     status ENUM('Available', 'Rented', 'Maintenance') DEFAULT 'Available',
     daily_rate DECIMAL(10, 2) NOT NULL,                  -- Giá/ngày
-    deposit_amount DECIMAL(10, 2) NOT NULL,              -- Tiền cọc
+    deposit_amount DECIMAL(10, 2) NOT NULL,              -- Tiền cọc (Fixed: 50,000,000 VND for all vehicles)
     images JSON,                                         -- Array URL ảnh: ["url1", "url2"]
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (model_id) REFERENCES vehicle_models(model_id) ON DELETE CASCADE,
@@ -106,6 +117,7 @@ CREATE TABLE vehicles (
 -- ===================================================================
 
 -- Bảng: bookings - Đặt xe
+-- WORKFLOW STEP 1: Customer creates booking and uploads documents (GPLX, CMND)
 CREATE TABLE bookings (
     booking_id INT PRIMARY KEY AUTO_INCREMENT,
     customer_id INT NOT NULL,
@@ -137,6 +149,10 @@ CREATE TABLE booking_documents (
 ) ENGINE=InnoDB;
 
 -- Bảng: contracts - Hợp đồng thuê xe
+-- WORKFLOW STEP 3: Auto-created when staff approves booking
+-- WORKFLOW STEP 4: Contract sent to customer with PENDING_PAYMENT status
+-- WORKFLOW STEP 5: Customer pays deposit, status changes to ACTIVE
+-- FIXED DEPOSIT: 50,000,000 VND for all cars
 CREATE TABLE contracts (
     contract_id INT PRIMARY KEY AUTO_INCREMENT,
     booking_id INT NOT NULL UNIQUE,                      -- 1-1 với booking
@@ -149,8 +165,8 @@ CREATE TABLE contracts (
     total_days INT NOT NULL,
     daily_rate DECIMAL(10, 2) NOT NULL,
     total_rental_fee DECIMAL(10, 2) NOT NULL,
-    deposit_amount DECIMAL(10, 2) NOT NULL,
-    status ENUM('Active', 'Completed', 'Cancelled') DEFAULT 'Active',
+    deposit_amount DECIMAL(10, 2) NOT NULL,              -- Fixed: 50,000,000 VND
+    status ENUM('Pending_Payment', 'Active', 'Completed', 'Cancelled') DEFAULT 'Pending_Payment',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (booking_id) REFERENCES bookings(booking_id) ON DELETE CASCADE,
     FOREIGN KEY (customer_id) REFERENCES users(user_id) ON DELETE CASCADE,
@@ -162,18 +178,37 @@ CREATE TABLE contracts (
 ) ENGINE=InnoDB;
 
 -- Bảng: payments - Thanh toán
+-- WORKFLOW STEP 5: Customer pays deposit of 50,000,000 VND
+-- Payment type 'Deposit' is created when customer confirms contract
+-- Supports online payment gateway integration
 CREATE TABLE payments (
     payment_id INT PRIMARY KEY AUTO_INCREMENT,
     contract_id INT NOT NULL,
-    payment_type ENUM('Deposit', 'Rental', 'Refund') NOT NULL,
+    payment_type ENUM('Deposit', 'Rental', 'Refund') NOT NULL,  -- Deposit = 50M VND
     amount DECIMAL(10, 2) NOT NULL,
-    method ENUM('Cash', 'Card', 'Transfer') NOT NULL,
-    status ENUM('Pending', 'Completed', 'Failed') DEFAULT 'Pending',
+    method ENUM('Cash', 'Card', 'Transfer', 'Online') NOT NULL,  -- Added 'Online' for payment gateway
+    status ENUM('Pending', 'Processing', 'Completed', 'Failed', 'Cancelled') DEFAULT 'Pending',  -- Added 'Processing' and 'Cancelled'
     payment_date DATETIME,
+
+    -- Online payment gateway fields
+    transaction_ref VARCHAR(50) UNIQUE,              -- Unique transaction reference (e.g., DEPOSIT123_12345678)
+    gateway_transaction_id VARCHAR(50),              -- Payment gateway's transaction ID
+    gateway_response_code VARCHAR(10),               -- Response code from gateway (00 = success)
+    gateway_transaction_status VARCHAR(10),          -- Transaction status from gateway
+    gateway_bank_code VARCHAR(20),                   -- Bank code used for payment
+    gateway_card_type VARCHAR(20),                   -- Card type (ATM, Credit, etc.)
+    gateway_pay_date VARCHAR(14),                    -- Payment date from gateway (yyyyMMddHHmmss)
+    gateway_secure_hash VARCHAR(255),                -- Security hash from gateway
+    payment_url TEXT,                                -- Payment gateway URL (for pending payments)
+
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
     FOREIGN KEY (contract_id) REFERENCES contracts(contract_id) ON DELETE CASCADE,
     INDEX idx_contract (contract_id),
-    INDEX idx_type (payment_type)
+    INDEX idx_type (payment_type),
+    INDEX idx_status (status),
+    INDEX idx_transaction_ref (transaction_ref)
 ) ENGINE=InnoDB;
 
 -- ===================================================================
@@ -508,70 +543,70 @@ INSERT INTO locations (location_name, address, city, phone) VALUES
 -- Hỗ trợ các định dạng: .jpg, .jpeg, .png, .webp, .gif, v.v.
 -- Tất cả ảnh phải được lưu trong folder: src/main/resources/static/images/
 INSERT INTO vehicles (model_id, location_id, license_plate, color, status, daily_rate, deposit_amount, images) VALUES
--- Available vehicles
-(1, 1, '30A-12345', 'Trắng', 'Available', 500000, 3000000, '["30a12345.jpg"]'),
-(1, 1, '30A-12346', 'Đen', 'Available', 500000, 3000000, '["30a12346.webp"]'),
-(5, 1, '30B-23456', 'Bạc', 'Available', 550000, 3500000, '["30b23456.jpg"]'),
-(12, 2, '30C-34567', 'Đỏ', 'Available', 600000, 4000000, '["30c34567.jpg"]'),
-(16, 2, '30D-45678', 'Xanh', 'Available', 400000, 2500000, '["30d45678.jpg"]'),
-(22, 3, '30E-56789', 'Trắng', 'Available', 450000, 2800000, '["30e56789.webp"]'),
-(4, 3, '30F-67890', 'Bạc', 'Available', 700000, 4500000, '["30f67890.jpg"]'),
-(23, 4, '30G-78901', 'Đen', 'Available', 800000, 5000000, '["30g78901.jpg"]'),
+-- Available vehicles - All deposits standardized to 50,000,000 VND
+(1, 1, '30A-12345', 'Trắng', 'Available', 500000, 50000000, '["30a12345.jpg"]'),
+(1, 1, '30A-12346', 'Đen', 'Available', 500000, 50000000, '["30a12346.webp"]'),
+(5, 1, '30B-23456', 'Bạc', 'Available', 550000, 50000000, '["30b23456.jpg"]'),
+(12, 2, '30C-34567', 'Đỏ', 'Available', 600000, 50000000, '["30c34567.jpg"]'),
+(16, 2, '30D-45678', 'Xanh', 'Available', 400000, 50000000, '["30d45678.jpg"]'),
+(22, 3, '30E-56789', 'Trắng', 'Available', 450000, 50000000, '["30e56789.webp"]'),
+(4, 3, '30F-67890', 'Bạc', 'Available', 700000, 50000000, '["30f67890.jpg"]'),
+(23, 4, '30G-78901', 'Đen', 'Available', 800000, 50000000, '["30g78901.jpg"]'),
 
 -- Sedan category
-(2, 1, '30H-89012', 'Đen', 'Available', 1200000, 8000000, '["30h89012.webp"]'),
-(6, 2, '30I-90123', 'Trắng', 'Available', 1100000, 7500000, '["30i90123.webp"]'),
-(9, 3, '30J-01234', 'Đỏ', 'Available', 1150000, 7800000, '["30j01234.jpg"]'),
-(13, 4, '30K-12347', 'Xanh', 'Available', 1100000, 7500000, '["30k12347.jpg"]'),
+(2, 1, '30H-89012', 'Đen', 'Available', 1200000, 50000000, '["30h89012.webp"]'),
+(6, 2, '30I-90123', 'Trắng', 'Available', 1100000, 50000000, '["30i90123.webp"]'),
+(9, 3, '30J-01234', 'Đỏ', 'Available', 1150000, 50000000, '["30j01234.jpg"]'),
+(13, 4, '30K-12347', 'Xanh', 'Available', 1100000, 50000000, '["30k12347.jpg"]'),
 
 -- SUV category
-(3, 1, '30L-23458', 'Đen', 'Available', 1800000, 12000000, '["30l23458.jpg"]'),
-(7, 2, '30M-34569', 'Trắng', 'Available', 1500000, 10000000, '["30m34569.jpg"]'),
-(10, 3, '30N-45670', 'Bạc', 'Available', 1600000, 11000000, '["30n45670.jpg"]'),
-(14, 4, '30O-56781', 'Đỏ', 'Available', 1550000, 10500000, '["30o56781.jpeg"]'),
-(18, 1, '30P-67892', 'Xanh', 'Available', 1650000, 11500000, '["30p67892.jpg"]'),
+(3, 1, '30L-23458', 'Đen', 'Available', 1800000, 50000000, '["30l23458.jpg"]'),
+(7, 2, '30M-34569', 'Trắng', 'Available', 1500000, 50000000, '["30m34569.jpg"]'),
+(10, 3, '30N-45670', 'Bạc', 'Available', 1600000, 50000000, '["30n45670.jpg"]'),
+(14, 4, '30O-56781', 'Đỏ', 'Available', 1550000, 50000000, '["30o56781.jpeg"]'),
+(18, 1, '30P-67892', 'Xanh', 'Available', 1650000, 50000000, '["30p67892.jpg"]'),
 
 -- Luxury category
-(27, 1, '30Q-78903', 'Đen', 'Available', 3500000, 25000000, '["30q78903.webp"]'),
-(28, 2, '30R-89014', 'Trắng', 'Available', 5000000, 35000000, '["30r89014.jpg"]'),
-(29, 3, '30S-90125', 'Bạc', 'Available', 3800000, 27000000, '["30s90125.webp"]'),
+(27, 1, '30Q-78903', 'Đen', 'Available', 3500000, 50000000, '["30q78903.webp"]'),
+(28, 2, '30R-89014', 'Trắng', 'Available', 5000000, 50000000, '["30r89014.jpg"]'),
+(29, 3, '30S-90125', 'Bạc', 'Available', 3800000, 50000000, '["30s90125.webp"]'),
 
 -- Rented vehicles (for active contracts)
-(1, 1, '30T-01235', 'Trắng', 'Rented', 500000, 3000000, '["30t01235.webp"]'),
-(5, 2, '30U-12348', 'Đen', 'Rented', 550000, 3500000, '["30u12348.jpg"]'),
-(9, 3, '30V-23459', 'Đỏ', 'Rented', 1150000, 7800000, '["30v23459.webp"]'),
-(10, 4, '30W-34570', 'Xanh', 'Rented', 1600000, 11000000, '["30w34570.jpg"]'),
-(27, 1, '30X-45681', 'Đen', 'Rented', 3500000, 25000000, '["30x45681.webp"]'),
+(1, 1, '30T-01235', 'Trắng', 'Rented', 500000, 50000000, '["30t01235.webp"]'),
+(5, 2, '30U-12348', 'Đen', 'Rented', 550000, 50000000, '["30u12348.jpg"]'),
+(9, 3, '30V-23459', 'Đỏ', 'Rented', 1150000, 50000000, '["30v23459.webp"]'),
+(10, 4, '30W-34570', 'Xanh', 'Rented', 1600000, 50000000, '["30w34570.jpg"]'),
+(27, 1, '30X-45681', 'Đen', 'Rented', 3500000, 50000000, '["30x45681.webp"]'),
 
 -- Maintenance vehicles
-(3, 5, '30AB-11111', 'Đen', 'Maintenance', 1800000, 12000000, '["30ab11111.jpg"]'),
-(7, 6, '30AC-22222', 'Trắng', 'Maintenance', 1500000, 10000000, '["30ac22222.webp"]'),
+(3, 5, '30AB-11111', 'Đen', 'Maintenance', 1800000, 50000000, '["30ab11111.jpg"]'),
+(7, 6, '30AC-22222', 'Trắng', 'Maintenance', 1500000, 50000000, '["30ac22222.webp"]'),
 
 -- Electric vehicles
-(24, 3, '30Y-56792', 'Trắng', 'Available', 800000, 5500000, '["30y56792.webp"]'),
-(25, 4, '30Z-67803', 'Đen', 'Available', 1400000, 9500000, '["30z67803.jpg"]'),
-(26, 1, '30AA-78914', 'Xanh', 'Available', 1900000, 13000000, '["30aa78914.webp"]');
+(24, 3, '30Y-56792', 'Trắng', 'Available', 800000, 50000000, '["30y56792.webp"]'),
+(25, 4, '30Z-67803', 'Đen', 'Available', 1400000, 50000000, '["30z67803.jpg"]'),
+(26, 1, '30AA-78914', 'Xanh', 'Available', 1900000, 50000000, '["30aa78914.webp"]');
 
 -- 7. BOOKINGS
-INSERT INTO bookings (customer_id, vehicle_id, pickup_location_id, return_location_id, start_date, end_date, total_days, status, created_at) VALUES
+INSERT INTO bookings (booking_id, customer_id, vehicle_id, pickup_location_id, return_location_id, start_date, end_date, total_days, status, created_at) VALUES
 -- Approved bookings (will create contracts)
-(5, 21, 1, 1, '2024-12-10 09:00:00', '2024-12-13 18:00:00', 3, 'Approved', '2024-12-05 10:30:00'),
-(6, 22, 2, 2, '2024-12-12 08:00:00', '2024-12-15 17:00:00', 3, 'Approved', '2024-12-06 14:20:00'),
-(7, 23, 3, 4, '2024-12-15 10:00:00', '2024-12-20 16:00:00', 5, 'Approved', '2024-12-07 09:15:00'),
+(1, 5, 21, 1, 1, '2024-12-10 09:00:00', '2024-12-13 18:00:00', 3, 'Approved', '2024-12-05 10:30:00'),
+(2, 6, 22, 2, 2, '2024-12-12 08:00:00', '2024-12-15 17:00:00', 3, 'Approved', '2024-12-06 14:20:00'),
+(3, 7, 23, 3, 4, '2024-12-15 10:00:00', '2024-12-20 16:00:00', 5, 'Approved', '2024-12-07 09:15:00'),
 
 -- Pending bookings (waiting for review)
-(8, 1, 1, 1, '2024-12-20 09:00:00', '2024-12-25 18:00:00', 5, 'Pending', '2024-12-04 11:00:00'),
-(9, 5, 2, 2, '2024-12-22 08:30:00', '2024-12-27 17:30:00', 5, 'Pending', '2024-12-04 13:45:00'),
-(10, 12, 3, 3, '2024-12-25 10:00:00', '2024-12-30 16:00:00', 5, 'Pending', '2024-12-04 15:20:00'),
-(11, 16, 4, 4, '2024-12-28 09:00:00', '2025-01-02 18:00:00', 5, 'Pending', '2024-12-04 16:30:00'),
+(4, 8, 1, 1, 1, '2024-12-20 09:00:00', '2024-12-25 18:00:00', 5, 'Pending', '2024-12-04 11:00:00'),
+(5, 9, 5, 2, 2, '2024-12-22 08:30:00', '2024-12-27 17:30:00', 5, 'Pending', '2024-12-04 13:45:00'),
+(6, 10, 12, 3, 3, '2024-12-25 10:00:00', '2024-12-30 16:00:00', 5, 'Pending', '2024-12-04 15:20:00'),
+(7, 11, 16, 4, 4, '2024-12-28 09:00:00', '2025-01-02 18:00:00', 5, 'Pending', '2024-12-04 16:30:00'),
 
 -- Rejected bookings
-(13, 8, 3, 3, '2024-12-15 09:00:00', '2024-12-18 18:00:00', 3, 'Rejected', '2024-12-03 10:00:00'),
-(14, 11, 4, 4, '2024-12-18 08:00:00', '2024-12-22 17:00:00', 4, 'Rejected', '2024-12-03 14:30:00'),
+(8, 13, 8, 3, 3, '2024-12-15 09:00:00', '2024-12-18 18:00:00', 3, 'Rejected', '2024-12-03 10:00:00'),
+(9, 14, 11, 4, 4, '2024-12-18 08:00:00', '2024-12-22 17:00:00', 4, 'Rejected', '2024-12-03 14:30:00'),
 
 -- Cancelled bookings
-(5, 7, 3, 3, '2024-12-08 09:00:00', '2024-12-12 18:00:00', 4, 'Cancelled', '2024-12-01 09:00:00'),
-(6, 9, 1, 2, '2024-12-10 10:00:00', '2024-12-14 16:00:00', 4, 'Cancelled', '2024-12-02 11:30:00');
+(10, 5, 7, 3, 3, '2024-12-08 09:00:00', '2024-12-12 18:00:00', 4, 'Cancelled', '2024-12-01 09:00:00'),
+(11, 6, 9, 1, 2, '2024-12-10 10:00:00', '2024-12-14 16:00:00', 4, 'Cancelled', '2024-12-02 11:30:00');
 
 -- 8. BOOKING DOCUMENTS
 INSERT INTO booking_documents (booking_id, document_id) VALUES
@@ -593,58 +628,86 @@ INSERT INTO booking_documents (booking_id, document_id) VALUES
 -- 9. CONTRACTS
 -- Note: We need to create more bookings first for completed contracts
 -- Adding more completed bookings
-INSERT INTO bookings (customer_id, vehicle_id, pickup_location_id, return_location_id, start_date, end_date, total_days, status, created_at) VALUES
+INSERT INTO bookings (booking_id, customer_id, vehicle_id, pickup_location_id, return_location_id, start_date, end_date, total_days, status, created_at) VALUES
 -- Completed bookings for past contracts
-(8, 9, 1, 1, '2024-11-01 09:00:00', '2024-11-05 18:00:00', 4, 'Approved', '2024-10-30 10:00:00'),
-(9, 14, 2, 2, '2024-11-10 08:00:00', '2024-11-15 17:00:00', 5, 'Approved', '2024-11-08 14:00:00'),
-(10, 15, 3, 4, '2024-11-15 10:00:00', '2024-11-20 16:00:00', 5, 'Approved', '2024-11-13 09:00:00'),
-(11, 10, 4, 4, '2024-10-20 09:00:00', '2024-10-25 18:00:00', 5, 'Approved', '2024-10-18 11:00:00');
+(12, 8, 9, 1, 1, '2024-11-01 09:00:00', '2024-11-05 18:00:00', 4, 'Approved', '2024-10-30 10:00:00'),
+(13, 9, 14, 2, 2, '2024-11-10 08:00:00', '2024-11-15 17:00:00', 5, 'Approved', '2024-11-08 14:00:00'),
+(14, 10, 15, 3, 4, '2024-11-15 10:00:00', '2024-11-20 16:00:00', 5, 'Approved', '2024-11-13 09:00:00'),
+(15, 11, 10, 4, 4, '2024-10-20 09:00:00', '2024-10-25 18:00:00', 5, 'Approved', '2024-10-18 11:00:00');
 
-INSERT INTO contracts (booking_id, contract_number, customer_id, vehicle_id, staff_id, start_date, end_date, total_days, daily_rate, total_rental_fee, deposit_amount, status, created_at) VALUES
+INSERT INTO contracts (contract_id, booking_id, contract_number, customer_id, vehicle_id, staff_id, start_date, end_date, total_days, daily_rate, total_rental_fee, deposit_amount, status, created_at) VALUES
 -- Active contracts (currently renting)
-(1, 'HD-2024-0001', 5, 21, 2, '2024-12-10 09:00:00', '2024-12-13 18:00:00', 3, 500000, 1500000, 3000000, 'Active', '2024-12-09 14:00:00'),
-(2, 'HD-2024-0002', 6, 22, 2, '2024-12-12 08:00:00', '2024-12-15 17:00:00', 3, 550000, 1650000, 3500000, 'Active', '2024-12-11 10:00:00'),
-(3, 'HD-2024-0003', 7, 23, 3, '2024-12-15 10:00:00', '2024-12-20 16:00:00', 5, 1150000, 5750000, 7800000, 'Active', '2024-12-14 15:30:00'),
+-- All deposits are 50,000,000 VND as per business requirement
+(1, 1, 'HD-2024-0001', 5, 21, 2, '2024-12-10 09:00:00', '2024-12-13 18:00:00', 3, 500000, 1500000, 50000000, 'Active', '2024-12-09 14:00:00'),
+(2, 2, 'HD-2024-0002', 6, 22, 2, '2024-12-12 08:00:00', '2024-12-15 17:00:00', 3, 550000, 1650000, 50000000, 'Active', '2024-12-11 10:00:00'),
+(3, 3, 'HD-2024-0003', 7, 23, 3, '2024-12-15 10:00:00', '2024-12-20 16:00:00', 5, 1150000, 5750000, 50000000, 'Active', '2024-12-14 15:30:00'),
 
 -- Completed contracts (returned vehicles)
 -- Contract 4: Normal return, no issues
-(12, 'HD-2024-0004', 8, 9, 2, '2024-11-01 09:00:00', '2024-11-05 18:00:00', 4, 1200000, 4800000, 8000000, 'Completed', '2024-10-31 11:00:00'),
+(4, 12, 'HD-2024-0004', 8, 9, 2, '2024-11-01 09:00:00', '2024-11-05 18:00:00', 4, 1200000, 4800000, 50000000, 'Completed', '2024-10-31 11:00:00'),
 
 -- Contract 5: Late return + damage fee
-(13, 'HD-2024-0005', 9, 14, 3, '2024-11-10 08:00:00', '2024-11-15 17:00:00', 5, 1500000, 7500000, 10000000, 'Completed', '2024-11-09 09:30:00'),
+(5, 13, 'HD-2024-0005', 9, 14, 3, '2024-11-10 08:00:00', '2024-11-15 17:00:00', 5, 1500000, 7500000, 50000000, 'Completed', '2024-11-09 09:30:00'),
 
 -- Contract 6: Different location return
-(14, 'HD-2024-0006', 10, 15, 2, '2024-11-15 10:00:00', '2024-11-20 16:00:00', 5, 1600000, 8000000, 11000000, 'Completed', '2024-11-14 14:20:00'),
+(6, 14, 'HD-2024-0006', 10, 15, 2, '2024-11-15 10:00:00', '2024-11-20 16:00:00', 5, 1600000, 8000000, 50000000, 'Completed', '2024-11-14 14:20:00'),
 
 -- Contract 7: Normal return with traffic violation
-(15, 'HD-2024-0007', 11, 10, 3, '2024-10-20 09:00:00', '2024-10-25 18:00:00', 5, 1100000, 5500000, 7500000, 'Completed', '2024-10-19 10:45:00'),
+(7, 15, 'HD-2024-0007', 11, 10, 3, '2024-10-20 09:00:00', '2024-10-25 18:00:00', 5, 1100000, 5500000, 50000000, 'Completed', '2024-10-19 10:45:00'),
 
 -- Cancelled contract
-(10, 'HD-2024-0008', 6, 7, 2, '2024-11-25 09:00:00', '2024-11-28 18:00:00', 3, 800000, 2400000, 5000000, 'Cancelled', '2024-11-24 13:00:00');
+(8, 10, 'HD-2024-0008', 6, 7, 2, '2024-11-25 09:00:00', '2024-11-28 18:00:00', 3, 800000, 2400000, 50000000, 'Cancelled', '2024-11-24 13:00:00'),
+
+-- Pending payment contract (awaiting deposit payment via online gateway)
+(9, 11, 'HD-2024-0009', 5, 8, 2, '2024-12-20 09:00:00', '2024-12-23 18:00:00', 3, 900000, 2700000, 50000000, 'Pending_Payment', '2024-12-09 16:00:00');
 
 -- 10. PAYMENTS
-INSERT INTO payments (contract_id, payment_type, amount, method, status, payment_date, created_at) VALUES
--- Active contracts - Deposit paid
-(1, 'Deposit', 3000000, 'Transfer', 'Completed', '2024-12-09 14:30:00', '2024-12-09 14:30:00'),
-(2, 'Deposit', 3500000, 'Card', 'Completed', '2024-12-11 10:30:00', '2024-12-11 10:30:00'),
-(3, 'Deposit', 7800000, 'Transfer', 'Completed', '2024-12-14 16:00:00', '2024-12-14 16:00:00'),
+-- Note: New fields added for online payment gateway integration:
+-- transaction_ref, gateway_transaction_id, gateway_response_code, gateway_transaction_status,
+-- gateway_bank_code, gateway_card_type, gateway_pay_date, gateway_secure_hash, payment_url
+INSERT INTO payments (contract_id, payment_type, amount, method, status, payment_date, created_at,
+                     transaction_ref, gateway_transaction_id, gateway_response_code, gateway_transaction_status,
+                     gateway_bank_code, gateway_card_type, gateway_pay_date, gateway_secure_hash, payment_url) VALUES
+-- Active contracts - Deposit paid (all 50,000,000 VND)
+(1, 'Deposit', 50000000, 'Transfer', 'Completed', '2024-12-09 14:30:00', '2024-12-09 14:30:00',
+ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(2, 'Deposit', 50000000, 'Card', 'Completed', '2024-12-11 10:30:00', '2024-12-11 10:30:00',
+ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(3, 'Deposit', 50000000, 'Transfer', 'Completed', '2024-12-14 16:00:00', '2024-12-14 16:00:00',
+ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 
--- Completed contracts - Full payments
-(4, 'Deposit', 8000000, 'Transfer', 'Completed', '2024-10-31 11:30:00', '2024-10-31 11:30:00'),
-(4, 'Rental', 4800000, 'Card', 'Completed', '2024-11-05 19:00:00', '2024-11-05 19:00:00'),
+-- Completed contracts - Full payments (deposit 50,000,000 VND)
+(4, 'Deposit', 50000000, 'Transfer', 'Completed', '2024-10-31 11:30:00', '2024-10-31 11:30:00',
+ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(4, 'Rental', 4800000, 'Card', 'Completed', '2024-11-05 19:00:00', '2024-11-05 19:00:00',
+ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 
-(5, 'Deposit', 10000000, 'Card', 'Completed', '2024-11-09 10:00:00', '2024-11-09 10:00:00'),
-(5, 'Rental', 7500000, 'Transfer', 'Completed', '2024-11-16 11:00:00', '2024-11-16 11:00:00'),
+(5, 'Deposit', 50000000, 'Card', 'Completed', '2024-11-09 10:00:00', '2024-11-09 10:00:00',
+ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(5, 'Rental', 7500000, 'Transfer', 'Completed', '2024-11-16 11:00:00', '2024-11-16 11:00:00',
+ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 
-(6, 'Deposit', 11000000, 'Transfer', 'Completed', '2024-11-14 14:45:00', '2024-11-14 14:45:00'),
-(6, 'Rental', 8000000, 'Card', 'Completed', '2024-11-21 10:30:00', '2024-11-21 10:30:00'),
+(6, 'Deposit', 50000000, 'Transfer', 'Completed', '2024-11-14 14:45:00', '2024-11-14 14:45:00',
+ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(6, 'Rental', 8000000, 'Card', 'Completed', '2024-11-21 10:30:00', '2024-11-21 10:30:00',
+ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 
-(7, 'Deposit', 7500000, 'Card', 'Completed', '2024-10-19 11:15:00', '2024-10-19 11:15:00'),
-(7, 'Rental', 5500000, 'Transfer', 'Completed', '2024-10-25 19:30:00', '2024-10-25 19:30:00'),
+(7, 'Deposit', 50000000, 'Card', 'Completed', '2024-10-19 11:15:00', '2024-10-19 11:15:00',
+ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(7, 'Rental', 5500000, 'Transfer', 'Completed', '2024-10-25 19:30:00', '2024-10-25 19:30:00',
+ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 
--- Cancelled contract - Refund
-(8, 'Deposit', 4500000, 'Transfer', 'Completed', '2024-11-24 13:30:00', '2024-11-24 13:30:00'),
-(8, 'Refund', 4500000, 'Transfer', 'Completed', '2024-11-24 15:00:00', '2024-11-24 15:00:00');
+-- Cancelled contract - Refund (deposit 50,000,000 VND)
+(8, 'Deposit', 50000000, 'Transfer', 'Completed', '2024-11-24 13:30:00', '2024-11-24 13:30:00',
+ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(8, 'Refund', 50000000, 'Transfer', 'Completed', '2024-11-24 15:00:00', '2024-11-24 15:00:00',
+ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+
+-- Pending payment contract - Online payment gateway (sample)
+-- This demonstrates a pending online payment awaiting customer to complete
+(9, 'Deposit', 50000000, 'Online', 'Pending', NULL, '2024-12-09 16:05:00',
+ 'DEPOSIT9_12345678', NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+ 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html?vnp_Amount=5000000000&vnp_Command=pay&...');
 
 -- 11. HANDOVERS
 INSERT INTO handovers (contract_id, handover_type, staff_id, handover_time, odometer, fuel_level, condition_notes, images, created_at) VALUES
@@ -686,17 +749,17 @@ INSERT INTO return_fees (contract_id, handover_id, is_late, hours_late, late_fee
 
 -- 13. DEPOSIT HOLDS
 INSERT INTO deposit_holds (contract_id, deposit_amount, deducted_at_return, hold_start_date, hold_end_date, status, created_at) VALUES
--- Contract 4: Ready for refund (no violations)
-(4, 8000000, 0, '2024-11-05 18:30:00', '2024-11-19 18:30:00', 'Ready', '2024-11-05 18:30:00'),
+-- Contract 4: Ready for refund (no violations) - Deposit 50,000,000 VND
+(4, 50000000, 0, '2024-11-05 18:30:00', '2024-11-19 18:30:00', 'Ready', '2024-11-05 18:30:00'),
 
--- Contract 5: Ready for refund (fees deducted)
-(5, 10000000, 2875000, '2024-11-16 10:45:00', '2024-11-30 10:45:00', 'Ready', '2024-11-16 10:45:00'),
+-- Contract 5: Ready for refund (fees deducted) - Deposit 50,000,000 VND
+(5, 50000000, 2875000, '2024-11-16 10:45:00', '2024-11-30 10:45:00', 'Ready', '2024-11-16 10:45:00'),
 
--- Contract 6: Ready for refund (one-way fee deducted)
-(6, 11000000, 1200000, '2024-11-21 10:15:00', '2024-12-05 10:15:00', 'Ready', '2024-11-21 10:15:00'),
+-- Contract 6: Ready for refund (one-way fee deducted) - Deposit 50,000,000 VND
+(6, 50000000, 1200000, '2024-11-21 10:15:00', '2024-12-05 10:15:00', 'Ready', '2024-11-21 10:15:00'),
 
--- Contract 7: Holding (waiting for traffic violation check)
-(7, 7500000, 0, '2024-10-25 18:45:00', '2024-11-08 18:45:00', 'Holding', '2024-10-25 18:45:00');
+-- Contract 7: Holding (waiting for traffic violation check) - Deposit 50,000,000 VND
+(7, 50000000, 0, '2024-10-25 18:45:00', '2024-11-08 18:45:00', 'Holding', '2024-10-25 18:45:00');
 
 -- 14. TRAFFIC VIOLATIONS
 INSERT INTO traffic_violations (hold_id, contract_id, violation_type, violation_date, fine_amount, description, evidence_url, status, created_at) VALUES
@@ -709,14 +772,14 @@ INSERT INTO traffic_violations (hold_id, contract_id, violation_type, violation_
 
 -- 15. REFUNDS
 INSERT INTO refunds (hold_id, contract_id, customer_id, original_deposit, deducted_at_return, traffic_fines, refund_amount, refund_method, status, processed_at, created_at) VALUES
--- Contract 4: Full refund completed
-(1, 4, 8, 8000000, 0, 0, 8000000, 'Transfer', 'Completed', '2024-11-20 10:00:00', '2024-11-19 18:30:00'),
+-- Contract 4: Full refund completed - Deposit 50,000,000 VND
+(1, 4, 8, 50000000, 0, 0, 50000000, 'Transfer', 'Completed', '2024-11-20 10:00:00', '2024-11-19 18:30:00'),
 
--- Contract 5: Partial refund completed (fees deducted)
-(2, 5, 9, 10000000, 2875000, 0, 7125000, 'Transfer', 'Completed', '2024-12-01 14:30:00', '2024-11-30 10:45:00'),
+-- Contract 5: Partial refund completed (fees deducted) - Deposit 50,000,000 VND
+(2, 5, 9, 50000000, 2875000, 0, 47125000, 'Transfer', 'Completed', '2024-12-01 14:30:00', '2024-11-30 10:45:00'),
 
--- Contract 6: Partial refund pending
-(3, 6, 10, 11000000, 1200000, 0, 9800000, 'Transfer', 'Pending', NULL, '2024-12-04 10:15:00');
+-- Contract 6: Partial refund pending - Deposit 50,000,000 VND
+(3, 6, 10, 50000000, 1200000, 0, 48800000, 'Transfer', 'Pending', NULL, '2024-12-04 10:15:00');
 
 -- 16. SUPPORT TICKETS
 INSERT INTO support_tickets (ticket_number, customer_id, category, subject, description, status, assigned_to, created_at) VALUES
@@ -888,14 +951,31 @@ DELIMITER ;
 
 DELIMITER //
 
--- Update vehicle status khi tạo contract
+-- Update vehicle status when contract becomes ACTIVE (after deposit payment)
+-- Vehicle should NOT be marked as Rented when contract is created with Pending_Payment status
 CREATE TRIGGER trg_contract_created
 AFTER INSERT ON contracts
 FOR EACH ROW
 BEGIN
-    UPDATE vehicles
-    SET status = 'Rented'
-    WHERE vehicle_id = NEW.vehicle_id;
+    -- Only mark vehicle as Rented if contract is created with Active status
+    IF NEW.status = 'Active' THEN
+        UPDATE vehicles
+        SET status = 'Rented'
+        WHERE vehicle_id = NEW.vehicle_id;
+    END IF;
+END//
+
+-- Update vehicle status when contract status changes to ACTIVE
+CREATE TRIGGER trg_contract_activated
+AFTER UPDATE ON contracts
+FOR EACH ROW
+BEGIN
+    -- When contract changes from Pending_Payment to Active, mark vehicle as Rented
+    IF OLD.status = 'Pending_Payment' AND NEW.status = 'Active' THEN
+        UPDATE vehicles
+        SET status = 'Rented'
+        WHERE vehicle_id = NEW.vehicle_id;
+    END IF;
 END//
 
 -- Update vehicle status khi có return fees (tức là đã trả xe)

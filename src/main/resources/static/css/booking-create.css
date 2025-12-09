@@ -1,0 +1,439 @@
+/* ===================================================================
+   BOOKING-CREATE.CSS - Stylesheet cho trang đặt xe
+   UC05: Create Booking
+   =================================================================== */
+
+/* ===== PAGE LAYOUT ===== */
+.booking-create-page {
+    min-height: 100vh;
+    background: var(--section-dark-bg);
+    position: relative;
+    padding: 0 0 var(--spacing-3xl) 0;
+}
+
+/* Top border gradient */
+.booking-create-page::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent 0%, var(--color-primary) 50%, transparent 100%);
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+/* Overlay gradient */
+.booking-create-page::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--section-dark-overlay);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.booking-create-page > * {
+    position: relative;
+    z-index: 1;
+}
+
+.booking-create-page .page-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--spacing-xl) 1rem 0;
+}
+
+/* ===== PAGE HEADER ===== */
+.booking-create-page .page-header {
+    margin-bottom: 2rem;
+    padding: var(--spacing-xl) var(--spacing-2xl);
+    background: rgba(31, 41, 55, 0.5);
+    border-radius: var(--radius-xl);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+}
+
+.booking-create-page .page-title {
+    font-size: var(--font-3xl);
+    font-weight: 700;
+    color: var(--color-text-white);
+    margin-bottom: 0.5rem;
+    text-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+.booking-create-page .page-subtitle {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: var(--font-base);
+}
+
+/* ===== BOOKING GRID ===== */
+.booking-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+/* ===== VEHICLE SUMMARY CARD ===== */
+.vehicle-summary-card {
+    background: rgba(31, 41, 55, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-xl);
+    backdrop-filter: blur(10px);
+    box-shadow: var(--shadow-lg);
+}
+
+.vehicle-summary-card .vehicle-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: var(--radius-lg);
+    margin-bottom: 1rem;
+    box-shadow: var(--shadow-md);
+}
+
+.vehicle-summary-card .vehicle-name {
+    font-size: var(--font-xl);
+    font-weight: 600;
+    color: var(--color-text-white);
+    margin-bottom: 0.5rem;
+}
+
+.vehicle-summary-card .vehicle-info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.vehicle-summary-card .vehicle-info-row:last-child {
+    border-bottom: none;
+}
+
+.vehicle-summary-card .info-label {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: var(--font-sm);
+}
+
+.vehicle-summary-card .info-value {
+    color: var(--color-text-white);
+    font-weight: 600;
+}
+
+.vehicle-summary-card .price-highlight {
+    color: var(--color-primary-light);
+    font-size: 1.25rem;
+}
+
+/* ===== BOOKING FORM CARD ===== */
+.booking-form-card {
+    background: rgba(31, 41, 55, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-xl);
+    padding: var(--spacing-xl);
+    backdrop-filter: blur(10px);
+    box-shadow: var(--shadow-lg);
+}
+
+/* ===== FORM SECTIONS ===== */
+.booking-form-card .form-section {
+    margin-bottom: 2rem;
+}
+
+.booking-form-card .form-section-title {
+    font-size: var(--font-lg);
+    font-weight: 600;
+    color: var(--color-text-white);
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--color-primary);
+    text-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+}
+
+/* ===== FORM CONTROLS ===== */
+.booking-form-card .form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.booking-form-card .form-group label {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: var(--font-sm);
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    position: relative;
+}
+
+/* Required field indicator */
+.booking-form-card .form-group label.required::after {
+    content: ' *';
+    color: #ef4444;
+    font-weight: 700;
+    margin-left: 2px;
+}
+
+/* Error indicator for invalid fields */
+.booking-form-card .form-group.error label::after {
+    content: ' *';
+    color: #ef4444;
+    font-weight: 700;
+    margin-left: 2px;
+    animation: pulse-error 0.5s ease-in-out;
+}
+
+@keyframes pulse-error {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.7;
+        transform: scale(1.2);
+    }
+}
+
+.booking-form-card .form-control {
+    padding: 0.75rem 1rem;
+    background: rgba(17, 24, 39, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-md);
+    color: var(--color-text-white);
+    font-size: var(--font-base);
+    transition: all var(--transition-base);
+}
+
+.booking-form-card .form-control:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    background: rgba(17, 24, 39, 0.7);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.booking-form-card .form-control::placeholder {
+    color: rgba(255, 255, 255, 0.4);
+}
+
+/* Date input calendar icon - white color */
+.booking-form-card input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+}
+
+.booking-form-card input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+}
+
+.booking-form-card select.form-control {
+    cursor: pointer;
+}
+
+.booking-form-card select.form-control option {
+    background: var(--color-dark);
+    color: var(--color-text-white);
+}
+
+.booking-form-card .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+/* ===== ALERT MESSAGES ===== */
+.booking-create-page .alert {
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius-lg);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    backdrop-filter: blur(10px);
+}
+
+.booking-create-page .alert-error {
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #fca5a5;
+}
+
+.booking-create-page .alert-warning {
+    background: rgba(245, 158, 11, 0.15);
+    border: 1px solid rgba(245, 158, 11, 0.3);
+    color: #fcd34d;
+}
+
+.booking-create-page .alert-warning a {
+    color: var(--color-primary-light);
+    text-decoration: underline;
+}
+
+.booking-create-page .alert-warning a:hover {
+    color: var(--color-primary);
+}
+
+/* ===== DOCUMENT SELECTION ===== */
+.booking-form-card .document-list {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.booking-form-card .document-item {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    background: rgba(17, 24, 39, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: all var(--transition-base);
+}
+
+.booking-form-card .document-item:hover {
+    border-color: var(--color-primary);
+    background: rgba(31, 41, 55, 0.7);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.booking-form-card .document-item input[type="checkbox"] {
+    margin-right: 1rem;
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.booking-form-card .document-info {
+    flex: 1;
+}
+
+.booking-form-card .document-type {
+    font-weight: 600;
+    color: var(--color-text-white);
+    margin-bottom: 0.25rem;
+}
+
+.booking-form-card .document-number {
+    font-size: var(--font-sm);
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* ===== COST SUMMARY ===== */
+.booking-form-card .cost-summary {
+    background: rgba(17, 24, 39, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-xl);
+    margin-top: var(--spacing-xl);
+    backdrop-filter: blur(10px);
+}
+
+.booking-form-card .cost-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.booking-form-card .cost-total {
+    border-top: 2px solid rgba(255, 255, 255, 0.2);
+    margin-top: 0.5rem;
+    padding-top: 1rem;
+    font-size: var(--font-xl);
+    font-weight: 700;
+    color: var(--color-primary-light);
+}
+
+/* ===== FORM ACTIONS ===== */
+.booking-form-card .form-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.booking-form-card .btn-submit {
+    flex: 1;
+    padding: var(--spacing-lg);
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+    color: white;
+    border: none;
+    border-radius: var(--radius-lg);
+    font-size: var(--font-base);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    box-shadow: var(--shadow-md);
+}
+
+.booking-form-card .btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.booking-form-card .btn-cancel {
+    padding: var(--spacing-lg) var(--spacing-2xl);
+    background: transparent;
+    color: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--radius-lg);
+    font-size: var(--font-base);
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+    transition: all var(--transition-base);
+}
+
+.booking-form-card .btn-cancel:hover {
+    border-color: rgba(255, 255, 255, 0.4);
+    color: var(--color-text-white);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+    .booking-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .booking-form-card .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .booking-create-page .page-header {
+        padding: var(--spacing-md);
+    }
+
+    .booking-create-page .page-title {
+        font-size: var(--font-2xl);
+    }
+
+    .vehicle-summary-card,
+    .booking-form-card {
+        padding: var(--spacing-md);
+    }
+}
+
+@media (max-width: 480px) {
+    .booking-create-page .page-container {
+        padding: var(--spacing-md) 0.5rem 0;
+    }
+
+    .booking-create-page .page-title {
+        font-size: var(--font-xl);
+    }
+
+    .booking-form-card .form-actions {
+        flex-direction: column;
+    }
+
+    .booking-form-card .btn-cancel {
+        width: 100%;
+    }
+}
