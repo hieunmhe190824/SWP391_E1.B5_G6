@@ -386,8 +386,8 @@
 </head>
 
 <body>
-    <!-- Dashboard Layout -->
-    <div th:replace="~{fragments/dashboard-layout :: layout(~{::main})}">
+    <!-- Dashboard Layout (Staff Sidebar) -->
+    <div th:replace="~{fragments/dashboard-layout :: layout-staff(pageTitle='Chi Tiết Đơn Đặt Xe', content=~{::main})}">
         <main class="booking-detail-page">
             <!-- Page Header -->
             <div class="page-header">
@@ -523,8 +523,9 @@
                                         Document Type
                                     </span>
                                     <span class="document-status"
-                                        th:classappend="${doc.status.name() == 'Approved' ? 'status-approved' : 'status-pending'}"
-                                        th:text="${doc.status.name() == 'Approved' ? 'Đã duyệt' : 'Chờ duyệt'}">
+                                        th:if="${doc.status.name() != 'Approved'}"
+                                        th:classappend="${'status-' + doc.status.name().toLowerCase()}"
+                                        th:text="${doc.status.name() == 'Rejected' ? 'Từ chối' : 'Chờ duyệt'}">
                                         Status
                                     </span>
                                 </div>

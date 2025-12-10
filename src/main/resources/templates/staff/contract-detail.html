@@ -11,8 +11,22 @@
     <link rel="stylesheet" th:href="@{/css/components.css}">
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
     <style>
+        /* Dark Theme */
+        body {
+            background: var(--section-dark-bg) !important;
+        }
+
+        .dashboard-content {
+            background: var(--section-dark-bg) !important;
+            max-width: none !important;
+            width: 100% !important;
+        }
+
         .contract-detail-page {
             padding: 2rem;
+            min-height: 100vh;
+            background: transparent;
+            width: 100%;
         }
 
         .page-header {
@@ -29,12 +43,13 @@
         .page-title {
             font-size: 1.75rem;
             font-weight: 700;
-            color: var(--color-text-primary);
+            color: var(--color-text-white);
             margin-bottom: 0.5rem;
+            text-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
         }
 
         .page-subtitle {
-            color: var(--color-text-secondary);
+            color: rgba(255, 255, 255, 0.8);
             font-size: 0.875rem;
         }
 
@@ -44,6 +59,12 @@
             font-size: 0.875rem;
             font-weight: 600;
             text-transform: uppercase;
+        }
+        
+        .status-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         .status-pending_payment {
@@ -65,31 +86,45 @@
             background: rgba(239, 68, 68, 0.1);
             color: #ef4444;
         }
+        
+        .btn-export {
+            padding: 0.5rem 0.9rem;
+            background: var(--color-primary);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        
+        .btn-export:hover {
+            background: var(--color-primary-dark, #2563eb);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            transform: translateY(-1px);
+        }
 
         .detail-grid {
             display: grid;
-            grid-template-columns: 2fr 1fr;
+            grid-template-columns: 1fr;
             gap: 2rem;
             margin-bottom: 2rem;
         }
 
-        @media (max-width: 968px) {
-            .detail-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
         .detail-card {
-            background: var(--color-surface);
-            border: 1px solid var(--color-border);
+            background: rgba(31, 41, 55, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
             border-radius: 12px;
             padding: 1.5rem;
+            box-shadow: var(--shadow-lg);
         }
 
         .card-title {
             font-size: 1.125rem;
             font-weight: 600;
-            color: var(--color-text-primary);
+            color: var(--color-text-white);
             margin-bottom: 1.5rem;
             padding-bottom: 0.75rem;
             border-bottom: 2px solid var(--color-primary);
@@ -100,7 +135,7 @@
             grid-template-columns: 180px 1fr;
             gap: 1rem;
             padding: 0.75rem 0;
-            border-bottom: 1px solid var(--color-border);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .info-row:last-child {
@@ -108,12 +143,12 @@
         }
 
         .info-label {
-            color: var(--color-text-secondary);
+            color: rgba(255, 255, 255, 0.7);
             font-size: 0.875rem;
         }
 
         .info-value {
-            color: var(--color-text-primary);
+            color: var(--color-text-white);
             font-weight: 500;
         }
 
@@ -121,8 +156,8 @@
             display: flex;
             gap: 1rem;
             padding: 1rem;
-            background: var(--color-background);
-            border: 1px solid var(--color-border);
+            background: rgba(17, 24, 39, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 8px;
             margin-bottom: 1rem;
         }
@@ -141,19 +176,19 @@
         .vehicle-name {
             font-size: 1.125rem;
             font-weight: 600;
-            color: var(--color-text-primary);
+            color: var(--color-text-white);
             margin-bottom: 0.5rem;
         }
 
         .vehicle-detail {
             font-size: 0.875rem;
-            color: var(--color-text-secondary);
+            color: rgba(255, 255, 255, 0.7);
             margin-bottom: 0.25rem;
         }
 
         .cost-summary {
-            background: var(--color-background);
-            border: 1px solid var(--color-border);
+            background: rgba(17, 24, 39, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 8px;
             padding: 1.5rem;
         }
@@ -162,7 +197,8 @@
             display: flex;
             justify-content: space-between;
             padding: 0.75rem 0;
-            border-bottom: 1px solid var(--color-border);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.9);
         }
 
         .cost-row:last-child {
@@ -175,12 +211,12 @@
             font-size: 1.25rem;
             font-weight: 700;
             color: var(--color-primary);
-            border-top: 2px solid var(--color-border);
+            border-top: 2px solid rgba(255, 255, 255, 0.1);
         }
 
         .payment-info {
-            background: var(--color-background);
-            border: 1px solid var(--color-border);
+            background: rgba(17, 24, 39, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 8px;
             padding: 1rem;
             margin-top: 1rem;
@@ -191,9 +227,11 @@
             align-items: center;
             gap: 0.5rem;
             padding: 0.75rem;
-            background: var(--color-surface);
+            background: rgba(31, 41, 55, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 6px;
             margin-bottom: 0.75rem;
+            color: var(--color-text-white);
         }
 
         .payment-status-icon {
@@ -265,18 +303,20 @@
 
         .btn-back {
             padding: 0.75rem 1.5rem;
-            background: transparent;
-            color: var(--color-text-secondary);
-            border: 1px solid var(--color-border);
-            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--color-text-white);
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            border-radius: 10px;
             text-decoration: none;
             font-weight: 600;
             transition: all 0.2s;
         }
 
         .btn-back:hover {
-            border-color: var(--color-text-primary);
-            color: var(--color-text-primary);
+            border-color: var(--color-primary);
+            color: var(--color-primary);
+            background: rgba(59, 130, 246, 0.12);
+            transform: translateY(-1px);
         }
 
         .alert {
@@ -336,8 +376,8 @@
 </head>
 
 <body>
-    <!-- Dashboard Layout -->
-    <div th:replace="~{fragments/dashboard-layout :: layout(~{::main})}">
+    <!-- Dashboard Layout (Staff Sidebar) -->
+    <div th:replace="~{fragments/dashboard-layout :: layout-staff(pageTitle='Chi Tiết Hợp Đồng', content=~{::main})}">
         <main class="contract-detail-page">
             <!-- Page Header -->
             <div class="page-header">
@@ -351,10 +391,13 @@
                         </span>
                     </p>
                 </div>
-                <span class="contract-status" th:classappend="${'status-' + contract.status.name().toLowerCase()}"
-                    th:text="${contract.status.value}">
-                    Status
-                </span>
+                <div class="status-actions">
+                    <span class="contract-status" th:classappend="${'status-' + contract.status.name().toLowerCase()}"
+                        th:text="${contract.status == T(com.carrental.model.Contract.ContractStatus).PENDING_PAYMENT ? 'Chờ thanh toán' : (contract.status == T(com.carrental.model.Contract.ContractStatus).ACTIVE ? 'Đang hoạt động' : (contract.status == T(com.carrental.model.Contract.ContractStatus).COMPLETED ? 'Hoàn thành' : 'Đã hủy'))}">
+                        Status
+                    </span>
+                    <a class="btn-export" th:href="@{/staff/contracts/{id}/export(id=${contract.id})}">Export PDF</a>
+                </div>
             </div>
 
             <!-- Messages -->
@@ -400,7 +443,7 @@
 
                         <div class="info-row">
                             <span class="info-label">Nhân viên tạo:</span>
-                            <span class="info-value" th:text="${contract.createdBy.fullName}">Staff Name</span>
+                            <span class="info-value" th:text="${contract.staff != null ? contract.staff.fullName : '---'}">Staff Name</span>
                         </div>
 
                         <div class="info-row">
@@ -408,7 +451,7 @@
                             <span class="info-value">
                                 <span class="contract-status"
                                     th:classappend="${'status-' + contract.status.name().toLowerCase()}"
-                                    th:text="${contract.status.value}">
+                                    th:text="${contract.status == T(com.carrental.model.Contract.ContractStatus).PENDING_PAYMENT ? 'Chờ thanh toán' : (contract.status == T(com.carrental.model.Contract.ContractStatus).ACTIVE ? 'Đang hoạt động' : (contract.status == T(com.carrental.model.Contract.ContractStatus).COMPLETED ? 'Hoàn thành' : 'Đã hủy'))}">
                                     Status
                                 </span>
                             </span>
@@ -557,7 +600,7 @@
                             <div class="cost-row">
                                 <span>Tổng tiền thuê</span>
                                 <span
-                                    th:text="${#numbers.formatDecimal(contract.rentalAmount, 0, 'COMMA', 0, 'POINT')} + ' ₫'">
+                                    th:text="${#numbers.formatDecimal(contract.totalRentalFee, 0, 'COMMA', 0, 'POINT')} + ' ₫'">
                                     Rental Fee
                                 </span>
                             </div>
@@ -573,7 +616,7 @@
                             <div class="cost-row cost-total">
                                 <span>Tổng cộng</span>
                                 <span
-                                    th:text="${#numbers.formatDecimal(contract.totalAmount, 0, 'COMMA', 0, 'POINT')} + ' ₫'">
+                                    th:text="${#numbers.formatDecimal(contract.totalRentalFee, 0, 'COMMA', 0, 'POINT')} + ' ₫'">
                                     Total Amount
                                 </span>
                             </div>
@@ -581,18 +624,18 @@
 
                         <!-- Payment Information -->
                         <div class="payment-info">
-                            <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 1rem;">Thông tin thanh toán
+                            <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 1rem; color: var(--color-text-white);">Thông tin thanh toán
                             </h3>
 
                             <div class="payment-status">
                                 <div class="payment-status-icon"
-                                    th:classappend="${contract.depositPaid ? 'paid' : 'pending'}">
-                                    <span th:text="${contract.depositPaid ? '✓' : '○'}">○</span>
+                                    th:classappend="${contract.status == T(com.carrental.model.Contract.ContractStatus).ACTIVE || contract.status == T(com.carrental.model.Contract.ContractStatus).COMPLETED ? 'paid' : 'pending'}">
+                                    <span th:text="${contract.status == T(com.carrental.model.Contract.ContractStatus).ACTIVE || contract.status == T(com.carrental.model.Contract.ContractStatus).COMPLETED ? '✓' : '○'}">○</span>
                                 </div>
                                 <div>
                                     <div style="font-weight: 600; font-size: 0.875rem;">Tiền cọc</div>
                                     <div style="font-size: 0.75rem; color: var(--color-text-secondary);"
-                                        th:text="${contract.depositPaid ? 'Đã thanh toán' : 'Chưa thanh toán'}">
+                                        th:text="${contract.status == T(com.carrental.model.Contract.ContractStatus).ACTIVE || contract.status == T(com.carrental.model.Contract.ContractStatus).COMPLETED ? 'Đã thanh toán' : 'Chưa thanh toán'}">
                                         Status
                                     </div>
                                 </div>
@@ -600,13 +643,13 @@
 
                             <div class="payment-status">
                                 <div class="payment-status-icon"
-                                    th:classappend="${contract.rentalPaid ? 'paid' : 'pending'}">
-                                    <span th:text="${contract.rentalPaid ? '✓' : '○'}">○</span>
+                                    th:classappend="${contract.status == T(com.carrental.model.Contract.ContractStatus).COMPLETED ? 'paid' : 'pending'}">
+                                    <span th:text="${contract.status == T(com.carrental.model.Contract.ContractStatus).COMPLETED ? '✓' : '○'}">○</span>
                                 </div>
                                 <div>
                                     <div style="font-weight: 600; font-size: 0.875rem;">Tiền thuê</div>
                                     <div style="font-size: 0.75rem; color: var(--color-text-secondary);"
-                                        th:text="${contract.rentalPaid ? 'Đã thanh toán' : 'Chưa thanh toán'}">
+                                        th:text="${contract.status == T(com.carrental.model.Contract.ContractStatus).COMPLETED ? 'Đã thanh toán' : 'Chưa thanh toán'}">
                                         Status
                                     </div>
                                 </div>
@@ -614,19 +657,6 @@
                         </div>
                     </div>
 
-                    <!-- Quick Actions -->
-                    <div class="detail-card" style="margin-top: 1.5rem;">
-                        <h2 class="card-title">Thao tác nhanh</h2>
-
-                        <div style="display: flex; flex-direction: column; gap: 0.75rem;">
-                            <a href="#" class="btn-print" onclick="window.print(); return false;">
-                                🖨️ In hợp đồng
-                            </a>
-                            <a href="#" class="btn-print" style="background: #3b82f6;">
-                                📥 Tải xuống PDF
-                            </a>
-                        </div>
-                    </div>
                 </div>
             </div>
 

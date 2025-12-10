@@ -405,8 +405,8 @@
 </head>
 
 <body>
-    <!-- Dashboard Layout -->
-    <div th:replace="~{fragments/dashboard-layout :: layout(~{::main})}">
+    <!-- Dashboard Layout (Staff Sidebar) -->
+    <div th:replace="~{fragments/dashboard-layout :: layout-staff(pageTitle='Quản Lý Đặt Xe', content=~{::main})}">
         <main class="bookings-manage-page">
             <!-- Page Header -->
             <div class="page-header">

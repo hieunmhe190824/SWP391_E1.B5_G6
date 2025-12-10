@@ -132,6 +132,9 @@ public class BookingManagementController {
             redirectAttributes.addFlashAttribute("successMessage",
                 "Đã duyệt đơn đặt xe #" + booking.getId() + " và tạo hợp đồng #" + contract.getContractNumber() +
                 " thành công. Hợp đồng đã được gửi cho khách hàng để xác nhận và thanh toán cọc.");
+            
+            // Điều hướng tới trang hợp đồng vừa tạo để nhân viên xem/xác nhận thông tin đã được tự động điền
+            return "redirect:/staff/contracts/" + contract.getId();
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage",
                 "Lỗi khi duyệt đơn: " + e.getMessage());
