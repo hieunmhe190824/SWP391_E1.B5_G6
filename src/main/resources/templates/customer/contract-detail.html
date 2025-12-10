@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi Tiết Hợp Đồng - Car Rental System</title>
+    <link rel="stylesheet" th:href="@{/css/variables.css}">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+    <style>
+        .contract-detail-page {
+            padding: 2rem 0;
+            background: var(--section-dark-bg);
+            min-height: calc(100vh - 200px);
+            position: relative;
+        }
+        .contract-detail-page::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent 0%, var(--color-primary) 50%, transparent 100%);
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+        }
+        .contract-detail-page::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: var(--section-dark-overlay);
+            pointer-events: none;
+            z-index: 0;
+        }
+        .contract-detail-page > * { position: relative; z-index: 1; }
+
+        .page-container { max-width: 1100px; margin: 0 auto; padding: 0 1rem; }
+
+        .card {
+            background: rgba(31, 41, 55, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            padding: 1.5rem;
+            backdrop-filter: blur(10px);
+        }
+        .card + .card { margin-top: 1.25rem; }
+
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+        .title {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--color-text-white);
+        }
+        .status-badge {
+            padding: 0.4rem 0.9rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .status-pending_payment { background: rgba(245, 158, 11, 0.1); color: #fbbf24; }
+        .status-active { background: rgba(34, 197, 94, 0.1); color: #22c55e; }
+        .status-completed { background: rgba(59, 130, 246, 0.1); color: #60a5fa; }
+        .status-cancelled { background: rgba(239, 68, 68, 0.1); color: #f87171; }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem 1.5rem;
+        }
+        .label { color: rgba(255,255,255,0.6); font-size: 0.9rem; }
+        .value { color: var(--color-text-white); font-weight: 700; }
+        .price { color: var(--color-primary); font-size: 1.1rem; }
+
+        .actions {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+        .btn-primary, .btn-outline {
+            padding: 0.65rem 1.4rem;
+            border-radius: 10px;
+            font-weight: 700;
+            text-decoration: none;
+            border: 1px solid var(--color-primary);
+            transition: all 0.2s ease;
+        }
+        .btn-primary { background: var(--color-primary); color: white; }
+        .btn-primary:hover { background: var(--color-primary-dark); border-color: var(--color-primary-dark); transform: translateY(-2px); }
+        .btn-outline { background: transparent; color: var(--color-primary); }
+        .btn-outline:hover { background: rgba(59,130,246,0.08); transform: translateY(-2px); }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--color-text-white);
+            margin-bottom: 0.75rem;
+        }
+
+        .timeline {
+            border-left: 2px solid rgba(255,255,255,0.08);
+            padding-left: 1rem;
+            display: grid;
+            gap: 0.8rem;
+        }
+        .timeline-item {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+        }
+
+        @media (max-width: 900px) {
+            .grid { grid-template-columns: 1fr; }
+            .header-row { flex-direction: column; align-items: flex-start; }
+        }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+
+<main class="contract-detail-page">
+    <div class="page-container">
+        <div class="card">
+            <div class="header-row">
+                <div>
+                    <div class="title" th:text="${contract.contractNumber}">CTR-XXXX</div>
+                    <div style="color: rgba(255,255,255,0.7); margin-top: 0.25rem;">
+                        Tạo lúc <span th:text="${#temporals.format(contract.createdAt, 'dd/MM/yyyy HH:mm')}">-</span>
+                    </div>
+                </div>
+                <div>
+                    <span class="status-badge" th:classappend="${' status-' + contract.status.name().toLowerCase()}"
+                          th:text="${contract.status}">PENDING_PAYMENT</span>
+                </div>
+            </div>
+            <div class="actions" style="margin-top: 1rem;">
+                <a th:href="@{/contracts/my-contracts}" class="btn-outline">Quay lại danh sách</a>
+                <a th:href="@{/contracts/{id}/export(id=${contract.id})}" class="btn-outline">Export PDF</a>
+                <a th:if="${contract.status.name() == 'PENDING_PAYMENT'}"
+                   th:href="@{/contracts/{id}/pay-deposit(id=${contract.id})}"
+                   class="btn-primary">Thanh toán cọc</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="section-title">Thông tin hợp đồng</div>
+            <div class="grid">
+                <div>
+                    <div class="label">Xe</div>
+                    <div class="value" th:text="${contract.vehicle.model.brand.brandName + ' ' + contract.vehicle.model.modelName}">-</div>
+                </div>
+                <div>
+                    <div class="label">Biển số</div>
+                    <div class="value" th:text="${contract.vehicle.licensePlate}">-</div>
+                </div>
+                <div>
+                    <div class="label">Ngày bắt đầu</div>
+                    <div class="value" th:text="${#temporals.format(contract.startDate, 'dd/MM/yyyy HH:mm')}">-</div>
+                </div>
+                <div>
+                    <div class="label">Ngày kết thúc</div>
+                    <div class="value" th:text="${#temporals.format(contract.endDate, 'dd/MM/yyyy HH:mm')}">-</div>
+                </div>
+                <div>
+                    <div class="label">Số ngày thuê</div>
+                    <div class="value" th:text="${contract.totalDays} + ' ngày'">-</div>
+                </div>
+                <div>
+                    <div class="label">Nhân viên phụ trách</div>
+                    <div class="value" th:text="${contract.staff.fullName}">-</div>
+                </div>
+                <div>
+                    <div class="label">Giá thuê / ngày</div>
+                    <div class="value" th:text="${#numbers.formatDecimal(contract.dailyRate, 0, 'COMMA', 0, 'POINT')} + ' VND'">-</div>
+                </div>
+                <div>
+                    <div class="label">Tiền thuê</div>
+                    <div class="value price" th:text="${#numbers.formatDecimal(contract.totalRentalFee, 0, 'COMMA', 0, 'POINT')} + ' VND'">-</div>
+                </div>
+                <div>
+                    <div class="label">Tiền đặt cọc</div>
+                    <div class="value price" th:text="${#numbers.formatDecimal(contract.depositAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">-</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="section-title">Thanh toán</div>
+            <div th:if="${payments != null and !payments.isEmpty()}">
+                <div class="timeline">
+                    <div class="timeline-item" th:each="payment : ${payments}">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div class="value" th:text="${payment.paymentType}">DEPOSIT</div>
+                            <span class="status-badge"
+                                  th:classappend="${payment.status == T(com.carrental.model.Payment.PaymentStatus).COMPLETED ? ' status-active' : ' status-pending_payment'}"
+                                  th:text="${payment.status}">COMPLETED</span>
+                        </div>
+                        <div class="label" style="margin-top: 0.35rem;">
+                            Số tiền: <span class="value" th:text="${#numbers.formatDecimal(payment.amount, 0, 'COMMA', 0, 'POINT')} + ' VND'">-</span>
+                        </div>
+                        <div class="label" th:if="${payment.paymentMethod}">
+                            Phương thức: <span class="value" th:text="${payment.paymentMethod}">ONLINE</span>
+                        </div>
+                        <div class="label" th:if="${payment.paymentDate != null}">
+                            Thời gian: <span class="value" th:text="${#temporals.format(payment.paymentDate, 'dd/MM/yyyy HH:mm')}">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div th:if="${payments == null or payments.isEmpty()}" style="color: rgba(255,255,255,0.7);">
+                Chưa có giao dịch thanh toán.
+            </div>
+            <div th:if="${contract.status.name() == 'PENDING_PAYMENT'}" style="margin-top: 1rem;">
+                <a th:href="@{/contracts/{id}/pay-deposit(id=${contract.id})}" class="btn-primary">Thanh toán cọc qua VNPay</a>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>
+

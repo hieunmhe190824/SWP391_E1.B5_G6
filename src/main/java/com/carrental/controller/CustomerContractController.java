@@ -7,6 +7,17 @@ import com.carrental.repository.UserRepository;
 import com.carrental.service.ContractService;
 import com.carrental.service.PaymentGatewayService;
 import com.carrental.service.PaymentService;
+import com.lowagie.text.Document;
+import com.lowagie.text.DocumentException;
+import com.lowagie.text.Font;
+import com.lowagie.text.FontFactory;
+import com.lowagie.text.PageSize;
+import com.lowagie.text.Paragraph;
+import com.lowagie.text.Phrase;
+import com.lowagie.text.pdf.BaseFont;
+import com.lowagie.text.pdf.PdfPCell;
+import com.lowagie.text.pdf.PdfPTable;
+import com.lowagie.text.pdf.PdfWriter;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -16,6 +27,13 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+
+import java.io.ByteArrayOutputStream;
 import java.util.List;
 
 /**
@@ -147,33 +165,148 @@ public class CustomerContractController {
      */
     @PostMapping("/{id}/pay-deposit")
     public String payDeposit(@PathVariable Long id,
-                            @RequestParam Payment.PaymentMethod paymentMethod,
                             HttpServletRequest request,
                             RedirectAttributes redirectAttributes) {
         try {
             User currentUser = getCurrentUser();
 
-            // Check if payment method is ONLINE (payment gateway)
-            if (paymentMethod == Payment.PaymentMethod.ONLINE) {
-                // Initiate online payment gateway
-                String paymentUrl = paymentGatewayService.initiateDepositPayment(id, request);
-
-                // Redirect to payment gateway
-                return "redirect:" + paymentUrl;
-            } else {
-                // Process direct payment (CASH, CARD, TRANSFER)
-                paymentService.processDepositPayment(id, currentUser, paymentMethod);
-
-                redirectAttributes.addFlashAttribute("successMessage",
-                    "Thanh toán cọc thành công! Hợp đồng của bạn đã được kích hoạt.");
-
-                return "redirect:/contracts/" + id;
-            }
+            // Always route through online payment gateway
+            String paymentUrl = paymentGatewayService.initiateDepositPayment(id, request);
+            return "redirect:" + paymentUrl;
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage",
                 "Lỗi khi thanh toán: " + e.getMessage());
             return "redirect:/contracts/" + id + "/pay-deposit";
         }
+    }
+
+    /**
+     * Export contract PDF for customer (only their own contract)
+     * GET /contracts/{id}/export
+     */
+    @GetMapping("/{id}/export")
+    public ResponseEntity<byte[]> exportContractPdf(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            User currentUser = getCurrentUser();
+            Contract contract = contractService.getContractById(id)
+                    .orElseThrow(() -> new RuntimeException("Contract not found"));
+
+            if (!contract.getCustomer().getId().equals(currentUser.getId())) {
+                throw new RuntimeException("You don't have permission to export this contract");
+            }
+
+            byte[] pdfBytes = generateContractPdf(contract);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_PDF);
+            headers.setContentDisposition(
+                    ContentDisposition.attachment()
+                            .filename("contract-" + contract.getContractNumber() + ".pdf")
+                            .build());
+
+            return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Xuất PDF thất bại: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    /**
+     * Build PDF for contract (minimal summary)
+     */
+    private byte[] generateContractPdf(Contract contract) throws DocumentException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        Document document = new Document(PageSize.A4, 36, 36, 36, 36);
+        PdfWriter.getInstance(document, baos);
+        document.open();
+
+        Font titleFont = fontUnicode(16, Font.BOLD);
+        Font sectionFont = fontUnicode(12, Font.BOLD);
+        Font textFont = fontUnicode(11, Font.NORMAL);
+
+        document.add(new Paragraph("HỢP ĐỒNG THUÊ XE", titleFont));
+        document.add(new Paragraph("Mã hợp đồng: " + safe(contract.getContractNumber()), textFont));
+        document.add(new Paragraph("Trạng thái: " + contract.getStatus(), textFont));
+        document.add(new Paragraph("Ngày tạo: " + safe(contract.getCreatedAt()), textFont));
+        document.add(Paragraph.getInstance("\n"));
+
+        document.add(new Paragraph("Thông tin khách hàng", sectionFont));
+        PdfPTable table = new PdfPTable(2);
+        table.setWidthPercentage(100);
+        addRow(table, "Họ tên", safe(contract.getCustomer().getFullName()), textFont);
+        addRow(table, "Email", safe(contract.getCustomer().getEmail()), textFont);
+        addRow(table, "Số điện thoại", safe(contract.getCustomer().getPhone()), textFont);
+        addRow(table, "Mã đơn đặt", "#" + contract.getBooking().getId(), textFont);
+        addRow(table, "Thời gian thuê", safe(contract.getStartDate()) + " → " + safe(contract.getEndDate()), textFont);
+        document.add(table);
+
+        document.add(Paragraph.getInstance("\n"));
+        document.add(new Paragraph("Thông tin xe", sectionFont));
+        PdfPTable vehicleTable = new PdfPTable(2);
+        vehicleTable.setWidthPercentage(100);
+        addRow(vehicleTable, "Xe", safe(contract.getVehicle().getModel().getBrand().getBrandName()) + " " + safe(contract.getVehicle().getModel().getModelName()), textFont);
+        addRow(vehicleTable, "Biển số", safe(contract.getVehicle().getLicensePlate()), textFont);
+        document.add(vehicleTable);
+
+        document.add(Paragraph.getInstance("\n"));
+        document.add(new Paragraph("Thanh toán", sectionFont));
+        PdfPTable paymentTable = new PdfPTable(2);
+        paymentTable.setWidthPercentage(100);
+        addRow(paymentTable, "Giá thuê / ngày", formatCurrency(contract.getDailyRate()), textFont);
+        addRow(paymentTable, "Số ngày thuê", safe(contract.getTotalDays()) + " ngày", textFont);
+        addRow(paymentTable, "Tiền cọc", formatCurrency(contract.getDepositAmount()), textFont);
+        addRow(paymentTable, "Tổng tiền thuê", formatCurrency(contract.getTotalRentalFee()), textFont);
+        document.add(paymentTable);
+
+        document.close();
+        return baos.toByteArray();
+    }
+
+    private void addRow(PdfPTable table, String label, String value, Font font) {
+        PdfPCell cell1 = new PdfPCell(new Phrase(label, font));
+        PdfPCell cell2 = new PdfPCell(new Phrase(value, font));
+        cell1.setBorderWidth(0.2f);
+        cell2.setBorderWidth(0.2f);
+        table.addCell(cell1);
+        table.addCell(cell2);
+    }
+
+    private String safe(Object obj) {
+        return obj == null ? "---" : obj.toString();
+    }
+
+    private String formatCurrency(java.math.BigDecimal amount) {
+        if (amount == null) return "---";
+        return String.format("%,.0f ₫", amount.doubleValue());
+    }
+
+    private Font fontUnicode(float size, int style) {
+        FontFactory.registerDirectories();
+
+        String[] winFonts = {
+                "C:/Windows/Fonts/arial.ttf",
+                "C:/Windows/Fonts/arialuni.ttf",
+                "C:/Windows/Fonts/tahoma.ttf",
+                "C:/Windows/Fonts/segoeui.ttf"
+        };
+        for (String path : winFonts) {
+            try {
+                BaseFont bf = BaseFont.createFont(path, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+                return new Font(bf, size, style);
+            } catch (Exception ignore) {
+                // try next
+            }
+        }
+
+        String[] names = {"Arial Unicode MS", "Segoe UI", "Tahoma", "Arial", "Times New Roman", "DejaVu Sans"};
+        for (String name : names) {
+            Font font = FontFactory.getFont(name, BaseFont.IDENTITY_H, BaseFont.EMBEDDED, size, style);
+            if (font != null && font.getBaseFont() != null) {
+                return font;
+            }
+        }
+
+        return FontFactory.getFont(FontFactory.HELVETICA, BaseFont.IDENTITY_H, BaseFont.EMBEDDED, size, style);
     }
 }
 

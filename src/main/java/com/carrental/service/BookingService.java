@@ -42,6 +42,9 @@ public class BookingService {
     @Autowired
     private UserDocumentRepository userDocumentRepository;
 
+    @Autowired
+    private ContractService contractService;
+
     /**
      * Get all bookings with relationships loaded
      */
@@ -197,11 +200,20 @@ public class BookingService {
 
         // Update booking status
         booking.setStatus(BookingStatus.APPROVED);
+        Booking savedBooking = bookingRepository.save(booking);
 
-        // Note: Vehicle status will be updated to RENTED when contract is created
-        // For now, we keep it as AVAILABLE until the actual rental starts
+        // Automatically create contract once booking is approved
+        try {
+            contractService.createContractFromBooking(savedBooking, staffUser);
+        } catch (RuntimeException ex) {
+            // If contract already exists, ignore; otherwise propagate
+            if (!ex.getMessage().toLowerCase().contains("contract already exists")) {
+                throw ex;
+            }
+        }
 
-        return bookingRepository.save(booking);
+        // Reload with relations to return latest view
+        return bookingRepository.findByIdWithRelations(bookingId).orElse(savedBooking);
     }
 
     /**

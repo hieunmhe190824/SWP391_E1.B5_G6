@@ -2,6 +2,7 @@ package com.carrental.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
 @Table(name = "contracts")
@@ -52,7 +53,8 @@ public class Contract {
     @Column(name = "status", nullable = false, length = 20)
     private ContractStatus status;
 
-    @Column(name = "created_at", insertable = false, updatable = false)
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
     public enum ContractStatus {

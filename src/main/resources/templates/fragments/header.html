@@ -42,6 +42,11 @@
                     <a th:href="@{/bookings/my-bookings}" class="nav-link">Đơn thuê của tôi</a>
                 </li>
 
+                <!-- My Contracts - CHỈ hiển thị khi đã đăng nhập -->
+                <li sec:authorize="isAuthenticated()">
+                    <a th:href="@{/contracts/my-contracts}" class="nav-link">Hợp đồng của tôi</a>
+                </li>
+
                 <!-- Support - CHỈ hiển thị khi đã đăng nhập -->
                 <li sec:authorize="isAuthenticated()">
                     <a th:href="@{/support/tickets}" class="nav-link">Hỗ trợ</a>

@@ -123,11 +123,12 @@ public class BookingManagementController {
         try {
             User currentStaff = getCurrentUser();
 
-            // Step 1: Approve the booking (validates documents)
+            // Approve booking; service will auto-create contract if needed
             Booking booking = bookingService.approveBooking(id, currentStaff);
 
-            // Step 2: Automatically create contract from approved booking
-            Contract contract = contractService.createContractFromBooking(booking, currentStaff);
+            // Fetch created/ existing contract for redirect
+            Contract contract = contractService.getContractByBookingId(booking.getId())
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy hợp đồng sau khi duyệt"));
 
             redirectAttributes.addFlashAttribute("successMessage",
                 "Đã duyệt đơn đặt xe #" + booking.getId() + " và tạo hợp đồng #" + contract.getContractNumber() +

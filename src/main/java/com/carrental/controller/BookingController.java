@@ -1,12 +1,14 @@
 package com.carrental.controller;
 
 import com.carrental.model.Booking;
+import com.carrental.model.Contract;
 import com.carrental.model.Location;
 import com.carrental.model.User;
 import com.carrental.model.UserDocument;
 import com.carrental.model.Vehicle;
 import com.carrental.repository.UserRepository;
 import com.carrental.service.BookingService;
+import com.carrental.service.ContractService;
 import com.carrental.service.LocationService;
 import com.carrental.service.UserDocumentService;
 import com.carrental.service.VehicleService;
@@ -21,6 +23,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Customer Booking Controller
@@ -29,6 +33,8 @@ import java.util.List;
 @Controller
 @RequestMapping("/bookings")
 public class BookingController {
+
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(BookingController.class);
 
     @Autowired
     private BookingService bookingService;
@@ -44,6 +50,9 @@ public class BookingController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private ContractService contractService;
 
     /**
      * Get current authenticated user
@@ -154,7 +163,9 @@ public class BookingController {
      */
     @GetMapping("/my-bookings")
     public String myBookings(@RequestParam(required = false) String status, Model model) {
+        log.info("[MY-BOOKINGS] === START === status filter: {}", status);
         User currentUser = getCurrentUser();
+        log.info("[MY-BOOKINGS] Current user: {} (ID: {})", currentUser.getEmail(), currentUser.getId());
 
         List<Booking> bookings;
         if (status != null && !status.isEmpty()) {
@@ -171,8 +182,26 @@ public class BookingController {
             bookings = bookingService.getBookingsByCustomer(currentUser.getId());
         }
 
+        // Map bookingId -> contract (if staff already created one)
+        // Build contract map from all contracts of current customer to ensure visibility
+        // Build contract map by fetching per booking to avoid missing entries
+        Map<Long, Contract> contractMap = new java.util.HashMap<>();
+        for (Booking booking : bookings) {
+            contractService.getContractByBookingId(booking.getId())
+                    .ifPresent(contract -> {
+                        contractMap.put(booking.getId(), contract);
+                        log.info("[MY-BOOKINGS] Contract found for bookingId={} contractId={} status={}",
+                                booking.getId(), contract.getId(), contract.getStatus());
+                    });
+        }
+
+        log.info("[MY-BOOKINGS] Bookings count={} contractMap size={}", bookings.size(), contractMap.size());
+        bookings.forEach(b -> log.info("[MY-BOOKINGS] Booking #{} status={} contract? {}",
+                b.getId(), b.getStatus(), contractMap.get(b.getId()) != null));
+
         model.addAttribute("bookings", bookings);
         model.addAttribute("selectedStatus", status);
+        model.addAttribute("contractMap", contractMap);
 
         return "customer/my-bookings";
     }

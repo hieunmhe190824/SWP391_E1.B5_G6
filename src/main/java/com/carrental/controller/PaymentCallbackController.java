@@ -47,15 +47,7 @@ public class PaymentCallbackController {
             String fieldName = params.nextElement();
             String fieldValue = request.getParameter(fieldName);
             if ((fieldValue != null) && (fieldValue.length() > 0)) {
-                // URL encode both field name and value for hash verification
-                try {
-                    String encodedName = URLEncoder.encode(fieldName, StandardCharsets.UTF_8.toString());
-                    String encodedValue = URLEncoder.encode(fieldValue, StandardCharsets.UTF_8.toString());
-                    fields.put(encodedName, encodedValue);
-                } catch (Exception e) {
-                    System.err.println("ERROR: Failed to encode field " + fieldName + ": " + e.getMessage());
-                    fields.put(fieldName, fieldValue); // Fallback to non-encoded
-                }
+                fields.put(fieldName, fieldValue); // keep original for hashing helper
             }
         }
 
@@ -63,16 +55,8 @@ public class PaymentCallbackController {
         String secureHash = request.getParameter("vnp_SecureHash");
 
         // Remove hash fields before validating
-        try {
-            String encodedHashType = URLEncoder.encode("vnp_SecureHashType", StandardCharsets.UTF_8.toString());
-            String encodedHash = URLEncoder.encode("vnp_SecureHash", StandardCharsets.UTF_8.toString());
-            fields.remove(encodedHashType);
-            fields.remove(encodedHash);
-        } catch (Exception e) {
-            // Fallback to non-encoded keys
-            fields.remove("vnp_SecureHashType");
-            fields.remove("vnp_SecureHash");
-        }
+        fields.remove("vnp_SecureHashType");
+        fields.remove("vnp_SecureHash");
 
         // Validate signature
         String signValue = gatewayConfig.hashAllFields(fields);
@@ -91,7 +75,18 @@ public class PaymentCallbackController {
 
         // Set attributes for view
         model.addAttribute("transactionRef", transactionRef);
+        // Parse amount from gateway (amount is in cents)
+        java.math.BigDecimal amountVnd = java.math.BigDecimal.ZERO;
+        try {
+            if (amount != null && !amount.isEmpty()) {
+                amountVnd = new java.math.BigDecimal(amount).divide(new java.math.BigDecimal("100"));
+            }
+        } catch (Exception ex) {
+            System.err.println("ERROR: Failed to parse amount: " + amount);
+        }
+
         model.addAttribute("amount", amount);
+        model.addAttribute("amountVnd", amountVnd);
         model.addAttribute("orderInfo", orderInfo);
         model.addAttribute("responseCode", responseCode);
         model.addAttribute("transactionNo", transactionNo);
@@ -158,6 +153,13 @@ public class PaymentCallbackController {
                 // Invalid signature
                 paymentStatus = "failed";
                 message = "Chữ ký thanh toán không hợp lệ. Giao dịch có thể bị giả mạo. Vui lòng liên hệ hỗ trợ.";
+                // Try to mark payment as failed if we have the reference
+                if (transactionRef != null) {
+                    paymentRepository.findByTransactionRef(transactionRef).ifPresent(p -> {
+                        p.setStatus(Payment.PaymentStatus.FAILED);
+                        paymentRepository.save(p);
+                    });
+                }
             }
         } catch (Exception e) {
             System.err.println("ERROR: Payment callback processing failed: " + e.getMessage());

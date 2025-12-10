@@ -16,14 +16,14 @@ public class Payment {
     @JoinColumn(name = "contract_id", nullable = false)
     private Contract contract;
 
-    @Enumerated(EnumType.STRING)
+    @Convert(converter = PaymentTypeConverter.class)
     @Column(name = "payment_type", nullable = false)
     private PaymentType paymentType;
 
     @Column(nullable = false)
     private BigDecimal amount;
 
-    @Enumerated(EnumType.STRING)
+    @Convert(converter = PaymentMethodConverter.class)
     @Column(name = "method", nullable = false)
     private PaymentMethod paymentMethod;
 

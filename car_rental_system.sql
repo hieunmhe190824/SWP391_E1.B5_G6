@@ -177,17 +177,16 @@ CREATE TABLE contracts (
     CONSTRAINT chk_deposit_fee CHECK (deposit_amount > total_rental_fee)
 ) ENGINE=InnoDB;
 
--- Bảng: payments - Thanh toán
 -- WORKFLOW STEP 5: Customer pays deposit of 50,000,000 VND
--- Payment type 'Deposit' is created when customer confirms contract
--- Supports online payment gateway integration
+-- Payment type 'DEPOSIT' is created when customer confirms contract
+-- Supports online payment gateway integration (default ONLINE)
 CREATE TABLE payments (
     payment_id INT PRIMARY KEY AUTO_INCREMENT,
     contract_id INT NOT NULL,
-    payment_type ENUM('Deposit', 'Rental', 'Refund') NOT NULL,  -- Deposit = 50M VND
+    payment_type ENUM('DEPOSIT', 'RENTAL', 'REFUND') NOT NULL,  -- Deposit = 50M VND
     amount DECIMAL(10, 2) NOT NULL,
-    method ENUM('Cash', 'Card', 'Transfer', 'Online') NOT NULL,  -- Added 'Online' for payment gateway
-    status ENUM('Pending', 'Processing', 'Completed', 'Failed', 'Cancelled') DEFAULT 'Pending',  -- Added 'Processing' and 'Cancelled'
+    method ENUM('CASH', 'CARD', 'TRANSFER', 'ONLINE') NOT NULL DEFAULT 'ONLINE',  -- Default: ONLINE
+    status ENUM('PENDING', 'PROCESSING', 'COMPLETED', 'FAILED', 'CANCELLED') DEFAULT 'PENDING',  -- Added PROCESSING and CANCELLED
     payment_date DATETIME,
 
     -- Online payment gateway fields
@@ -669,43 +668,43 @@ INSERT INTO payments (contract_id, payment_type, amount, method, status, payment
                      transaction_ref, gateway_transaction_id, gateway_response_code, gateway_transaction_status,
                      gateway_bank_code, gateway_card_type, gateway_pay_date, gateway_secure_hash, payment_url) VALUES
 -- Active contracts - Deposit paid (all 50,000,000 VND)
-(1, 'Deposit', 50000000, 'Transfer', 'Completed', '2024-12-09 14:30:00', '2024-12-09 14:30:00',
+(1, 'DEPOSIT', 50000000, 'TRANSFER', 'COMPLETED', '2024-12-09 14:30:00', '2024-12-09 14:30:00',
  NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(2, 'Deposit', 50000000, 'Card', 'Completed', '2024-12-11 10:30:00', '2024-12-11 10:30:00',
+(2, 'DEPOSIT', 50000000, 'CARD', 'COMPLETED', '2024-12-11 10:30:00', '2024-12-11 10:30:00',
  NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(3, 'Deposit', 50000000, 'Transfer', 'Completed', '2024-12-14 16:00:00', '2024-12-14 16:00:00',
+(3, 'DEPOSIT', 50000000, 'TRANSFER', 'COMPLETED', '2024-12-14 16:00:00', '2024-12-14 16:00:00',
  NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 
 -- Completed contracts - Full payments (deposit 50,000,000 VND)
-(4, 'Deposit', 50000000, 'Transfer', 'Completed', '2024-10-31 11:30:00', '2024-10-31 11:30:00',
+(4, 'DEPOSIT', 50000000, 'TRANSFER', 'COMPLETED', '2024-10-31 11:30:00', '2024-10-31 11:30:00',
  NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(4, 'Rental', 4800000, 'Card', 'Completed', '2024-11-05 19:00:00', '2024-11-05 19:00:00',
- NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-
-(5, 'Deposit', 50000000, 'Card', 'Completed', '2024-11-09 10:00:00', '2024-11-09 10:00:00',
- NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(5, 'Rental', 7500000, 'Transfer', 'Completed', '2024-11-16 11:00:00', '2024-11-16 11:00:00',
+(4, 'RENTAL', 4800000, 'CARD', 'COMPLETED', '2024-11-05 19:00:00', '2024-11-05 19:00:00',
  NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 
-(6, 'Deposit', 50000000, 'Transfer', 'Completed', '2024-11-14 14:45:00', '2024-11-14 14:45:00',
+(5, 'DEPOSIT', 50000000, 'CARD', 'COMPLETED', '2024-11-09 10:00:00', '2024-11-09 10:00:00',
  NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(6, 'Rental', 8000000, 'Card', 'Completed', '2024-11-21 10:30:00', '2024-11-21 10:30:00',
+(5, 'RENTAL', 7500000, 'TRANSFER', 'COMPLETED', '2024-11-16 11:00:00', '2024-11-16 11:00:00',
  NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 
-(7, 'Deposit', 50000000, 'Card', 'Completed', '2024-10-19 11:15:00', '2024-10-19 11:15:00',
+(6, 'DEPOSIT', 50000000, 'TRANSFER', 'COMPLETED', '2024-11-14 14:45:00', '2024-11-14 14:45:00',
  NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(7, 'Rental', 5500000, 'Transfer', 'Completed', '2024-10-25 19:30:00', '2024-10-25 19:30:00',
+(6, 'RENTAL', 8000000, 'CARD', 'COMPLETED', '2024-11-21 10:30:00', '2024-11-21 10:30:00',
+ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+
+(7, 'DEPOSIT', 50000000, 'CARD', 'COMPLETED', '2024-10-19 11:15:00', '2024-10-19 11:15:00',
+ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(7, 'RENTAL', 5500000, 'TRANSFER', 'COMPLETED', '2024-10-25 19:30:00', '2024-10-25 19:30:00',
  NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 
 -- Cancelled contract - Refund (deposit 50,000,000 VND)
-(8, 'Deposit', 50000000, 'Transfer', 'Completed', '2024-11-24 13:30:00', '2024-11-24 13:30:00',
+(8, 'DEPOSIT', 50000000, 'TRANSFER', 'COMPLETED', '2024-11-24 13:30:00', '2024-11-24 13:30:00',
  NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(8, 'Refund', 50000000, 'Transfer', 'Completed', '2024-11-24 15:00:00', '2024-11-24 15:00:00',
+(8, 'REFUND', 50000000, 'TRANSFER', 'COMPLETED', '2024-11-24 15:00:00', '2024-11-24 15:00:00',
  NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 
 -- Pending payment contract - Online payment gateway (sample)
 -- This demonstrates a pending online payment awaiting customer to complete
-(9, 'Deposit', 50000000, 'Online', 'Pending', NULL, '2024-12-09 16:05:00',
+(9, 'DEPOSIT', 50000000, 'ONLINE', 'PENDING', NULL, '2024-12-09 16:05:00',
  'DEPOSIT9_12345678', NULL, NULL, NULL, NULL, NULL, NULL, NULL,
  'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html?vnp_Amount=5000000000&vnp_Command=pay&...');
 

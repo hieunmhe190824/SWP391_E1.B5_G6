@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -95,15 +96,10 @@ public class PaymentService {
         payment.setPaymentType(PaymentType.DEPOSIT);
         payment.setAmount(contract.getDepositAmount());
         payment.setPaymentMethod(paymentMethod);
-        payment.setStatus(PaymentStatus.COMPLETED);
+        payment.setStatus(PaymentStatus.PENDING); // will be finalized by gateway callback
         payment.setPaymentDate(LocalDateTime.now());
 
-        Payment savedPayment = paymentRepository.save(payment);
-
-        // Update contract status to ACTIVE
-        contractService.updateContractStatus(contractId, Contract.ContractStatus.ACTIVE);
-
-        return savedPayment;
+        return paymentRepository.save(payment);
     }
 
     /**
@@ -113,5 +109,42 @@ public class PaymentService {
         return paymentRepository.findByContractId(contractId).stream()
                 .filter(p -> p.getPaymentType() == PaymentType.DEPOSIT)
                 .findFirst();
+    }
+
+    /**
+     * Create refund payment when contract is cancelled
+     * Used when pickup fails or contract is cancelled before pickup
+     * 
+     * @param contractId Contract ID
+     * @param refundAmount Amount to refund
+     * @param reason Refund reason
+     * @return Created refund payment
+     */
+    public Payment createRefundPayment(Long contractId, BigDecimal refundAmount, String reason) {
+        // Get contract
+        Contract contract = contractService.getContractById(contractId)
+                .orElseThrow(() -> new RuntimeException("Contract not found"));
+
+        // Verify contract is cancelled
+        if (contract.getStatus() != Contract.ContractStatus.CANCELLED) {
+            throw new RuntimeException("Can only create refund for cancelled contracts");
+        }
+
+        // Check if deposit payment exists
+        Optional<Payment> depositPayment = getDepositPayment(contractId);
+        if (depositPayment.isEmpty()) {
+            throw new RuntimeException("No deposit payment found for this contract");
+        }
+
+        // Create refund payment
+        Payment refund = new Payment();
+        refund.setContract(contract);
+        refund.setPaymentType(PaymentType.REFUND);
+        refund.setAmount(refundAmount);
+        refund.setPaymentMethod(PaymentMethod.TRANSFER); // Refunds typically via transfer
+        refund.setStatus(PaymentStatus.PENDING); // Refund needs to be processed
+        refund.setPaymentDate(LocalDateTime.now());
+
+        return paymentRepository.save(refund);
     }
 }

@@ -94,7 +94,7 @@ public class ContractService {
      */
     public List<Contract> getContractsByCustomer(Long customerId) {
         return contractRepository.findAll().stream()
-                .filter(c -> c.getCustomer().getId().equals(customerId))
+                .filter(c -> c.getCustomer() != null && c.getCustomer().getId().equals(customerId))
                 .toList();
     }
 
