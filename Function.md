@@ -2,15 +2,15 @@
 
  FEATURE 1: AUTHENTICATION & USER MANAGEMENT
 
- UC01: Register Account
+ UC01: Register Account - done
 - Roles: Guest
 - Mô tả: Đăng ký tài khoản mới, submit thông tin cá nhân và giấy tờ
 
- UC02: Login
+ UC02: Login - done
 - Roles: Customer, Staff, Admin
 - Mô tả: Đăng nhập vào hệ thống
 
- UC03: Manage Profile
+ UC03: Manage Profile - done
 - Roles: Customer, Staff, Admin
 - Mô tả: Quản lý thông tin cá nhân, cập nhật giấy tờ
 
@@ -18,12 +18,12 @@
 
  FEATURE 2: VEHICLE CATALOG
 
- UC04: Browse Vehicles
+ UC04: Browse Vehicles - done
 - Roles: Customer, Guest
 - Mô tả: Xem, tìm kiếm, lọc danh sách xe có sẵn, xem chi tiết xe
 - Gộp: View list + Search/Filter + View details
 
- UC05: Manage Vehicles
+ UC05: Manage Vehicles - done
 - Roles: Admin, Staff
 - Mô tả: CRUD thông tin xe, cập nhật trạng thái, upload hình ảnh
 - Gộp: Add/Edit/Delete vehicles + Update status + Manage images
@@ -32,7 +32,7 @@
 
  FEATURE 3: BOOKING MANAGEMENT
 
- UC06: Create Booking
+ UC06: Create Booking - done
 - Roles: Customer
 - Mô tả: Tạo đặt xe mới, chọn thời gian, địa điểm, submit giấy tờ
 - Gộp: Schedule rental + Submit documents
@@ -46,7 +46,7 @@
 - Roles: Customer, Staff
 - Mô tả: Hủy đặt xe (trước khi tạo hợp đồng)
 
- UC09: View Booking History
+ UC09: View Booking History - done
 - Roles: Customer
 - Mô tả: Xem lịch sử đặt xe và trạng thái
 

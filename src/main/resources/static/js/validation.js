@@ -371,13 +371,9 @@ function autoHideAlerts() {
             // Thêm class fade-out để trigger animation
             alert.classList.add('fade-out');
             
-            // Xóa element sau khi animation hoàn thành
+            // Chỉ ẩn alert, không xóa parent để tránh mất các phần tử khác
             setTimeout(function() {
-                if (alert.parentElement) {
-                    alert.parentElement.remove();
-                } else {
-                    alert.remove();
-                }
+                alert.style.display = 'none';
             }, 500); // Đợi animation fade-out hoàn thành (0.5s)
         }, 3000); // 3 giây
     });

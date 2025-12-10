@@ -4,6 +4,8 @@ import com.carrental.controller.BookingController.BookingCreateDTO;
 import com.carrental.model.*;
 import com.carrental.model.Booking.BookingStatus;
 import com.carrental.repository.*;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +23,9 @@ import java.util.stream.Collectors;
 @Service
 @Transactional
 public class BookingService {
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @Autowired
     private BookingRepository bookingRepository;
@@ -231,8 +236,16 @@ public class BookingService {
      * @return Cancelled booking
      */
     public Booking cancelBooking(Long bookingId, User user) {
+        System.out.println("=== CANCEL BOOKING START ===");
+        System.out.println("Booking ID: " + bookingId);
+        System.out.println("User: " + user.getEmail() + " (Role: " + user.getRole() + ")");
+        
+        // Get the booking from repository to check permissions
         Booking booking = bookingRepository.findByIdWithRelations(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        System.out.println("Current status (enum): " + booking.getStatus());
+        System.out.println("Current statusString: " + booking.getStatusString());
 
         // Validate user has permission to cancel
         if (user.getRole() == User.UserRole.CUSTOMER) {
@@ -241,19 +254,43 @@ public class BookingService {
             }
         }
 
-        // Validate booking status - can only cancel Pending or Approved bookings
-        if (booking.getStatus() != BookingStatus.PENDING &&
-            booking.getStatus() != BookingStatus.APPROVED) {
-            throw new RuntimeException("Only pending or approved bookings can be cancelled");
+        // Validate booking status - can only cancel Pending bookings
+        if (booking.getStatus() != BookingStatus.PENDING) {
+            throw new RuntimeException("Only pending bookings can be cancelled");
         }
+
+        System.out.println("Validation passed. Setting status to CANCELLED...");
 
         // TODO: Check if contract exists - if yes, cannot cancel
         // For now, we assume no contract exists
 
-        // Update booking status
-        booking.setStatus(BookingStatus.CANCELLED);
+        // Method 1: Use direct update query (most reliable)
+        System.out.println("Using direct update query...");
+        int rowsUpdated = bookingRepository.updateBookingStatus(bookingId, "Cancelled");
+        System.out.println("Rows updated: " + rowsUpdated);
+        
+        if (rowsUpdated == 0) {
+            throw new RuntimeException("Failed to update booking status");
+        }
 
-        return bookingRepository.save(booking);
+        // Flush and clear to ensure the update is committed and cache is cleared
+        entityManager.flush();
+        System.out.println("Flushed to database");
+        
+        entityManager.clear();
+        System.out.println("Cleared EntityManager cache");
+
+        // Reload from database to get updated booking with all relationships
+        System.out.println("Reloading from database...");
+        Booking updatedBooking = bookingRepository.findByIdWithRelations(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found after update"));
+        
+        System.out.println("After reload - ID: " + updatedBooking.getId());
+        System.out.println("After reload - enum: " + updatedBooking.getStatus());
+        System.out.println("After reload - string: " + updatedBooking.getStatusString());
+        System.out.println("=== CANCEL BOOKING END ===");
+        
+        return updatedBooking;
     }
 
     /**

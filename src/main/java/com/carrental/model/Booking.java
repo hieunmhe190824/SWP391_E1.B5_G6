@@ -158,6 +158,18 @@ public class Booking {
         }
     }
 
+    public String getStatusString() {
+        return statusString;
+    }
+
+    public void setStatusString(String statusString) {
+        this.statusString = statusString;
+        // Also update the enum when setting string directly
+        if (statusString != null) {
+            this.status = BookingStatus.fromValue(statusString);
+        }
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }

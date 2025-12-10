@@ -214,14 +214,29 @@ public class BookingController {
      */
     @PostMapping("/{id}/cancel")
     public String cancelBooking(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        System.out.println("=== CONTROLLER: Cancel Booking Request ===");
+        System.out.println("Booking ID from path: " + id);
+        
         try {
             User currentUser = getCurrentUser();
+            System.out.println("Current user: " + currentUser.getEmail());
 
             Booking booking = bookingService.cancelBooking(id, currentUser);
+            
+            System.out.println("=== CONTROLLER: After Service Call ===");
+            System.out.println("Returned booking ID: " + booking.getId());
+            System.out.println("Returned booking status enum: " + booking.getStatus());
+            System.out.println("Returned booking status string: " + booking.getStatusString());
 
             redirectAttributes.addFlashAttribute("successMessage",
                 "Đã hủy đơn đặt xe #" + booking.getId() + " thành công");
+            
+            System.out.println("=== CONTROLLER: Redirecting to my-bookings ===");
         } catch (Exception e) {
+            System.err.println("=== CONTROLLER: ERROR ===");
+            System.err.println("Error message: " + e.getMessage());
+            e.printStackTrace();
+            
             redirectAttributes.addFlashAttribute("errorMessage",
                 "Lỗi khi hủy đơn: " + e.getMessage());
         }

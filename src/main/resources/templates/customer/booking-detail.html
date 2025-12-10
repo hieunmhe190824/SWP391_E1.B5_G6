@@ -319,6 +319,161 @@
             border: 1px solid rgba(245, 158, 11, 0.3) !important;
             color: #fcd34d !important;
         }
+
+        /* Cancel Booking Modal */
+        .cancel-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cancel-modal.active {
+            display: flex;
+        }
+
+        .cancel-modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+        }
+
+        .cancel-modal-content {
+            position: relative;
+            background: rgba(31, 41, 55, 0.98);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            max-width: 480px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px) scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .cancel-modal-header {
+            padding: 2rem 2rem 1rem;
+            text-align: center;
+        }
+
+        .cancel-modal-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            animation: iconPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes iconPulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        .cancel-modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--color-text-white);
+            margin: 0;
+        }
+
+        .cancel-modal-body {
+            padding: 0 2rem 2rem;
+            text-align: center;
+        }
+
+        .cancel-modal-message {
+            font-size: 1.125rem;
+            color: var(--color-text-white);
+            margin: 0 0 0.5rem 0;
+        }
+
+        .cancel-modal-submessage {
+            font-size: 0.875rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin: 0;
+        }
+
+        .cancel-modal-footer {
+            padding: 1.5rem 2rem;
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-modal-cancel,
+        .btn-modal-confirm {
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            min-width: 140px;
+        }
+
+        .btn-modal-cancel {
+            background: rgba(107, 114, 128, 0.2);
+            color: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-modal-cancel:hover {
+            background: rgba(107, 114, 128, 0.3);
+            color: white;
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-modal-confirm {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-modal-confirm:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+        }
+
+        @media (max-width: 640px) {
+            .cancel-modal-content {
+                width: 95%;
+            }
+
+            .cancel-modal-footer {
+                flex-direction: column;
+            }
+
+            .btn-modal-cancel,
+            .btn-modal-confirm {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
@@ -506,23 +661,37 @@
                     ← Quay lại
                 </a>
 
-                <!-- Show cancel button for Pending or Approved bookings -->
-                <form th:if="${booking.status.name() == 'PENDING' or booking.status.name() == 'APPROVED'}"
+                <!-- Show cancel button only for Pending bookings -->
+                <form th:if="${booking.status.name() == 'PENDING'}"
                       th:action="@{/bookings/{id}/cancel(id=${booking.id})}"
                       method="post"
-                      data-delete-form="true"
-                      data-confirm-title="Xác nhận hủy đơn"
-                      data-confirm-message="Bạn có chắc muốn hủy đơn đặt xe này? Hành động này không thể hoàn tác."
-                      data-confirm-button="Hủy đơn"
+                      class="cancel-booking-form"
                       style="display: inline;">
-                    <button type="submit" class="btn btn-danger">Hủy đơn</button>
+                    <button type="button" class="btn btn-danger" onclick="showCancelModal(this)">Hủy đơn</button>
+                    <button type="submit" class="cancel-submit-hidden" style="display: none;">Submit</button>
                 </form>
             </div>
         </div>
     </main>
 
-    <!-- Cancel Confirmation Modal -->
-    <div th:replace="~{fragments/components/modals :: deleteConfirmModal}"></div>
+    <!-- Cancel Booking Modal -->
+    <div id="cancelBookingModal" class="cancel-modal">
+        <div class="cancel-modal-overlay"></div>
+        <div class="cancel-modal-content">
+            <div class="cancel-modal-header">
+                <div class="cancel-modal-icon">⚠️</div>
+                <h3 class="cancel-modal-title">Xác nhận hủy đơn</h3>
+            </div>
+            <div class="cancel-modal-body">
+                <p class="cancel-modal-message">Bạn có chắc muốn hủy đơn đặt xe này?</p>
+                <p class="cancel-modal-submessage">Hành động này không thể hoàn tác.</p>
+            </div>
+            <div class="cancel-modal-footer">
+                <button type="button" class="btn-modal-cancel" onclick="closeCancelModal()">Không, giữ lại</button>
+                <button type="button" class="btn-modal-confirm" onclick="confirmCancelBooking()">Có, hủy đơn</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Footer -->
     <div th:replace="~{fragments/footer :: footer}"></div>
@@ -532,63 +701,71 @@
     <script th:src="@{/js/validation.js}"></script>
     
     <script>
-        // Delete/Cancel Confirmation Modal Handler
-        document.addEventListener('DOMContentLoaded', function() {
-            const modal = document.getElementById('deleteConfirmModal');
-            const modalTitle = modal.querySelector('.delete-modal-title');
-            const modalMessage = modal.querySelector('.delete-modal-message');
-            const modalConfirmBtn = modal.querySelector('.delete-modal-confirm');
-            const modalCancelBtn = modal.querySelector('.delete-modal-cancel');
-            const modalOverlay = modal.querySelector('.delete-modal-overlay');
-            let currentForm = null;
+        // Simple Cancel Booking Modal for the cancel form on detail page
+        let currentCancelForm = null;
 
-            // Handle all forms with data-delete-form attribute
-            document.querySelectorAll('form[data-delete-form="true"]').forEach(form => {
-                form.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    currentForm = this;
+        function showCancelModal(button) {
+            currentCancelForm = button.closest('form');
+            const modal = document.getElementById('cancelBookingModal');
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
 
-                    // Customize modal content based on data attributes
-                    const title = this.dataset.confirmTitle || 'Xác nhận xóa';
-                    const message = this.dataset.confirmMessage || 'Bạn có chắc chắn muốn xóa mục này? Hành động này không thể hoàn tác.';
-                    const confirmBtnText = this.dataset.confirmButton || 'Xóa';
+        function closeCancelModal() {
+            const modal = document.getElementById('cancelBookingModal');
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+            currentCancelForm = null;
+        }
 
-                    modalTitle.textContent = title;
-                    modalMessage.textContent = message;
-                    modalConfirmBtn.textContent = confirmBtnText;
-
-                    // Show modal
-                    modal.classList.add('active');
-                    document.body.style.overflow = 'hidden';
-                });
-            });
-
-            // Confirm button click
-            modalConfirmBtn.addEventListener('click', function() {
-                if (currentForm) {
-                    currentForm.submit();
+        function confirmCancelBooking() {
+            if (currentCancelForm) {
+                const submitBtn = currentCancelForm.querySelector('.cancel-submit-hidden');
+                if (submitBtn) {
+                    closeCancelModal();
+                    submitBtn.click(); // Trigger native submit
+                } else {
+                    console.error('Hidden submit button not found!');
                 }
-                closeModal();
-            });
-
-            // Cancel button click
-            modalCancelBtn.addEventListener('click', closeModal);
-
-            // Overlay click
-            modalOverlay.addEventListener('click', closeModal);
-
-            // ESC key
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape' && modal.classList.contains('active')) {
-                    closeModal();
-                }
-            });
-
-            function closeModal() {
-                modal.classList.remove('active');
-                document.body.style.overflow = '';
-                currentForm = null;
+            } else {
+                console.error('Form not found!');
             }
+        }
+
+        // Close modal on overlay click and ESC key + auto hide alerts
+        document.addEventListener('DOMContentLoaded', function () {
+            const overlay = document.querySelector('.cancel-modal-overlay');
+            if (overlay) {
+                overlay.addEventListener('click', closeCancelModal);
+            }
+
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') {
+                    const modal = document.getElementById('cancelBookingModal');
+                    if (modal && modal.classList.contains('active')) {
+                        closeCancelModal();
+                    }
+                }
+            });
+
+            const successAlert = document.querySelector('.alert-success');
+            const errorAlert = document.querySelector('.alert-error');
+
+            function hideAlert(alert) {
+                if (alert) {
+                    setTimeout(function () {
+                        alert.style.transition = 'opacity 0.5s ease-out, transform 0.5s ease-out';
+                        alert.style.opacity = '0';
+                        alert.style.transform = 'translateY(-10px)';
+                        setTimeout(function () {
+                            alert.style.display = 'none';
+                        }, 500);
+                    }, 3000);
+                }
+            }
+
+            hideAlert(successAlert);
+            hideAlert(errorAlert);
         });
     </script>
 </body>

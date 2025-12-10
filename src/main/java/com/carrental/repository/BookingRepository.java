@@ -2,6 +2,7 @@ package com.carrental.repository;
 
 import com.carrental.model.Booking;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -121,4 +122,12 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
            "ORDER BY b.createdAt DESC")
     List<Booking> findByCustomerIdAndStatusWithRelations(@Param("customerId") Long customerId,
                                                          @Param("status") String status);
+
+    /**
+     * Update booking status directly in database
+     * Use this for critical status updates to ensure they are persisted
+     */
+    @Modifying
+    @Query("UPDATE Booking b SET b.statusString = :status WHERE b.id = :bookingId")
+    int updateBookingStatus(@Param("bookingId") Long bookingId, @Param("status") String status);
 }
