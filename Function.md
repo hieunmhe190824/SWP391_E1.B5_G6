@@ -37,12 +37,12 @@
 - Mô tả: Tạo đặt xe mới, chọn thời gian, địa điểm, submit giấy tờ
 - Gộp: Schedule rental + Submit documents
 
- UC07: Approve/Reject Booking
+ UC07: Approve/Reject Booking - donedone
 - Roles: Staff
 - Mô tả: Xem yêu cầu đặt xe, kiểm tra giấy tờ, phê duyệt hoặc từ chối
 - Gộp: Check documents + 
 
- UC08: Cancel Booking
+ UC08: Cancel Booking - done
 - Roles: Customer, Staff
 - Mô tả: Hủy đặt xe (trước khi tạo hợp đồng)
 
@@ -54,12 +54,12 @@
 
  FEATURE 4: CONTRACT & PAYMENT
 
- UC10: Create Contract
+ UC10: Create Contract - done
 - Roles: Staff
 - Mô tả: Tạo hợp đồng thuê xe từ booking đã được duyệt
 - Gộp: Create contract + Collect deposit (online payment)
 
- UC11: View Contract
+ UC11: View Contract - done
 - Roles: Customer, Staff
 - Mô tả: Xem chi tiết hợp đồng, điều khoản, in/download hợp đồng
 

@@ -153,9 +153,10 @@ CREATE TABLE booking_documents (
 -- WORKFLOW STEP 4: Contract sent to customer with PENDING_PAYMENT status
 -- WORKFLOW STEP 5: Customer pays deposit, status changes to ACTIVE
 -- FIXED DEPOSIT: 50,000,000 VND for all cars
+-- NOTE: booking_id is nullable to allow contracts to exist independently (e.g., when booking is cancelled)
 CREATE TABLE contracts (
     contract_id INT PRIMARY KEY AUTO_INCREMENT,
-    booking_id INT NOT NULL UNIQUE,                      -- 1-1 với booking
+    booking_id INT UNIQUE,                               -- Nullable: 1 booking có thể không có hoặc có 1 contract
     contract_number VARCHAR(50) NOT NULL UNIQUE,
     customer_id INT NOT NULL,
     vehicle_id INT NOT NULL,
@@ -168,11 +169,12 @@ CREATE TABLE contracts (
     deposit_amount DECIMAL(10, 2) NOT NULL,              -- Fixed: 50,000,000 VND
     status ENUM('Pending_Payment', 'Active', 'Completed', 'Cancelled') DEFAULT 'Pending_Payment',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (booking_id) REFERENCES bookings(booking_id) ON DELETE CASCADE,
+    FOREIGN KEY (booking_id) REFERENCES bookings(booking_id) ON DELETE SET NULL,
     FOREIGN KEY (customer_id) REFERENCES users(user_id) ON DELETE CASCADE,
     FOREIGN KEY (vehicle_id) REFERENCES vehicles(vehicle_id) ON DELETE CASCADE,
     FOREIGN KEY (staff_id) REFERENCES users(user_id) ON DELETE CASCADE,
     INDEX idx_customer (customer_id),
+    INDEX idx_booking (booking_id),
     INDEX idx_status (status),
     CONSTRAINT chk_deposit_fee CHECK (deposit_amount > total_rental_fee)
 ) ENGINE=InnoDB;
@@ -214,11 +216,10 @@ CREATE TABLE payments (
 -- 4. RENTAL PROCESS (2 bảng)
 -- ===================================================================
 
--- Bảng: handovers - Bàn giao xe (pickup + return)
 CREATE TABLE handovers (
     handover_id INT PRIMARY KEY AUTO_INCREMENT,
     contract_id INT NOT NULL,
-    handover_type ENUM('Pickup', 'Return') NOT NULL,     -- Nhận hoặc trả
+    handover_type ENUM('PICKUP', 'RETURN') NOT NULL,     -- Nhận hoặc trả
     staff_id INT NOT NULL,
     handover_time DATETIME NOT NULL,                     -- Thời gian thực tế
     odometer INT,                                        -- Số km
@@ -589,23 +590,23 @@ INSERT INTO vehicles (model_id, location_id, license_plate, color, status, daily
 -- 7. BOOKINGS
 INSERT INTO bookings (booking_id, customer_id, vehicle_id, pickup_location_id, return_location_id, start_date, end_date, total_days, status, created_at) VALUES
 -- Approved bookings (will create contracts)
-(1, 5, 21, 1, 1, '2024-12-10 09:00:00', '2024-12-13 18:00:00', 3, 'Approved', '2024-12-05 10:30:00'),
-(2, 6, 22, 2, 2, '2024-12-12 08:00:00', '2024-12-15 17:00:00', 3, 'Approved', '2024-12-06 14:20:00'),
-(3, 7, 23, 3, 4, '2024-12-15 10:00:00', '2024-12-20 16:00:00', 5, 'Approved', '2024-12-07 09:15:00'),
+(1, 5, 21, 1, 1, '2025-03-12 09:00:00', '2025-03-15 18:00:00', 3, 'Approved', '2025-03-07 10:30:00'),
+(2, 6, 22, 2, 2, '2025-03-14 08:00:00', '2025-03-17 17:00:00', 3, 'Approved', '2025-03-08 14:20:00'),
+(3, 7, 23, 3, 4, '2025-03-17 10:00:00', '2025-03-22 16:00:00', 5, 'Approved', '2025-03-09 09:15:00'),
 
 -- Pending bookings (waiting for review)
-(4, 8, 1, 1, 1, '2024-12-20 09:00:00', '2024-12-25 18:00:00', 5, 'Pending', '2024-12-04 11:00:00'),
-(5, 9, 5, 2, 2, '2024-12-22 08:30:00', '2024-12-27 17:30:00', 5, 'Pending', '2024-12-04 13:45:00'),
-(6, 10, 12, 3, 3, '2024-12-25 10:00:00', '2024-12-30 16:00:00', 5, 'Pending', '2024-12-04 15:20:00'),
-(7, 11, 16, 4, 4, '2024-12-28 09:00:00', '2025-01-02 18:00:00', 5, 'Pending', '2024-12-04 16:30:00'),
+(4, 8, 1, 1, 1, '2025-03-22 09:00:00', '2025-03-27 18:00:00', 5, 'Pending', '2025-03-06 11:00:00'),
+(5, 9, 5, 2, 2, '2025-03-24 08:30:00', '2025-03-29 17:30:00', 5, 'Pending', '2025-03-06 13:45:00'),
+(6, 10, 12, 3, 3, '2025-03-27 10:00:00', '2025-04-01 16:00:00', 5, 'Pending', '2025-03-06 15:20:00'),
+(7, 11, 16, 4, 4, '2025-03-30 09:00:00', '2025-04-04 18:00:00', 5, 'Pending', '2025-03-06 16:30:00'),
 
 -- Rejected bookings
-(8, 13, 8, 3, 3, '2024-12-15 09:00:00', '2024-12-18 18:00:00', 3, 'Rejected', '2024-12-03 10:00:00'),
-(9, 14, 11, 4, 4, '2024-12-18 08:00:00', '2024-12-22 17:00:00', 4, 'Rejected', '2024-12-03 14:30:00'),
+(8, 13, 8, 3, 3, '2025-03-17 09:00:00', '2025-03-20 18:00:00', 3, 'Rejected', '2025-03-05 10:00:00'),
+(9, 14, 11, 4, 4, '2025-03-20 08:00:00', '2025-03-24 17:00:00', 4, 'Rejected', '2025-03-05 14:30:00'),
 
 -- Cancelled bookings
-(10, 5, 7, 3, 3, '2024-12-08 09:00:00', '2024-12-12 18:00:00', 4, 'Cancelled', '2024-12-01 09:00:00'),
-(11, 6, 9, 1, 2, '2024-12-10 10:00:00', '2024-12-14 16:00:00', 4, 'Cancelled', '2024-12-02 11:30:00');
+(10, 6, 7, 3, 3, '2025-02-25 09:00:00', '2025-02-28 18:00:00', 3, 'Cancelled', '2025-02-24 09:00:00'),
+(11, 5, 8, 1, 2, '2025-03-22 09:00:00', '2025-03-25 18:00:00', 3, 'Cancelled', '2025-03-21 11:30:00');
 
 -- 8. BOOKING DOCUMENTS
 INSERT INTO booking_documents (booking_id, document_id) VALUES
@@ -629,36 +630,66 @@ INSERT INTO booking_documents (booking_id, document_id) VALUES
 -- Adding more completed bookings
 INSERT INTO bookings (booking_id, customer_id, vehicle_id, pickup_location_id, return_location_id, start_date, end_date, total_days, status, created_at) VALUES
 -- Completed bookings for past contracts
-(12, 8, 9, 1, 1, '2024-11-01 09:00:00', '2024-11-05 18:00:00', 4, 'Approved', '2024-10-30 10:00:00'),
-(13, 9, 14, 2, 2, '2024-11-10 08:00:00', '2024-11-15 17:00:00', 5, 'Approved', '2024-11-08 14:00:00'),
-(14, 10, 15, 3, 4, '2024-11-15 10:00:00', '2024-11-20 16:00:00', 5, 'Approved', '2024-11-13 09:00:00'),
-(15, 11, 10, 4, 4, '2024-10-20 09:00:00', '2024-10-25 18:00:00', 5, 'Approved', '2024-10-18 11:00:00');
+(12, 8, 9, 1, 1, '2025-02-01 09:00:00', '2025-02-05 18:00:00', 4, 'Approved', '2025-01-30 10:00:00'),
+(13, 9, 14, 2, 2, '2025-02-10 08:00:00', '2025-02-15 17:00:00', 5, 'Approved', '2025-02-08 14:00:00'),
+(14, 10, 15, 3, 4, '2025-02-15 10:00:00', '2025-02-20 16:00:00', 5, 'Approved', '2025-02-13 09:00:00'),
+(15, 11, 10, 4, 4, '2025-01-20 09:00:00', '2025-01-25 18:00:00', 5, 'Approved', '2025-01-18 11:00:00'),
+
+-- TEST BOOKINGS for handover pickup testing (contracts 10-14)
+-- These bookings are approved and will have Active contracts with deposit paid but NO pickup handover
+(16, 5, 1, 1, 1, '2025-01-10 09:00:00', '2025-01-13 18:00:00', 3, 'Approved', '2025-01-08 10:00:00'),
+(17, 6, 5, 2, 2, '2025-01-12 08:00:00', '2025-01-15 17:00:00', 3, 'Approved', '2025-01-10 14:00:00'),
+(18, 7, 12, 3, 3, '2025-01-08 10:00:00', '2025-01-12 16:00:00', 4, 'Approved', '2025-01-06 09:00:00'),
+(19, 8, 16, 4, 4, '2025-01-15 09:00:00', '2025-01-20 18:00:00', 5, 'Approved', '2025-01-13 11:00:00'),
+(20, 9, 22, 2, 2, '2025-01-11 08:30:00', '2025-01-16 17:30:00', 5, 'Approved', '2025-01-09 15:00:00');
+
+-- Add booking documents for test bookings
+INSERT INTO booking_documents (booking_id, document_id) VALUES
+-- Test Bookings 16-20 (using same documents as their customers)
+(16, 1), (16, 2),
+(17, 3), (17, 4),
+(18, 5), (18, 6),
+(19, 7), (19, 8),
+(20, 9), (20, 10);
 
 INSERT INTO contracts (contract_id, booking_id, contract_number, customer_id, vehicle_id, staff_id, start_date, end_date, total_days, daily_rate, total_rental_fee, deposit_amount, status, created_at) VALUES
 -- Active contracts (currently renting)
 -- All deposits are 50,000,000 VND as per business requirement
-(1, 1, 'HD-2024-0001', 5, 21, 2, '2024-12-10 09:00:00', '2024-12-13 18:00:00', 3, 500000, 1500000, 50000000, 'Active', '2024-12-09 14:00:00'),
-(2, 2, 'HD-2024-0002', 6, 22, 2, '2024-12-12 08:00:00', '2024-12-15 17:00:00', 3, 550000, 1650000, 50000000, 'Active', '2024-12-11 10:00:00'),
-(3, 3, 'HD-2024-0003', 7, 23, 3, '2024-12-15 10:00:00', '2024-12-20 16:00:00', 5, 1150000, 5750000, 50000000, 'Active', '2024-12-14 15:30:00'),
+(1, 1, 'HD-2025-0001', 5, 21, 2, '2025-03-12 09:00:00', '2025-03-15 18:00:00', 3, 500000, 1500000, 50000000, 'Active', '2025-03-11 14:00:00'),
+(2, 2, 'HD-2025-0002', 6, 22, 2, '2025-03-14 08:00:00', '2025-03-17 17:00:00', 3, 550000, 1650000, 50000000, 'Active', '2025-03-13 10:00:00'),
+(3, 3, 'HD-2025-0003', 7, 23, 3, '2025-03-17 10:00:00', '2025-03-22 16:00:00', 5, 1150000, 5750000, 50000000, 'Active', '2025-03-16 15:30:00'),
 
 -- Completed contracts (returned vehicles)
 -- Contract 4: Normal return, no issues
-(4, 12, 'HD-2024-0004', 8, 9, 2, '2024-11-01 09:00:00', '2024-11-05 18:00:00', 4, 1200000, 4800000, 50000000, 'Completed', '2024-10-31 11:00:00'),
+(4, 12, 'HD-2025-0004', 8, 9, 2, '2025-02-01 09:00:00', '2025-02-05 18:00:00', 4, 1200000, 4800000, 50000000, 'Completed', '2025-01-31 11:00:00'),
 
 -- Contract 5: Late return + damage fee
-(5, 13, 'HD-2024-0005', 9, 14, 3, '2024-11-10 08:00:00', '2024-11-15 17:00:00', 5, 1500000, 7500000, 50000000, 'Completed', '2024-11-09 09:30:00'),
+(5, 13, 'HD-2025-0005', 9, 14, 3, '2025-02-10 08:00:00', '2025-02-15 17:00:00', 5, 1500000, 7500000, 50000000, 'Completed', '2025-02-09 09:30:00'),
 
 -- Contract 6: Different location return
-(6, 14, 'HD-2024-0006', 10, 15, 2, '2024-11-15 10:00:00', '2024-11-20 16:00:00', 5, 1600000, 8000000, 50000000, 'Completed', '2024-11-14 14:20:00'),
+(6, 14, 'HD-2025-0006', 10, 15, 2, '2025-02-15 10:00:00', '2025-02-20 16:00:00', 5, 1600000, 8000000, 50000000, 'Completed', '2025-02-14 14:20:00'),
 
 -- Contract 7: Normal return with traffic violation
-(7, 15, 'HD-2024-0007', 11, 10, 3, '2024-10-20 09:00:00', '2024-10-25 18:00:00', 5, 1100000, 5500000, 50000000, 'Completed', '2024-10-19 10:45:00'),
+(7, 15, 'HD-2025-0007', 11, 10, 3, '2025-01-20 09:00:00', '2025-01-25 18:00:00', 5, 1100000, 5500000, 50000000, 'Completed', '2025-01-19 10:45:00'),
 
--- Cancelled contract
-(8, 10, 'HD-2024-0008', 6, 7, 2, '2024-11-25 09:00:00', '2024-11-28 18:00:00', 3, 800000, 2400000, 50000000, 'Cancelled', '2024-11-24 13:00:00'),
+-- Cancelled contract (contract exists but booking was cancelled - demonstrating the fix)
+-- This shows that booking_id can reference a cancelled booking
+(8, 10, 'HD-2025-0008', 6, 7, 2, '2025-02-25 09:00:00', '2025-02-28 18:00:00', 3, 800000, 2400000, 50000000, 'Cancelled', '2025-02-24 13:00:00'),
 
--- Pending payment contract (awaiting deposit payment via online gateway)
-(9, 11, 'HD-2024-0009', 5, 8, 2, '2024-12-20 09:00:00', '2024-12-23 18:00:00', 3, 900000, 2700000, 50000000, 'Pending_Payment', '2024-12-09 16:00:00');
+-- Pending payment contract with cancelled booking (demonstrating the nullable booking scenario)
+-- Customer created booking #11 for Mitsubishi Xpander (vehicle_id=8), contract was created,
+-- but then customer cancelled the booking before payment
+-- Contract still exists with booking_id=11 (which is now cancelled)
+(9, 11, 'HD-2025-0009', 5, 8, 2, '2025-03-22 09:00:00', '2025-03-25 18:00:00', 3, 800000, 2400000, 50000000, 'Pending_Payment', '2025-03-21 16:00:00'),
+
+-- TEST CONTRACTS for handover pickup testing (contracts 10-14)
+-- These contracts have Active status with deposit paid but NO pickup handover
+-- They will appear in the handover pickup list at /staff/handover/pickup
+(10, 16, 'HD-2025-0010', 5, 1, 2, '2025-01-10 09:00:00', '2025-01-13 18:00:00', 3, 500000, 1500000, 50000000, 'Active', '2025-01-09 10:00:00'),
+(11, 17, 'HD-2025-0011', 6, 5, 2, '2025-01-12 08:00:00', '2025-01-15 17:00:00', 3, 550000, 1650000, 50000000, 'Active', '2025-01-11 14:00:00'),
+(12, 18, 'HD-2025-0012', 7, 12, 3, '2025-01-08 10:00:00', '2025-01-12 16:00:00', 4, 600000, 2400000, 50000000, 'Active', '2025-01-07 09:00:00'),
+(13, 19, 'HD-2025-0013', 8, 16, 2, '2025-01-15 09:00:00', '2025-01-20 18:00:00', 5, 400000, 2000000, 50000000, 'Active', '2025-01-14 11:00:00'),
+(14, 20, 'HD-2025-0014', 9, 22, 3, '2025-01-11 08:30:00', '2025-01-16 17:30:00', 5, 550000, 2750000, 50000000, 'Active', '2025-01-10 15:00:00');
 
 -- 10. PAYMENTS
 -- Note: New fields added for online payment gateway integration:
@@ -668,233 +699,246 @@ INSERT INTO payments (contract_id, payment_type, amount, method, status, payment
                      transaction_ref, gateway_transaction_id, gateway_response_code, gateway_transaction_status,
                      gateway_bank_code, gateway_card_type, gateway_pay_date, gateway_secure_hash, payment_url) VALUES
 -- Active contracts - Deposit paid (all 50,000,000 VND)
-(1, 'DEPOSIT', 50000000, 'TRANSFER', 'COMPLETED', '2024-12-09 14:30:00', '2024-12-09 14:30:00',
+(1, 'DEPOSIT', 50000000, 'TRANSFER', 'COMPLETED', '2025-03-11 14:30:00', '2025-03-11 14:30:00',
  NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(2, 'DEPOSIT', 50000000, 'CARD', 'COMPLETED', '2024-12-11 10:30:00', '2024-12-11 10:30:00',
+(2, 'DEPOSIT', 50000000, 'CARD', 'COMPLETED', '2025-03-13 10:30:00', '2025-03-13 10:30:00',
  NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(3, 'DEPOSIT', 50000000, 'TRANSFER', 'COMPLETED', '2024-12-14 16:00:00', '2024-12-14 16:00:00',
+(3, 'DEPOSIT', 50000000, 'TRANSFER', 'COMPLETED', '2025-03-16 16:00:00', '2025-03-16 16:00:00',
  NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 
 -- Completed contracts - Full payments (deposit 50,000,000 VND)
-(4, 'DEPOSIT', 50000000, 'TRANSFER', 'COMPLETED', '2024-10-31 11:30:00', '2024-10-31 11:30:00',
+(4, 'DEPOSIT', 50000000, 'TRANSFER', 'COMPLETED', '2025-01-31 11:30:00', '2025-01-31 11:30:00',
  NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(4, 'RENTAL', 4800000, 'CARD', 'COMPLETED', '2024-11-05 19:00:00', '2024-11-05 19:00:00',
- NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-
-(5, 'DEPOSIT', 50000000, 'CARD', 'COMPLETED', '2024-11-09 10:00:00', '2024-11-09 10:00:00',
- NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(5, 'RENTAL', 7500000, 'TRANSFER', 'COMPLETED', '2024-11-16 11:00:00', '2024-11-16 11:00:00',
+(4, 'RENTAL', 4800000, 'CARD', 'COMPLETED', '2025-02-05 19:00:00', '2025-02-05 19:00:00',
  NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 
-(6, 'DEPOSIT', 50000000, 'TRANSFER', 'COMPLETED', '2024-11-14 14:45:00', '2024-11-14 14:45:00',
+(5, 'DEPOSIT', 50000000, 'CARD', 'COMPLETED', '2025-02-09 10:00:00', '2025-02-09 10:00:00',
  NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(6, 'RENTAL', 8000000, 'CARD', 'COMPLETED', '2024-11-21 10:30:00', '2024-11-21 10:30:00',
+(5, 'RENTAL', 7500000, 'TRANSFER', 'COMPLETED', '2025-02-16 11:00:00', '2025-02-16 11:00:00',
  NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 
-(7, 'DEPOSIT', 50000000, 'CARD', 'COMPLETED', '2024-10-19 11:15:00', '2024-10-19 11:15:00',
+(6, 'DEPOSIT', 50000000, 'TRANSFER', 'COMPLETED', '2025-02-14 14:45:00', '2025-02-14 14:45:00',
  NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(7, 'RENTAL', 5500000, 'TRANSFER', 'COMPLETED', '2024-10-25 19:30:00', '2024-10-25 19:30:00',
+(6, 'RENTAL', 8000000, 'CARD', 'COMPLETED', '2025-02-21 10:30:00', '2025-02-21 10:30:00',
+ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+
+(7, 'DEPOSIT', 50000000, 'CARD', 'COMPLETED', '2025-01-19 11:15:00', '2025-01-19 11:15:00',
+ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(7, 'RENTAL', 5500000, 'TRANSFER', 'COMPLETED', '2025-01-25 19:30:00', '2025-01-25 19:30:00',
  NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 
 -- Cancelled contract - Refund (deposit 50,000,000 VND)
-(8, 'DEPOSIT', 50000000, 'TRANSFER', 'COMPLETED', '2024-11-24 13:30:00', '2024-11-24 13:30:00',
+(8, 'DEPOSIT', 50000000, 'TRANSFER', 'COMPLETED', '2025-02-24 13:30:00', '2025-02-24 13:30:00',
  NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
-(8, 'REFUND', 50000000, 'TRANSFER', 'COMPLETED', '2024-11-24 15:00:00', '2024-11-24 15:00:00',
+(8, 'REFUND', 50000000, 'TRANSFER', 'COMPLETED', '2025-02-24 15:00:00', '2025-02-24 15:00:00',
  NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
 
 -- Pending payment contract - Online payment gateway (sample)
 -- This demonstrates a pending online payment awaiting customer to complete
-(9, 'DEPOSIT', 50000000, 'ONLINE', 'PENDING', NULL, '2024-12-09 16:05:00',
+(9, 'DEPOSIT', 50000000, 'ONLINE', 'PENDING', NULL, '2025-03-11 16:05:00',
  'DEPOSIT9_12345678', NULL, NULL, NULL, NULL, NULL, NULL, NULL,
- 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html?vnp_Amount=5000000000&vnp_Command=pay&...');
+ 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html?vnp_Amount=5000000000&vnp_Command=pay&...'),
+
+-- TEST CONTRACTS deposit payments (contracts 10-14)
+-- All deposits are 50,000,000 VND and status is COMPLETED
+(10, 'DEPOSIT', 50000000, 'TRANSFER', 'COMPLETED', '2025-01-09 10:30:00', '2025-01-09 10:30:00',
+ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(11, 'DEPOSIT', 50000000, 'CARD', 'COMPLETED', '2025-01-11 14:30:00', '2025-01-11 14:30:00',
+ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(12, 'DEPOSIT', 50000000, 'TRANSFER', 'COMPLETED', '2025-01-07 09:30:00', '2025-01-07 09:30:00',
+ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(13, 'DEPOSIT', 50000000, 'CARD', 'COMPLETED', '2025-01-14 11:30:00', '2025-01-14 11:30:00',
+ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL),
+(14, 'DEPOSIT', 50000000, 'TRANSFER', 'COMPLETED', '2025-01-10 15:30:00', '2025-01-10 15:30:00',
+ NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 
 -- 11. HANDOVERS
 INSERT INTO handovers (contract_id, handover_type, staff_id, handover_time, odometer, fuel_level, condition_notes, images, created_at) VALUES
--- Active contracts - Pickup only
-(1, 'Pickup', 2, '2024-12-10 09:30:00', 45000, 100, 'Xe trong tình trạng tốt, đầy xăng, không trầy xước', '["https://example.com/pickup/h1-1.jpg","https://example.com/pickup/h1-2.jpg"]', '2024-12-10 09:30:00'),
-(2, 'Pickup', 2, '2024-12-12 08:30:00', 38000, 100, 'Xe sạch sẽ, không vấn đề gì', '["https://example.com/pickup/h2-1.jpg"]', '2024-12-12 08:30:00'),
-(3, 'Pickup', 3, '2024-12-15 10:30:00', 52000, 100, 'Xe trong tình trạng hoàn hảo', '["https://example.com/pickup/h3-1.jpg","https://example.com/pickup/h3-2.jpg"]', '2024-12-15 10:30:00'),
+-- Active contracts - Pickup only (REMOVED for testing - contracts 1-3 will appear in pickup list)
+-- (1, 'PICKUP', 2, '2025-03-12 09:30:00', 45000, 100, 'Xe trong tình trạng tốt, đầy xăng, không trầy xước', '["https://example.com/pickup/h1-1.jpg","https://example.com/pickup/h1-2.jpg"]', '2025-03-12 09:30:00'),
+-- (2, 'PICKUP', 2, '2025-03-14 08:30:00', 38000, 100, 'Xe sạch sẽ, không vấn đề gì', '["https://example.com/pickup/h2-1.jpg"]', '2025-03-14 08:30:00'),
+-- (3, 'PICKUP', 3, '2025-03-17 10:30:00', 52000, 100, 'Xe trong tình trạng hoàn hảo', '["https://example.com/pickup/h3-1.jpg","https://example.com/pickup/h3-2.jpg"]', '2025-03-17 10:30:00'),
 
 -- Completed contracts - Pickup and Return
 -- Contract 4: Normal return
-(4, 'Pickup', 2, '2024-11-01 09:30:00', 62000, 100, 'Xe tốt, không vấn đề', '["https://example.com/pickup/h4-1.jpg"]', '2024-11-01 09:30:00'),
-(4, 'Return', 2, '2024-11-05 18:20:00', 62800, 95, 'Xe trả đúng hạn, tình trạng tốt, xăng còn 95%', '["https://example.com/return/h4-1.jpg","https://example.com/return/h4-2.jpg"]', '2024-11-05 18:20:00'),
+(4, 'PICKUP', 2, '2025-02-01 09:30:00', 62000, 100, 'Xe tốt, không vấn đề', '["https://example.com/pickup/h4-1.jpg"]', '2025-02-01 09:30:00'),
+(4, 'RETURN', 2, '2025-02-05 18:20:00', 62800, 95, 'Xe trả đúng hạn, tình trạng tốt, xăng còn 95%', '["https://example.com/return/h4-1.jpg","https://example.com/return/h4-2.jpg"]', '2025-02-05 18:20:00'),
 
 -- Contract 5: Late return + damage
-(5, 'Pickup', 3, '2024-11-10 08:30:00', 78000, 100, 'Xe trong tình trạng tốt', '["https://example.com/pickup/h5-1.jpg"]', '2024-11-10 08:30:00'),
-(5, 'Return', 3, '2024-11-16 10:30:00', 79200, 70, 'Trả trễ 17.5 giờ, có trầy xước ở cửa phụ, xăng còn 70%', '["https://example.com/return/h5-1.jpg","https://example.com/return/h5-2.jpg","https://example.com/return/h5-3.jpg"]', '2024-11-16 10:30:00'),
+(5, 'PICKUP', 3, '2025-02-10 08:30:00', 78000, 100, 'Xe trong tình trạng tốt', '["https://example.com/pickup/h5-1.jpg"]', '2025-02-10 08:30:00'),
+(5, 'RETURN', 3, '2025-02-16 10:30:00', 79200, 70, 'Trả trễ 17.5 giờ, có trầy xước ở cửa phụ, xăng còn 70%', '["https://example.com/return/h5-1.jpg","https://example.com/return/h5-2.jpg","https://example.com/return/h5-3.jpg"]', '2025-02-16 10:30:00'),
 
 -- Contract 6: Different location return
-(6, 'Pickup', 2, '2024-11-15 10:30:00', 55000, 100, 'Xe hoàn hảo', '["https://example.com/pickup/h6-1.jpg"]', '2024-11-15 10:30:00'),
-(6, 'Return', 4, '2024-11-21 10:00:00', 55850, 90, 'Trả xe tại địa điểm khác, tình trạng tốt', '["https://example.com/return/h6-1.jpg","https://example.com/return/h6-2.jpg"]', '2024-11-21 10:00:00'),
+(6, 'PICKUP', 2, '2025-02-15 10:30:00', 55000, 100, 'Xe hoàn hảo', '["https://example.com/pickup/h6-1.jpg"]', '2025-02-15 10:30:00'),
+(6, 'RETURN', 4, '2025-02-21 10:00:00', 55850, 90, 'Trả xe tại địa điểm khác, tình trạng tốt', '["https://example.com/return/h6-1.jpg","https://example.com/return/h6-2.jpg"]', '2025-02-21 10:00:00'),
 
 -- Contract 7: Normal return (will have traffic violation later)
-(7, 'Pickup', 3, '2024-10-20 09:30:00', 41000, 100, 'Xe tốt', '["https://example.com/pickup/h7-1.jpg"]', '2024-10-20 09:30:00'),
-(7, 'Return', 3, '2024-10-25 18:30:00', 41650, 100, 'Trả đúng hạn, xe trong tình trạng tốt', '["https://example.com/return/h7-1.jpg"]', '2024-10-25 18:30:00');
+(7, 'PICKUP', 3, '2025-01-20 09:30:00', 41000, 100, 'Xe tốt', '["https://example.com/pickup/h7-1.jpg"]', '2025-01-20 09:30:00'),
+(7, 'RETURN', 3, '2025-01-25 18:30:00', 41650, 100, 'Trả đúng hạn, xe trong tình trạng tốt', '["https://example.com/return/h7-1.jpg"]', '2025-01-25 18:30:00');
 
 -- 12. RETURN FEES
 INSERT INTO return_fees (contract_id, handover_id, is_late, hours_late, late_fee, has_damage, damage_description, damage_fee, is_different_location, one_way_fee, total_fees, created_at) VALUES
 -- Contract 4: No fees
-(4, 5, FALSE, 0, 0, FALSE, NULL, 0, FALSE, 0, 0, '2024-11-05 18:30:00'),
+(4, 2, FALSE, 0, 0, FALSE, NULL, 0, FALSE, 0, 0, '2025-02-05 18:30:00'),
 
 -- Contract 5: Late + Damage
-(5, 7, TRUE, 17.5, 875000, TRUE, 'Trầy xước cửa xe phụ bên phải, kích thước 15cm', 2000000, FALSE, 0, 2875000, '2024-11-16 10:45:00'),
+(5, 4, TRUE, 17.5, 875000, TRUE, 'Trầy xước cửa xe phụ bên phải, kích thước 15cm', 2000000, FALSE, 0, 2875000, '2025-02-16 10:45:00'),
 
 -- Contract 6: One-way fee
-(6, 9, FALSE, 0, 0, FALSE, NULL, 0, TRUE, 1200000, 1200000, '2024-11-21 10:15:00'),
+(6, 6, FALSE, 0, 0, FALSE, NULL, 0, TRUE, 1200000, 1200000, '2025-02-21 10:15:00'),
 
 -- Contract 7: No fees (but will have traffic violation)
-(7, 11, FALSE, 0, 0, FALSE, NULL, 0, FALSE, 0, 0, '2024-10-25 18:45:00');
+(7, 8, FALSE, 0, 0, FALSE, NULL, 0, FALSE, 0, 0, '2025-01-25 18:45:00');
 
 -- 13. DEPOSIT HOLDS
 INSERT INTO deposit_holds (contract_id, deposit_amount, deducted_at_return, hold_start_date, hold_end_date, status, created_at) VALUES
 -- Contract 4: Ready for refund (no violations) - Deposit 50,000,000 VND
-(4, 50000000, 0, '2024-11-05 18:30:00', '2024-11-19 18:30:00', 'Ready', '2024-11-05 18:30:00'),
+(4, 50000000, 0, '2025-02-05 18:30:00', '2025-02-19 18:30:00', 'Ready', '2025-02-05 18:30:00'),
 
 -- Contract 5: Ready for refund (fees deducted) - Deposit 50,000,000 VND
-(5, 50000000, 2875000, '2024-11-16 10:45:00', '2024-11-30 10:45:00', 'Ready', '2024-11-16 10:45:00'),
+(5, 50000000, 2875000, '2025-02-16 10:45:00', '2025-03-02 10:45:00', 'Ready', '2025-02-16 10:45:00'),
 
 -- Contract 6: Ready for refund (one-way fee deducted) - Deposit 50,000,000 VND
-(6, 50000000, 1200000, '2024-11-21 10:15:00', '2024-12-05 10:15:00', 'Ready', '2024-11-21 10:15:00'),
+(6, 50000000, 1200000, '2025-02-21 10:15:00', '2025-03-07 10:15:00', 'Ready', '2025-02-21 10:15:00'),
 
 -- Contract 7: Holding (waiting for traffic violation check) - Deposit 50,000,000 VND
-(7, 50000000, 0, '2024-10-25 18:45:00', '2024-11-08 18:45:00', 'Holding', '2024-10-25 18:45:00');
+(7, 50000000, 0, '2025-01-25 18:45:00', '2025-02-08 18:45:00', 'Holding', '2025-01-25 18:45:00');
 
 -- 14. TRAFFIC VIOLATIONS
 INSERT INTO traffic_violations (hold_id, contract_id, violation_type, violation_date, fine_amount, description, evidence_url, status, created_at) VALUES
 -- Contract 7: Traffic violations during rental period
-(4, 7, 'Vượt đèn đỏ', '2024-10-22 15:30:00', 1000000, 'Vượt đèn đỏ tại ngã tư Lê Lợi - Nguyễn Huệ', 'https://example.com/violations/v1.jpg', 'Confirmed', '2024-11-02 09:00:00'),
-(4, 7, 'Đi quá tốc độ', '2024-10-24 08:45:00', 800000, 'Vượt tốc độ cho phép 20km/h trên đường Võ Văn Kiệt', 'https://example.com/violations/v2.jpg', 'Confirmed', '2024-11-03 10:30:00'),
+(4, 7, 'Vượt đèn đỏ', '2025-01-22 15:30:00', 1000000, 'Vượt đèn đỏ tại ngã tư Lê Lợi - Nguyễn Huệ', 'https://example.com/violations/v1.jpg', 'Confirmed', '2025-02-02 09:00:00'),
+(4, 7, 'Đi quá tốc độ', '2025-01-24 08:45:00', 800000, 'Vượt tốc độ cho phép 20km/h trên đường Võ Văn Kiệt', 'https://example.com/violations/v2.jpg', 'Confirmed', '2025-02-03 10:30:00'),
 
 -- Pending violation
-(4, 7, 'Đậu xe sai quy định', '2024-10-23 14:20:00', 500000, 'Đậu xe trên vỉa hè đường Hai Bà Trưng', 'https://example.com/violations/v3.jpg', 'Pending', '2024-11-05 11:00:00');
+(4, 7, 'Đậu xe sai quy định', '2025-01-23 14:20:00', 500000, 'Đậu xe trên vỉa hè đường Hai Bà Trưng', 'https://example.com/violations/v3.jpg', 'Pending', '2025-02-05 11:00:00');
 
 -- 15. REFUNDS
 INSERT INTO refunds (hold_id, contract_id, customer_id, original_deposit, deducted_at_return, traffic_fines, refund_amount, refund_method, status, processed_at, created_at) VALUES
 -- Contract 4: Full refund completed - Deposit 50,000,000 VND
-(1, 4, 8, 50000000, 0, 0, 50000000, 'Transfer', 'Completed', '2024-11-20 10:00:00', '2024-11-19 18:30:00'),
+(1, 4, 8, 50000000, 0, 0, 50000000, 'Transfer', 'Completed', '2025-02-20 10:00:00', '2025-02-19 18:30:00'),
 
 -- Contract 5: Partial refund completed (fees deducted) - Deposit 50,000,000 VND
-(2, 5, 9, 50000000, 2875000, 0, 47125000, 'Transfer', 'Completed', '2024-12-01 14:30:00', '2024-11-30 10:45:00'),
+(2, 5, 9, 50000000, 2875000, 0, 47125000, 'Transfer', 'Completed', '2025-03-03 14:30:00', '2025-03-02 10:45:00'),
 
 -- Contract 6: Partial refund pending - Deposit 50,000,000 VND
-(3, 6, 10, 50000000, 1200000, 0, 48800000, 'Transfer', 'Pending', NULL, '2024-12-04 10:15:00');
+(3, 6, 10, 50000000, 1200000, 0, 48800000, 'Transfer', 'Pending', NULL, '2025-03-06 10:15:00');
 
 -- 16. SUPPORT TICKETS
 INSERT INTO support_tickets (ticket_number, customer_id, category, subject, description, status, assigned_to, created_at) VALUES
 -- Open tickets
-('TK-2024-0001', 5, 'Booking', 'Thay đổi thời gian thuê xe', 'Em muốn thay đổi thời gian nhận xe từ 9h sáng sang 14h chiều được không ạ?', 'Open', NULL, '2024-12-04 08:30:00'),
-('TK-2024-0002', 6, 'Vehicle', 'Hỏi về tình trạng xe', 'Xe Toyota Camry còn mới không ạ? Em muốn thuê xe mới nhất có thể.', 'Open', NULL, '2024-12-04 09:15:00'),
-('TK-2024-0003', NULL, 'General', 'Hỏi về giấy tờ cần thiết', 'Cho em hỏi thuê xe cần giấy tờ gì ạ? Em chưa có GPLX lâu năm.', 'Open', NULL, '2024-12-04 10:00:00'),
+('TK-2025-0001', 5, 'Booking', 'Thay đổi thời gian thuê xe', 'Em muốn thay đổi thời gian nhận xe từ 9h sáng sang 14h chiều được không ạ?', 'Open', NULL, '2025-03-06 08:30:00'),
+('TK-2025-0002', 6, 'Vehicle', 'Hỏi về tình trạng xe', 'Xe Toyota Camry còn mới không ạ? Em muốn thuê xe mới nhất có thể.', 'Open', NULL, '2025-03-06 09:15:00'),
+('TK-2025-0003', NULL, 'General', 'Hỏi về giấy tờ cần thiết', 'Cho em hỏi thuê xe cần giấy tờ gì ạ? Em chưa có GPLX lâu năm.', 'Open', NULL, '2025-03-06 10:00:00'),
 
 -- In Progress tickets
-('TK-2024-0004', 7, 'Payment', 'Vấn đề thanh toán tiền cọc', 'Em chuyển khoản tiền cọc rồi nhưng chưa thấy cập nhật trạng thái thanh toán.', 'In_Progress', 2, '2024-12-03 14:20:00'),
-('TK-2024-0005', 8, 'Booking', 'Yêu cầu hủy booking', 'Em có việc đột xuất không thể thuê xe được, muốn hủy booking và hoàn tiền.', 'In_Progress', 3, '2024-12-03 16:45:00'),
+('TK-2025-0004', 7, 'Payment', 'Vấn đề thanh toán tiền cọc', 'Em chuyển khoản tiền cọc rồi nhưng chưa thấy cập nhật trạng thái thanh toán.', 'In_Progress', 2, '2025-03-05 14:20:00'),
+('TK-2025-0005', 8, 'Booking', 'Yêu cầu hủy booking', 'Em có việc đột xuất không thể thuê xe được, muốn hủy booking và hoàn tiền.', 'In_Progress', 3, '2025-03-05 16:45:00'),
 
 -- Resolved tickets
-('TK-2024-0006', 9, 'Vehicle', 'Xe bị hỏng giữa đường', 'Em đang thuê xe mà xe bị chết máy giữa đường, cần hỗ trợ gấp!', 'Resolved', 2, '2024-12-02 11:30:00'),
-('TK-2024-0007', 10, 'Payment', 'Hỏi về phí trả xe khác địa điểm', 'Nếu em nhận xe ở Q1 mà trả ở Tân Bình thì tính phí thế nào ạ?', 'Resolved', 3, '2024-12-01 09:00:00'),
-('TK-2024-0008', 11, 'General', 'Hỏi về chính sách hoàn tiền cọc', 'Cho em hỏi tiền cọc hoàn sau bao lâu và có trường hợp nào bị giữ cọc không ạ?', 'Resolved', 2, '2024-11-30 15:20:00'),
+('TK-2025-0006', 9, 'Vehicle', 'Xe bị hỏng giữa đường', 'Em đang thuê xe mà xe bị chết máy giữa đường, cần hỗ trợ gấp!', 'Resolved', 2, '2025-03-04 11:30:00'),
+('TK-2025-0007', 10, 'Payment', 'Hỏi về phí trả xe khác địa điểm', 'Nếu em nhận xe ở Q1 mà trả ở Tân Bình thì tính phí thế nào ạ?', 'Resolved', 3, '2025-03-03 09:00:00'),
+('TK-2025-0008', 11, 'General', 'Hỏi về chính sách hoàn tiền cọc', 'Cho em hỏi tiền cọc hoàn sau bao lâu và có trường hợp nào bị giữ cọc không ạ?', 'Resolved', 2, '2025-03-02 15:20:00'),
 
 -- Closed tickets (with ratings)
-('TK-2024-0009', 5, 'Booking', 'Hỏi về thời gian thuê tối thiểu', 'Em chỉ muốn thuê 1 ngày được không ạ?', 'Closed', 2, '2024-11-28 10:00:00'),
-('TK-2024-0010', 6, 'Vehicle', 'Xe có bluetooth không?', 'Em muốn thuê xe có kết nối bluetooth để nghe nhạc.', 'Closed', 3, '2024-11-27 14:30:00');
+('TK-2025-0009', 5, 'Booking', 'Hỏi về thời gian thuê tối thiểu', 'Em chỉ muốn thuê 1 ngày được không ạ?', 'Closed', 2, '2025-02-28 10:00:00'),
+('TK-2025-0010', 6, 'Vehicle', 'Xe có bluetooth không?', 'Em muốn thuê xe có kết nối bluetooth để nghe nhạc.', 'Closed', 3, '2025-02-27 14:30:00');
 
 -- 17. SUPPORT MESSAGES
 INSERT INTO support_messages (ticket_id, sender_id, message_text, rating, created_at) VALUES
 -- Ticket 1: Open (no response yet)
-(1, 5, 'Em muốn thay đổi thời gian nhận xe từ 9h sáng sang 14h chiều được không ạ?', NULL, '2024-12-04 08:30:00'),
+(1, 5, 'Em muốn thay đổi thời gian nhận xe từ 9h sáng sang 14h chiều được không ạ?', NULL, '2025-03-06 08:30:00'),
 
 -- Ticket 2: Open (no response yet)
-(2, 6, 'Xe Toyota Camry còn mới không ạ? Em muốn thuê xe mới nhất có thể.', NULL, '2024-12-04 09:15:00'),
+(2, 6, 'Xe Toyota Camry còn mới không ạ? Em muốn thuê xe mới nhất có thể.', NULL, '2025-03-06 09:15:00'),
 
 -- Ticket 3: Open (guest inquiry)
-(3, 1, 'Cho em hỏi thuê xe cần giấy tờ gì ạ? Em chưa có GPLX lâu năm.', NULL, '2024-12-04 10:00:00'),
+(3, 1, 'Cho em hỏi thuê xe cần giấy tờ gì ạ? Em chưa có GPLX lâu năm.', NULL, '2025-03-06 10:00:00'),
 
 -- Ticket 4: In Progress (conversation ongoing)
-(4, 7, 'Em chuyển khoản tiền cọc rồi nhưng chưa thấy cập nhật trạng thái thanh toán.', NULL, '2024-12-03 14:20:00'),
-(4, 2, 'Chào anh/chị, cho em xin mã giao dịch để kiểm tra ạ.', NULL, '2024-12-03 14:35:00'),
-(4, 7, 'Mã GD là: 1234567890. Em chuyển lúc 10h sáng nay.', NULL, '2024-12-03 14:50:00'),
-(4, 2, 'Dạ, em đã tìm thấy. Hệ thống sẽ cập nhật trong 15 phút nữa ạ.', NULL, '2024-12-03 15:00:00'),
+(4, 7, 'Em chuyển khoản tiền cọc rồi nhưng chưa thấy cập nhật trạng thái thanh toán.', NULL, '2025-03-05 14:20:00'),
+(4, 2, 'Chào anh/chị, cho em xin mã giao dịch để kiểm tra ạ.', NULL, '2025-03-05 14:35:00'),
+(4, 7, 'Mã GD là: 1234567890. Em chuyển lúc 10h sáng nay.', NULL, '2025-03-05 14:50:00'),
+(4, 2, 'Dạ, em đã tìm thấy. Hệ thống sẽ cập nhật trong 15 phút nữa ạ.', NULL, '2025-03-05 15:00:00'),
 
 -- Ticket 5: In Progress
-(5, 8, 'Em có việc đột xuất không thể thuê xe được, muốn hủy booking và hoàn tiền.', NULL, '2024-12-03 16:45:00'),
-(5, 3, 'Chào anh/chị, booking của anh/chị đã được duyệt chưa ạ?', NULL, '2024-12-03 17:00:00'),
-(5, 8, 'Chưa ạ, vẫn đang chờ duyệt.', NULL, '2024-12-03 17:15:00'),
+(5, 8, 'Em có việc đột xuất không thể thuê xe được, muốn hủy booking và hoàn tiền.', NULL, '2025-03-05 16:45:00'),
+(5, 3, 'Chào anh/chị, booking của anh/chị đã được duyệt chưa ạ?', NULL, '2025-03-05 17:00:00'),
+(5, 8, 'Chưa ạ, vẫn đang chờ duyệt.', NULL, '2025-03-05 17:15:00'),
 
 -- Ticket 6: Resolved (emergency handled)
-(6, 9, 'Em đang thuê xe mà xe bị chết máy giữa đường, cần hỗ trợ gấp!', NULL, '2024-12-02 11:30:00'),
-(6, 2, 'Em ở đâu ạ? Bên mình sẽ cử nhân viên đến hỗ trợ ngay!', NULL, '2024-12-02 11:32:00'),
-(6, 9, 'Em đang ở đường Võ Văn Tần gần ngã tư với Hai Bà Trưng ạ.', NULL, '2024-12-02 11:35:00'),
-(6, 2, 'Nhân viên đang trên đường đến, khoảng 15 phút nữa sẽ đến nơi ạ.', NULL, '2024-12-02 11:40:00'),
-(6, 9, 'Cảm ơn anh/chị nhiều ạ!', NULL, '2024-12-02 12:00:00'),
-(6, 2, 'Vấn đề đã được xử lý. Xe đã hoạt động trở lại bình thường ạ.', NULL, '2024-12-02 12:30:00'),
+(6, 9, 'Em đang thuê xe mà xe bị chết máy giữa đường, cần hỗ trợ gấp!', NULL, '2025-03-04 11:30:00'),
+(6, 2, 'Em ở đâu ạ? Bên mình sẽ cử nhân viên đến hỗ trợ ngay!', NULL, '2025-03-04 11:32:00'),
+(6, 9, 'Em đang ở đường Võ Văn Tần gần ngã tư với Hai Bà Trưng ạ.', NULL, '2025-03-04 11:35:00'),
+(6, 2, 'Nhân viên đang trên đường đến, khoảng 15 phút nữa sẽ đến nơi ạ.', NULL, '2025-03-04 11:40:00'),
+(6, 9, 'Cảm ơn anh/chị nhiều ạ!', NULL, '2025-03-04 12:00:00'),
+(6, 2, 'Vấn đề đã được xử lý. Xe đã hoạt động trở lại bình thường ạ.', NULL, '2025-03-04 12:30:00'),
 
 -- Ticket 7: Resolved
-(7, 10, 'Nếu em nhận xe ở Q1 mà trả ở Tân Bình thì tính phí thế nào ạ?', NULL, '2024-12-01 09:00:00'),
-(7, 3, 'Chào anh/chị, phí trả xe khác địa điểm là 15% trên tổng tiền thuê ạ. Ví dụ tổng tiền thuê 10 triệu thì phí thêm là 1.5 triệu.', NULL, '2024-12-01 09:15:00'),
-(7, 10, 'Em hiểu rồi, cảm ơn anh/chị.', NULL, '2024-12-01 09:30:00'),
+(7, 10, 'Nếu em nhận xe ở Q1 mà trả ở Tân Bình thì tính phí thế nào ạ?', NULL, '2025-03-03 09:00:00'),
+(7, 3, 'Chào anh/chị, phí trả xe khác địa điểm là 15% trên tổng tiền thuê ạ. Ví dụ tổng tiền thuê 10 triệu thì phí thêm là 1.5 triệu.', NULL, '2025-03-03 09:15:00'),
+(7, 10, 'Em hiểu rồi, cảm ơn anh/chị.', NULL, '2025-03-03 09:30:00'),
 
 -- Ticket 8: Resolved
-(8, 11, 'Cho em hỏi tiền cọc hoàn sau bao lâu và có trường hợp nào bị giữ cọc không ạ?', NULL, '2024-11-30 15:20:00'),
-(8, 2, 'Chào anh/chị, tiền cọc sẽ được giữ 14 ngày để kiểm tra vi phạm giao thông. Sau 14 ngày nếu không có vi phạm sẽ hoàn đầy đủ. Nếu có vi phạm sẽ trừ tiền phạt từ cọc và hoàn lại phần còn lại ạ.', NULL, '2024-11-30 15:35:00'),
-(8, 11, 'Vậy nếu có hư hỏng xe thì sao ạ?', NULL, '2024-11-30 15:50:00'),
-(8, 2, 'Nếu có hư hỏng sẽ tính phí ngay khi trả xe và trừ vào cọc luôn ạ. Còn vi phạm giao thông thì phải đợi 14 ngày mới biết có vi phạm hay không.', NULL, '2024-11-30 16:00:00'),
-(8, 11, 'Em hiểu rồi, cảm ơn nhiều ạ!', NULL, '2024-11-30 16:15:00'),
+(8, 11, 'Cho em hỏi tiền cọc hoàn sau bao lâu và có trường hợp nào bị giữ cọc không ạ?', NULL, '2025-03-02 15:20:00'),
+(8, 2, 'Chào anh/chị, tiền cọc sẽ được giữ 14 ngày để kiểm tra vi phạm giao thông. Sau 14 ngày nếu không có vi phạm sẽ hoàn đầy đủ. Nếu có vi phạm sẽ trừ tiền phạt từ cọc và hoàn lại phần còn lại ạ.', NULL, '2025-03-02 15:35:00'),
+(8, 11, 'Vậy nếu có hư hỏng xe thì sao ạ?', NULL, '2025-03-02 15:50:00'),
+(8, 2, 'Nếu có hư hỏng sẽ tính phí ngay khi trả xe và trừ vào cọc luôn ạ. Còn vi phạm giao thông thì phải đợi 14 ngày mới biết có vi phạm hay không.', NULL, '2025-03-02 16:00:00'),
+(8, 11, 'Em hiểu rồi, cảm ơn nhiều ạ!', NULL, '2025-03-02 16:15:00'),
 
 -- Ticket 9: Closed with rating
-(9, 5, 'Em chỉ muốn thuê 1 ngày được không ạ?', NULL, '2024-11-28 10:00:00'),
-(9, 2, 'Dạ được ạ, bên mình cho thuê tối thiểu 1 ngày. Anh/chị có thể đặt xe ngay trên website ạ.', NULL, '2024-11-28 10:15:00'),
-(9, 5, 'Cảm ơn anh/chị!', NULL, '2024-11-28 10:30:00'),
-(9, 5, 'Nhân viên tư vấn nhiệt tình, giải đáp nhanh chóng!', 5, '2024-11-28 11:00:00'),
+(9, 5, 'Em chỉ muốn thuê 1 ngày được không ạ?', NULL, '2025-02-28 10:00:00'),
+(9, 2, 'Dạ được ạ, bên mình cho thuê tối thiểu 1 ngày. Anh/chị có thể đặt xe ngay trên website ạ.', NULL, '2025-02-28 10:15:00'),
+(9, 5, 'Cảm ơn anh/chị!', NULL, '2025-02-28 10:30:00'),
+(9, 5, 'Nhân viên tư vấn nhiệt tình, giải đáp nhanh chóng!', 5, '2025-02-28 11:00:00'),
 
 -- Ticket 10: Closed with rating
-(10, 6, 'Em muốn thuê xe có kết nối bluetooth để nghe nhạc.', NULL, '2024-11-27 14:30:00'),
-(10, 3, 'Chào anh/chị, hầu hết các xe đời mới của bên mình đều có bluetooth ạ. Anh/chị có thể xem thông tin chi tiết từng xe trên trang danh sách xe.', NULL, '2024-11-27 14:45:00'),
-(10, 6, 'Vậy xe Toyota Vios 2023 có không ạ?', NULL, '2024-11-27 15:00:00'),
-(10, 3, 'Dạ có ạ, xe Vios 2023 đều có kết nối bluetooth và Apple CarPlay nữa ạ.', NULL, '2024-11-27 15:15:00'),
-(10, 6, 'Tuyệt vời, cảm ơn nhiều!', NULL, '2024-11-27 15:30:00'),
-(10, 6, 'Hỗ trợ tốt, thông tin đầy đủ!', 4, '2024-11-27 16:00:00');
+(10, 6, 'Em muốn thuê xe có kết nối bluetooth để nghe nhạc.', NULL, '2025-02-27 14:30:00'),
+(10, 3, 'Chào anh/chị, hầu hết các xe đời mới của bên mình đều có bluetooth ạ. Anh/chị có thể xem thông tin chi tiết từng xe trên trang danh sách xe.', NULL, '2025-02-27 14:45:00'),
+(10, 6, 'Vậy xe Toyota Vios 2023 có không ạ?', NULL, '2025-02-27 15:00:00'),
+(10, 3, 'Dạ có ạ, xe Vios 2023 đều có kết nối bluetooth và Apple CarPlay nữa ạ.', NULL, '2025-02-27 15:15:00'),
+(10, 6, 'Tuyệt vời, cảm ơn nhiều!', NULL, '2025-02-27 15:30:00'),
+(10, 6, 'Hỗ trợ tốt, thông tin đầy đủ!', 4, '2025-02-27 16:00:00');
 
 -- 18. NOTIFICATIONS
 INSERT INTO notifications (user_id, title, message, is_read, created_at) VALUES
 -- Customer notifications
-(5, 'Booking được phê duyệt', 'Booking HD-2024-0001 của bạn đã được phê duyệt. Vui lòng thanh toán tiền cọc để hoàn tất.', TRUE, '2024-12-09 10:00:00'),
-(5, 'Thanh toán thành công', 'Thanh toán tiền cọc 3.000.000 VNĐ cho hợp đồng HD-2024-0001 thành công.', TRUE, '2024-12-09 14:30:00'),
-(5, 'Nhắc nhở nhận xe', 'Bạn có lịch nhận xe vào ngày 10/12/2024 lúc 09:00. Vui lòng đến đúng giờ.', TRUE, '2024-12-09 18:00:00'),
-(5, 'Ticket hỗ trợ mới', 'Yêu cầu hỗ trợ TK-2024-0001 của bạn đã được tiếp nhận.', FALSE, '2024-12-04 08:30:00'),
+(5, 'Booking được phê duyệt', 'Booking HD-2025-0001 của bạn đã được phê duyệt. Vui lòng thanh toán tiền cọc để hoàn tất.', TRUE, '2025-03-11 10:00:00'),
+(5, 'Thanh toán thành công', 'Thanh toán tiền cọc 3.000.000 VNĐ cho hợp đồng HD-2025-0001 thành công.', TRUE, '2025-03-11 14:30:00'),
+(5, 'Nhắc nhở nhận xe', 'Bạn có lịch nhận xe vào ngày 12/03/2025 lúc 09:00. Vui lòng đến đúng giờ.', TRUE, '2025-03-11 18:00:00'),
+(5, 'Ticket hỗ trợ mới', 'Yêu cầu hỗ trợ TK-2025-0001 của bạn đã được tiếp nhận.', FALSE, '2025-03-06 08:30:00'),
 
-(6, 'Booking được phê duyệt', 'Booking HD-2024-0002 của bạn đã được phê duyệt.', TRUE, '2024-12-11 09:00:00'),
-(6, 'Thanh toán thành công', 'Thanh toán tiền cọc 3.500.000 VNĐ cho hợp đồng HD-2024-0002 thành công.', TRUE, '2024-12-11 10:30:00'),
-(6, 'Nhắc nhở trả xe', 'Hợp đồng HD-2024-0002 sẽ hết hạn vào ngày 15/12/2024 lúc 17:00. Vui lòng trả xe đúng hạn.', FALSE, '2024-12-14 08:00:00'),
+(6, 'Booking được phê duyệt', 'Booking HD-2025-0002 của bạn đã được phê duyệt.', TRUE, '2025-03-13 09:00:00'),
+(6, 'Thanh toán thành công', 'Thanh toán tiền cọc 3.500.000 VNĐ cho hợp đồng HD-2025-0002 thành công.', TRUE, '2025-03-13 10:30:00'),
+(6, 'Nhắc nhở trả xe', 'Hợp đồng HD-2025-0002 sẽ hết hạn vào ngày 17/03/2025 lúc 17:00. Vui lòng trả xe đúng hạn.', FALSE, '2025-03-16 08:00:00'),
 
-(7, 'Booking được phê duyệt', 'Booking HD-2024-0003 của bạn đã được phê duyệt.', TRUE, '2024-12-14 14:00:00'),
-(7, 'Thanh toán thành công', 'Thanh toán tiền cọc 7.800.000 VNĐ cho hợp đồng HD-2024-0003 thành công.', TRUE, '2024-12-14 16:00:00'),
+(7, 'Booking được phê duyệt', 'Booking HD-2025-0003 của bạn đã được phê duyệt.', TRUE, '2025-03-16 14:00:00'),
+(7, 'Thanh toán thành công', 'Thanh toán tiền cọc 7.800.000 VNĐ cho hợp đồng HD-2025-0003 thành công.', TRUE, '2025-03-16 16:00:00'),
 
-(8, 'Hoàn tiền cọc', 'Tiền cọc 8.000.000 VNĐ cho hợp đồng HD-2024-0004 đã được hoàn vào tài khoản của bạn.', TRUE, '2024-11-20 10:00:00'),
-(8, 'Ticket hỗ trợ đang xử lý', 'Yêu cầu hỗ trợ TK-2024-0005 của bạn đang được xử lý.', FALSE, '2024-12-03 17:00:00'),
+(8, 'Hoàn tiền cọc', 'Tiền cọc 8.000.000 VNĐ cho hợp đồng HD-2025-0004 đã được hoàn vào tài khoản của bạn.', TRUE, '2025-02-20 10:00:00'),
+(8, 'Ticket hỗ trợ đang xử lý', 'Yêu cầu hỗ trợ TK-2025-0005 của bạn đang được xử lý.', FALSE, '2025-03-05 17:00:00'),
 
-(9, 'Phí phát sinh khi trả xe', 'Hợp đồng HD-2024-0005 có phí phát sinh 2.875.000 VNĐ (trễ hạn + hư hỏng). Số tiền đã được trừ vào cọc.', TRUE, '2024-11-16 11:00:00'),
-(9, 'Hoàn tiền cọc', 'Tiền cọc còn lại 7.125.000 VNĐ cho hợp đồng HD-2024-0005 đã được hoàn.', TRUE, '2024-12-01 14:30:00'),
+(9, 'Phí phát sinh khi trả xe', 'Hợp đồng HD-2025-0005 có phí phát sinh 2.875.000 VNĐ (trễ hạn + hư hỏng). Số tiền đã được trừ vào cọc.', TRUE, '2025-02-16 11:00:00'),
+(9, 'Hoàn tiền cọc', 'Tiền cọc còn lại 7.125.000 VNĐ cho hợp đồng HD-2025-0005 đã được hoàn.', TRUE, '2025-03-03 14:30:00'),
 
-(10, 'Phí trả xe khác địa điểm', 'Hợp đồng HD-2024-0006 có phí trả xe khác địa điểm 1.200.000 VNĐ.', TRUE, '2024-11-21 10:30:00'),
-(10, 'Tiền cọc chờ hoàn', 'Tiền cọc 9.800.000 VNĐ của bạn đang chờ xử lý hoàn tiền.', FALSE, '2024-12-04 10:15:00'),
+(10, 'Phí trả xe khác địa điểm', 'Hợp đồng HD-2025-0006 có phí trả xe khác địa điểm 1.200.000 VNĐ.', TRUE, '2025-02-21 10:30:00'),
+(10, 'Tiền cọc chờ hoàn', 'Tiền cọc 9.800.000 VNĐ của bạn đang chờ xử lý hoàn tiền.', FALSE, '2025-03-06 10:15:00'),
 
-(11, 'Vi phạm giao thông', 'Phát hiện vi phạm giao thông trong thời gian thuê xe HD-2024-0007. Tổng phạt: 2.300.000 VNĐ.', TRUE, '2024-11-05 09:00:00'),
-(11, 'Đang kiểm tra vi phạm', 'Tiền cọc của bạn đang được giữ để kiểm tra vi phạm giao thông (14 ngày).', TRUE, '2024-10-25 19:00:00'),
+(11, 'Vi phạm giao thông', 'Phát hiện vi phạm giao thông trong thời gian thuê xe HD-2025-0007. Tổng phạt: 2.300.000 VNĐ.', TRUE, '2025-02-05 09:00:00'),
+(11, 'Đang kiểm tra vi phạm', 'Tiền cọc của bạn đang được giữ để kiểm tra vi phạm giao thông (14 ngày).', TRUE, '2025-01-25 19:00:00'),
 
 -- Staff notifications
-(2, 'Booking mới cần duyệt', 'Có 4 booking mới đang chờ phê duyệt.', FALSE, '2024-12-04 16:30:00'),
-(2, 'Nhắc nhở bàn giao xe', 'Hợp đồng HD-2024-0001 có lịch bàn giao xe vào 10/12/2024 lúc 09:00.', TRUE, '2024-12-09 18:00:00'),
-(2, 'Ticket hỗ trợ mới', 'Có 3 ticket hỗ trợ mới cần xử lý.', FALSE, '2024-12-04 10:00:00'),
+(2, 'Booking mới cần duyệt', 'Có 4 booking mới đang chờ phê duyệt.', FALSE, '2025-03-06 16:30:00'),
+(2, 'Nhắc nhở bàn giao xe', 'Hợp đồng HD-2025-0001 có lịch bàn giao xe vào 12/03/2025 lúc 09:00.', TRUE, '2025-03-11 18:00:00'),
+(2, 'Ticket hỗ trợ mới', 'Có 3 ticket hỗ trợ mới cần xử lý.', FALSE, '2025-03-06 10:00:00'),
 
-(3, 'Xe cần bảo trì', 'Xe 30AB-11111 đang ở trạng thái Maintenance cần kiểm tra.', FALSE, '2024-12-03 09:00:00'),
-(3, 'Nhắc nhở nhận xe trả', 'Hợp đồng HD-2024-0002 có lịch nhận xe trả vào 15/12/2024 lúc 17:00.', FALSE, '2024-12-14 08:00:00'),
+(3, 'Xe cần bảo trì', 'Xe 30AB-11111 đang ở trạng thái Maintenance cần kiểm tra.', FALSE, '2025-03-05 09:00:00'),
+(3, 'Nhắc nhở nhận xe trả', 'Hợp đồng HD-2025-0002 có lịch nhận xe trả vào 17/03/2025 lúc 17:00.', FALSE, '2025-03-16 08:00:00'),
 
 -- Admin notifications
-(1, 'Báo cáo doanh thu tuần', 'Doanh thu tuần này: 125.000.000 VNĐ. Tăng 15% so với tuần trước.', FALSE, '2024-12-02 09:00:00'),
-(1, 'Xe cần kiểm tra', '2 xe đang trong trạng thái Maintenance cần xử lý.', FALSE, '2024-12-03 09:00:00'),
-(1, 'Giấy tờ chờ duyệt', 'Có 2 bộ giấy tờ khách hàng đang chờ phê duyệt.', FALSE, '2024-12-04 08:00:00');
+(1, 'Báo cáo doanh thu tuần', 'Doanh thu tuần này: 125.000.000 VNĐ. Tăng 15% so với tuần trước.', FALSE, '2025-03-04 09:00:00'),
+(1, 'Xe cần kiểm tra', '2 xe đang trong trạng thái Maintenance cần xử lý.', FALSE, '2025-03-05 09:00:00'),
+(1, 'Giấy tờ chờ duyệt', 'Có 2 bộ giấy tờ khách hàng đang chờ phê duyệt.', FALSE, '2025-03-06 08:00:00');
 
 -- ===================================================================
 -- STORED PROCEDURES

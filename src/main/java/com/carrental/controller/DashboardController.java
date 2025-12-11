@@ -1,6 +1,7 @@
 package com.carrental.controller;
 
 import com.carrental.model.User;
+import com.carrental.model.Booking;
 import com.carrental.service.BookingService;
 import com.carrental.service.SupportService;
 import com.carrental.service.UserService;
@@ -14,6 +15,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.List;
 
 /**
  * Dashboard Controller
@@ -57,22 +60,33 @@ public class DashboardController {
     public String adminDashboard(@AuthenticationPrincipal UserDetails userDetails, Model model) {
         // Load statistics cho dashboard
         try {
+            var bookings = bookingService.getAllBookings();
             model.addAttribute("totalUsers", userService.getAllUsers().size());
             model.addAttribute("totalVehicles", vehicleService.getAllVehicles().size());
-            model.addAttribute("totalBookings", bookingService.getAllBookings().size());
+            model.addAttribute("totalBookings", bookings.size());
+            model.addAttribute("bookings", bookings);
+            addBookingStatusCounts(model, bookings);
         } catch (Exception e) {
             // Nếu có lỗi, set giá trị mặc định
+            System.err.println("Error loading dashboard data: " + e.getMessage());
+            e.printStackTrace();
             model.addAttribute("totalUsers", 0);
             model.addAttribute("totalVehicles", 0);
             model.addAttribute("totalBookings", 0);
+            model.addAttribute("bookings", java.util.Collections.emptyList());
+            // Set default counts
+            model.addAttribute("pendingCount", 0);
+            model.addAttribute("approvedCount", 0);
+            model.addAttribute("rejectedCount", 0);
+            model.addAttribute("cancelledCount", 0);
         }
-        
+
         // Add current user for header
         if (userDetails != null) {
             User currentUser = userService.findByUsername(userDetails.getUsername());
             model.addAttribute("currentUser", currentUser);
         }
-        
+
         return "admin/dashboard";
     }
 
@@ -177,8 +191,34 @@ public class DashboardController {
      */
     @GetMapping("/staff/dashboard")
     public String staffDashboard(Model model) {
-        model.addAttribute("bookings", bookingService.getAllBookings());
+        var bookings = bookingService.getAllBookings();
+        model.addAttribute("bookings", bookings);
+        addBookingStatusCounts(model, bookings);
         return "staff/dashboard";
+    }
+
+    /**
+     * Tính toán số lượng booking theo trạng thái (case-insensitive)
+     */
+    private void addBookingStatusCounts(Model model, List<Booking> bookings) {
+        int pending = 0, approved = 0, rejected = 0, cancelled = 0;
+        if (bookings != null) {
+            for (Booking b : bookings) {
+                String status = b.getStatusString();
+                if (status == null) continue;
+                String normalized = status.trim().toUpperCase();
+                switch (normalized) {
+                    case "PENDING" -> pending++;
+                    case "APPROVED" -> approved++;
+                    case "REJECTED" -> rejected++;
+                    case "CANCELLED" -> cancelled++;
+                }
+            }
+        }
+        model.addAttribute("pendingCount", pending);
+        model.addAttribute("approvedCount", approved);
+        model.addAttribute("rejectedCount", rejected);
+        model.addAttribute("cancelledCount", cancelled);
     }
 
     /**
