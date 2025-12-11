@@ -236,7 +236,10 @@ public class CustomerContractController {
         addRow(table, "Họ tên", safe(contract.getCustomer().getFullName()), textFont);
         addRow(table, "Email", safe(contract.getCustomer().getEmail()), textFont);
         addRow(table, "Số điện thoại", safe(contract.getCustomer().getPhone()), textFont);
-        addRow(table, "Mã đơn đặt", "#" + contract.getBooking().getId(), textFont);
+        // Only show booking ID if booking exists
+        if (contract.getBooking() != null) {
+            addRow(table, "Mã đơn đặt", "#" + contract.getBooking().getId(), textFont);
+        }
         addRow(table, "Thời gian thuê", safe(contract.getStartDate()) + " → " + safe(contract.getEndDate()), textFont);
         document.add(table);
 

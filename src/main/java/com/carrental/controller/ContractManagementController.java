@@ -148,23 +148,26 @@ public class ContractManagementController {
         document.add(new Paragraph("Ngày tạo: " + safe(contract.getCreatedAt()), textFont));
         document.add(Paragraph.getInstance("\n"));
         
-        // Customer & booking info table
+        // Customer info table - use contract data instead of booking to avoid null issues
         document.add(new Paragraph("Thông tin khách hàng", sectionFont));
         PdfPTable table = new PdfPTable(2);
         table.setWidthPercentage(100);
-        addRow(table, "Họ tên", safe(contract.getBooking().getCustomer().getFullName()), textFont);
-        addRow(table, "Email", safe(contract.getBooking().getCustomer().getEmail()), textFont);
-        addRow(table, "Số điện thoại", safe(contract.getBooking().getCustomer().getPhone()), textFont);
-        addRow(table, "Mã đơn đặt", "#" + contract.getBooking().getId(), textFont);
-        addRow(table, "Thời gian thuê", safe(contract.getBooking().getStartDate()) + " → " + safe(contract.getBooking().getEndDate()), textFont);
+        addRow(table, "Họ tên", safe(contract.getCustomer().getFullName()), textFont);
+        addRow(table, "Email", safe(contract.getCustomer().getEmail()), textFont);
+        addRow(table, "Số điện thoại", safe(contract.getCustomer().getPhone()), textFont);
+        // Only show booking ID if booking exists
+        if (contract.getBooking() != null) {
+            addRow(table, "Mã đơn đặt", "#" + contract.getBooking().getId(), textFont);
+        }
+        addRow(table, "Thời gian thuê", safe(contract.getStartDate()) + " → " + safe(contract.getEndDate()), textFont);
         document.add(table);
-        
+
         document.add(Paragraph.getInstance("\n"));
         document.add(new Paragraph("Thông tin xe", sectionFont));
         PdfPTable vehicleTable = new PdfPTable(2);
         vehicleTable.setWidthPercentage(100);
-        addRow(vehicleTable, "Xe", safe(contract.getBooking().getVehicle().getModel().getBrand().getBrandName()) + " " + safe(contract.getBooking().getVehicle().getModel().getModelName()), textFont);
-        addRow(vehicleTable, "Biển số", safe(contract.getBooking().getVehicle().getLicensePlate()), textFont);
+        addRow(vehicleTable, "Xe", safe(contract.getVehicle().getModel().getBrand().getBrandName()) + " " + safe(contract.getVehicle().getModel().getModelName()), textFont);
+        addRow(vehicleTable, "Biển số", safe(contract.getVehicle().getLicensePlate()), textFont);
         document.add(vehicleTable);
         
         document.add(Paragraph.getInstance("\n"));

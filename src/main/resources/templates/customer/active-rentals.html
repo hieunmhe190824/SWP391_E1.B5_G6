@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xe Đang Thuê - Car Rental System</title>
+    <!-- CSS Variables - Theme Black & Blue -->
+    <link rel="stylesheet" th:href="@{/css/variables.css}">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+    <style>
+        .active-rentals-page {
+            padding: 2rem 1rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--color-text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .page-subtitle {
+            color: var(--color-text-secondary);
+        }
+
+        .rentals-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .rental-card {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.2s;
+        }
+
+        .rental-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .rental-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .rental-content {
+            padding: 1.5rem;
+        }
+
+        .rental-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1rem;
+        }
+
+        .vehicle-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--color-text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .vehicle-plate {
+            color: var(--color-text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .contract-number {
+            font-size: 0.75rem;
+            color: var(--color-primary);
+            font-family: monospace;
+            font-weight: 600;
+        }
+
+        .rental-details {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .detail-row:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .detail-label {
+            color: var(--color-text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .detail-value {
+            color: var(--color-text-primary);
+            font-weight: 600;
+        }
+
+        .days-remaining-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-weight: 700;
+            text-align: center;
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+
+        .days-remaining-badge.urgent {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        .days-remaining-badge.warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+        }
+
+        .days-remaining-badge.normal {
+            background: rgba(34, 197, 94, 0.1);
+            color: #22c55e;
+        }
+
+        .rental-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 0.75rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: var(--color-primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--color-primary-dark);
+        }
+
+        .btn-secondary {
+            background: var(--color-background);
+            color: var(--color-text-primary);
+            border: 1px solid var(--color-border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--color-surface);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+
+        .empty-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--color-text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-text {
+            color: var(--color-text-secondary);
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <!-- Main Content -->
+    <main class="active-rentals-page">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title">Xe Đang Thuê</h1>
+            <p class="page-subtitle">Danh sách các xe bạn đang thuê</p>
+        </div>
+
+        <!-- Rentals Grid -->
+        <div class="rentals-grid" th:if="${contracts != null and !contracts.isEmpty()}">
+            <div class="rental-card" th:each="contract : ${contracts}">
+                <img th:src="${contract.vehicle.firstImageUrl}" th:alt="${contract.vehicle.model.brand.brandName}"
+                    class="rental-image">
+                <div class="rental-content">
+                    <div class="rental-header">
+                        <div>
+                            <div class="vehicle-name"
+                                th:text="${contract.vehicle.model.brand.brandName + ' ' + contract.vehicle.model.modelName}">
+                                Vehicle Name
+                            </div>
+                            <div class="vehicle-plate" th:text="${contract.vehicle.licensePlate}">30A-12345</div>
+                        </div>
+                        <div class="contract-number" th:text="${contract.contractNumber}">HD-001</div>
+                    </div>
+
+                    <div class="days-remaining-badge"
+                        th:classappend="${T(java.time.temporal.ChronoUnit).DAYS.between(T(java.time.LocalDateTime).now(), contract.endDate) <= 1} ? 'urgent' : (${T(java.time.temporal.ChronoUnit).DAYS.between(T(java.time.LocalDateTime).now(), contract.endDate) <= 3} ? 'warning' : 'normal')">
+                        <span
+                            th:text="${T(java.time.temporal.ChronoUnit).DAYS.between(T(java.time.LocalDateTime).now(), contract.endDate)}">X</span>
+                        ngày còn lại
+                    </div>
+
+                    <div class="rental-details">
+                        <div class="detail-row">
+                            <span class="detail-label">Ngày nhận xe</span>
+                            <span class="detail-value"
+                                th:text="${#temporals.format(contract.startDate, 'dd/MM/yyyy')}">Date</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Ngày trả xe</span>
+                            <span class="detail-value"
+                                th:text="${#temporals.format(contract.endDate, 'dd/MM/yyyy')}">Date</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Tổng số ngày</span>
+                            <span class="detail-value" th:text="${contract.totalDays + ' ngày'}">X days</span>
+                        </div>
+                    </div>
+
+                    <div class="rental-actions">
+                        <a th:href="@{/customer/contracts/{id}(id=${contract.id})}" class="btn btn-primary">
+                            Xem chi tiết
+                        </a>
+                        <a th:href="@{/customer/support/create(contractId=${contract.id})}" class="btn btn-secondary">
+                            Hỗ trợ
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-state" th:if="${contracts == null or contracts.isEmpty()}">
+            <div class="empty-icon">🚗</div>
+            <h2 class="empty-title">Bạn chưa có xe đang thuê</h2>
+            <p class="empty-text">Hãy tìm và đặt xe phù hợp với nhu cầu của bạn</p>
+            <a th:href="@{/vehicles}" class="btn btn-primary">Tìm xe ngay</a>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <div th:replace="~{fragments/footer :: footer}"></div>
+
+    <!-- JavaScript -->
+    <script th:src="@{/js/main.js}"></script>
+</body>
+
+</html>

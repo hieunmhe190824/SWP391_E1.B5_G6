@@ -11,9 +11,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -25,6 +25,8 @@ import java.util.*;
 @Controller
 @RequestMapping("/payment")
 public class PaymentCallbackController {
+
+    private static final Logger log = LoggerFactory.getLogger(PaymentCallbackController.class);
 
     @Autowired
     private PaymentGatewayConfig gatewayConfig;
@@ -41,26 +43,42 @@ public class PaymentCallbackController {
      */
     @GetMapping("/callback")
     public String handlePaymentCallback(HttpServletRequest request, Model model) {
-        // Get all parameters from payment gateway
+        log.info("Received VNPay callback with raw params: {}", Collections.list(request.getParameterNames())
+                .stream()
+                .collect(HashMap::new, (m, k) -> m.put(k, request.getParameter(k)), HashMap::putAll));
+
+        // Get all parameters from VNPay
+        // IMPORTANT: For hash verification, only field VALUES must be URL encoded (per VNPay spec)
+        // Field names remain as-is (not encoded in hash data, only in query URL)
         Map<String, String> fields = new HashMap<>();
         for (Enumeration<String> params = request.getParameterNames(); params.hasMoreElements(); ) {
             String fieldName = params.nextElement();
             String fieldValue = request.getParameter(fieldName);
             if ((fieldValue != null) && (fieldValue.length() > 0)) {
-                fields.put(fieldName, fieldValue); // keep original for hashing helper
+                // For hash data: fieldName stays as-is, only encode the value
+                try {
+                    String encodedValue = java.net.URLEncoder.encode(fieldValue, java.nio.charset.StandardCharsets.UTF_8.toString());
+                    fields.put(fieldName, encodedValue);
+                } catch (Exception e) {
+                    log.error("Failed to encode field {} for hashing", fieldName, e);
+                    fields.put(fieldName, fieldValue); // Fallback to non-encoded
+                }
             }
         }
 
-        // Get secure hash from payment gateway (original, not encoded)
+        // Get secure hash from VNPay (original, not encoded)
         String secureHash = request.getParameter("vnp_SecureHash");
 
-        // Remove hash fields before validating
+        // Remove hash fields before validating (using non-encoded keys since field names are not encoded)
         fields.remove("vnp_SecureHashType");
         fields.remove("vnp_SecureHash");
 
-        // Validate signature
+        // Validate signature using the same method as in VNPayConfig.hashAllFields
         String signValue = gatewayConfig.hashAllFields(fields);
-        boolean isValidSignature = signValue.equals(secureHash);
+        boolean isValidSignature = signValue.equalsIgnoreCase(secureHash);
+
+        // Debug logs to compare hash inputs with VNPay (helps diagnose signature mismatches)
+        log.info("[VNPay] Callback computedSign={}, receivedHash={}, isValidSignature={}", signValue, secureHash, isValidSignature);
 
         // Get payment details
         String transactionRef = request.getParameter("vnp_TxnRef");
@@ -82,7 +100,7 @@ public class PaymentCallbackController {
                 amountVnd = new java.math.BigDecimal(amount).divide(new java.math.BigDecimal("100"));
             }
         } catch (Exception ex) {
-            System.err.println("ERROR: Failed to parse amount: " + amount);
+            log.error("Failed to parse amount {}", amount, ex);
         }
 
         model.addAttribute("amount", amount);
@@ -106,11 +124,14 @@ public class PaymentCallbackController {
                 // Find payment by transaction reference
                 Optional<Payment> paymentOpt = paymentRepository.findByTransactionRef(transactionRef);
                 if (!paymentOpt.isPresent()) {
+                    log.warn("Payment callback received but no payment found for transactionRef={}", transactionRef);
                     message = "Payment record not found";
                     paymentStatus = "failed";
                 } else {
                     Payment payment = paymentOpt.get();
                     contractId = payment.getContract().getId();
+                    log.info("Processing callback for contractId={}, transactionRef={}, responseCode={}, transactionStatus={}",
+                            contractId, transactionRef, responseCode, transactionStatus);
 
                     // Check transaction status
                     if ("00".equals(responseCode) && "00".equals(transactionStatus)) {
@@ -129,6 +150,7 @@ public class PaymentCallbackController {
                         payment.setGatewayPayDate(payDate);
                         payment.setGatewaySecureHash(secureHash);
                         paymentRepository.save(payment);
+                        log.info("Payment completed for contractId={}, vnPayTxn={}, bankCode={}", contractId, transactionNo, bankCode);
 
                         // Update contract status to ACTIVE
                         contractService.updateContractStatus(contractId, Contract.ContractStatus.ACTIVE);
@@ -147,12 +169,15 @@ public class PaymentCallbackController {
                         payment.setGatewayPayDate(payDate);
                         payment.setGatewaySecureHash(secureHash);
                         paymentRepository.save(payment);
+                        log.warn("Payment failed for contractId={}, responseCode={}, transactionStatus={}, message={}",
+                                contractId, responseCode, transactionStatus, message);
                     }
                 }
             } else {
                 // Invalid signature
                 paymentStatus = "failed";
                 message = "Chữ ký thanh toán không hợp lệ. Giao dịch có thể bị giả mạo. Vui lòng liên hệ hỗ trợ.";
+                log.error("Invalid VNPay signature for transactionRef={}, receivedHash={}, computed={}", transactionRef, secureHash, signValue);
                 // Try to mark payment as failed if we have the reference
                 if (transactionRef != null) {
                     paymentRepository.findByTransactionRef(transactionRef).ifPresent(p -> {
@@ -162,8 +187,7 @@ public class PaymentCallbackController {
                 }
             }
         } catch (Exception e) {
-            System.err.println("ERROR: Payment callback processing failed: " + e.getMessage());
-            e.printStackTrace();
+            log.error("Payment callback processing failed for transactionRef={}", transactionRef, e);
             message = "Lỗi xử lý thanh toán: " + e.getMessage();
             paymentStatus = "failed";
         }
@@ -186,7 +210,7 @@ public class PaymentCallbackController {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
             return LocalDateTime.parse(payDate, formatter);
         } catch (Exception e) {
-            System.err.println("ERROR: Failed to parse payment date: " + payDate);
+            log.warn("Failed to parse payment date {}, fallback to now()", payDate, e);
             return LocalDateTime.now();
         }
     }

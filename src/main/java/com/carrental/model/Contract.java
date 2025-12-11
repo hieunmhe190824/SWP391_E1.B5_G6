@@ -13,8 +13,8 @@ public class Contract {
     private Long id;
 
     @OneToOne
-    @JoinColumn(name = "booking_id", nullable = false, unique = true)
-    private Booking booking;
+    @JoinColumn(name = "booking_id", nullable = true, unique = true)
+    private Booking booking;  
 
     @ManyToOne
     @JoinColumn(name = "customer_id", nullable = false)

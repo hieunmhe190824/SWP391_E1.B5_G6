@@ -1,6 +1,7 @@
 package com.carrental.model;
 
 import jakarta.persistence.*;
+import com.carrental.model.HandoverTypeConverter;
 import java.time.LocalDateTime;
 
 @Entity
@@ -19,7 +20,7 @@ public class Handover {
     @JoinColumn(name = "staff_id", nullable = false)
     private User staff;
 
-    @Enumerated(EnumType.STRING)
+    @Convert(converter = HandoverTypeConverter.class)
     @Column(name = "handover_type", nullable = false)
     private HandoverType type;
 

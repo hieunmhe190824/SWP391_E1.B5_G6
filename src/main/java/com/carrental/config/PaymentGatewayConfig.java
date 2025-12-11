@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.*;
@@ -114,8 +115,33 @@ public class PaymentGatewayConfig {
     }
 
     /**
+     * Build the canonical hash data string from fields (sorted & URL encoded)
+     * This matches VNPay's expected signature input.
+     */
+    public String buildHashData(Map<String, String> fields) {
+        List<String> fieldNames = new ArrayList<>(fields.keySet());
+        Collections.sort(fieldNames);
+        List<String> hashDataList = new ArrayList<>();
+
+        for (String fieldName : fieldNames) {
+            String fieldValue = fields.get(fieldName);
+            if ((fieldValue != null) && (fieldValue.length() > 0)) {
+                try {
+                    // VNPay requires hashing over URL-encoded values in the same way they were sent
+                    String encodedValue = URLEncoder.encode(fieldValue, StandardCharsets.UTF_8.toString());
+                    hashDataList.add(fieldName + "=" + encodedValue);
+                } catch (Exception e) {
+                    throw new RuntimeException("Failed to encode payment field for hashing", e);
+                }
+            }
+        }
+
+        return String.join("&", hashDataList);
+    }
+
+    /**
      * Hash all fields for payment gateway signature
-     * Fields should already be URL encoded before passing to this method
+     * NOTE: Fields should already be URL encoded before passing to this method
      */
     public String hashAllFields(Map<String, String> fields) {
         List<String> fieldNames = new ArrayList<>(fields.keySet());
@@ -125,12 +151,16 @@ public class PaymentGatewayConfig {
         for (String fieldName : fieldNames) {
             String fieldValue = fields.get(fieldName);
             if ((fieldValue != null) && (fieldValue.length() > 0)) {
+                // Fields are already URL encoded, just concatenate
                 hashDataList.add(fieldName + "=" + fieldValue);
             }
         }
 
         String hashData = String.join("&", hashDataList);
-        return hmacSHA512(secretKey, hashData);
+        System.out.println("DEBUG hashAllFields - Hash Data: " + hashData);
+        String hash = hmacSHA512(secretKey, hashData);
+        System.out.println("DEBUG hashAllFields - Generated Hash: " + hash);
+        return hash;
     }
 
     /**
