@@ -234,26 +234,41 @@ public class ReportService {
      * Generate dashboard overview statistics
      */
     public DashboardStatsDTO generateDashboardStats() {
+        LocalDateTime now = LocalDateTime.now();
+        return generateDashboardStats(now.minusYears(1), now);
+    }
+
+    /**
+     * Generate dashboard statistics within a date range (used by reports filter)
+     */
+    public DashboardStatsDTO generateDashboardStats(LocalDateTime startDate, LocalDateTime endDate) {
         DashboardStatsDTO stats = new DashboardStatsDTO();
         
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime startOfWeek = now.minusDays(7);
-        LocalDateTime startOfMonth = now.minusDays(30);
-        LocalDateTime startOfYear = now.minusYears(1);
-        
         // Revenue metrics
-        stats.setTotalRevenue(paymentRepository.getTotalRevenue(startOfYear, now));
-        stats.setMonthlyRevenue(paymentRepository.getTotalRevenue(startOfMonth, now));
-        stats.setWeeklyRevenue(paymentRepository.getTotalRevenue(startOfWeek, now));
+        stats.setTotalRevenue(paymentRepository.getTotalRevenue(startDate, endDate));
+
+        LocalDateTime last30DaysStart = endDate.minusDays(30);
+        if (last30DaysStart.isBefore(startDate)) last30DaysStart = startDate;
+        stats.setMonthlyRevenue(paymentRepository.getTotalRevenue(last30DaysStart, endDate));
+
+        LocalDateTime last7DaysStart = endDate.minusDays(7);
+        if (last7DaysStart.isBefore(startDate)) last7DaysStart = startDate;
+        stats.setWeeklyRevenue(paymentRepository.getTotalRevenue(last7DaysStart, endDate));
         
         // Booking metrics
-        stats.setTotalBookings(bookingRepository.count());
-        stats.setPendingBookings(bookingRepository.findByStatusStringWithRelations("Pending").size() + 0L);
+        List<Booking> bookingsInRange = bookingRepository.findAllWithRelations().stream()
+            .filter(b -> !b.getCreatedAt().isBefore(startDate) && !b.getCreatedAt().isAfter(endDate))
+            .collect(Collectors.toList());
+        stats.setTotalBookings((long) bookingsInRange.size());
+        stats.setPendingBookings(bookingsInRange.stream()
+            .filter(b -> "Pending".equalsIgnoreCase(b.getStatusString()))
+            .count());
         
         // Contract metrics
-        stats.setTotalContracts(contractRepository.count());
-        stats.setActiveContracts(contractRepository.countByStatus(Contract.ContractStatus.ACTIVE));
-        stats.setCompletedContracts(contractRepository.countByStatus(Contract.ContractStatus.COMPLETED));
+        List<Contract> contractsInRange = contractRepository.findContractsInRange(startDate, endDate);
+        stats.setTotalContracts((long) contractsInRange.size());
+        stats.setActiveContracts(contractRepository.countByStatusInRange(Contract.ContractStatus.ACTIVE, startDate, endDate));
+        stats.setCompletedContracts(contractRepository.countByStatusInRange(Contract.ContractStatus.COMPLETED, startDate, endDate));
         stats.setActiveRentals(stats.getActiveContracts());
         stats.setCompletedRentals(stats.getCompletedContracts());
         
@@ -265,20 +280,20 @@ public class ReportService {
         
         // Customer metrics
         stats.setTotalCustomers(userRepository.countCustomers());
-        stats.setNewCustomersThisMonth(userRepository.countNewCustomers(startOfMonth, now));
+        stats.setNewCustomersThisMonth(userRepository.countNewCustomers(last30DaysStart, endDate));
         stats.setActiveCustomers(userRepository.countActiveCustomers());
         
         // Payment metrics
         stats.setPendingPayments(paymentRepository.countPaymentsByStatus(
-            Payment.PaymentStatus.PENDING, startOfYear, now));
+            Payment.PaymentStatus.PENDING, startDate, endDate));
         stats.setPendingPaymentAmount(paymentRepository.getTotalPendingAmount());
         
         // Chart data - Bookings by status
         Map<String, Long> bookingsByStatus = new LinkedHashMap<>();
-        bookingsByStatus.put("Pending", bookingRepository.findByStatusStringWithRelations("Pending").size() + 0L);
-        bookingsByStatus.put("Approved", bookingRepository.findByStatusStringWithRelations("Approved").size() + 0L);
-        bookingsByStatus.put("Rejected", bookingRepository.findByStatusStringWithRelations("Rejected").size() + 0L);
-        bookingsByStatus.put("Cancelled", bookingRepository.findByStatusStringWithRelations("Cancelled").size() + 0L);
+        bookingsByStatus.put("Pending", bookingsInRange.stream().filter(b -> "Pending".equalsIgnoreCase(b.getStatusString())).count());
+        bookingsByStatus.put("Approved", bookingsInRange.stream().filter(b -> "Approved".equalsIgnoreCase(b.getStatusString())).count());
+        bookingsByStatus.put("Rejected", bookingsInRange.stream().filter(b -> "Rejected".equalsIgnoreCase(b.getStatusString())).count());
+        bookingsByStatus.put("Cancelled", bookingsInRange.stream().filter(b -> "Cancelled".equalsIgnoreCase(b.getStatusString())).count());
         stats.setBookingsByStatus(bookingsByStatus);
         
         // Chart data - Vehicles by status
@@ -292,8 +307,15 @@ public class ReportService {
         Map<String, BigDecimal> revenueByMonth = new LinkedHashMap<>();
         DateTimeFormatter monthFormatter = DateTimeFormatter.ofPattern("MMM yyyy");
         for (int i = 5; i >= 0; i--) {
-            LocalDateTime monthStart = now.minusMonths(i).withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0);
+            LocalDateTime monthStart = endDate.minusMonths(i).withDayOfMonth(1).withHour(0).withMinute(0).withSecond(0);
             LocalDateTime monthEnd = monthStart.plusMonths(1).minusSeconds(1);
+            // Clamp to selected range
+            if (monthEnd.isBefore(startDate)) {
+                continue;
+            }
+            if (monthStart.isBefore(startDate)) {
+                monthStart = startDate;
+            }
             String monthLabel = monthStart.format(monthFormatter);
             BigDecimal monthRevenue = paymentRepository.getTotalRevenue(monthStart, monthEnd);
             revenueByMonth.put(monthLabel, monthRevenue);
