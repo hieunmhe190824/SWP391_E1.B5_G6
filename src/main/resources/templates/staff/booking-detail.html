@@ -535,22 +535,42 @@
 
                                 <!-- Document Image or Placeholder -->
                                 <div class="document-image-container">
-                                    <img th:if="${doc.imageUrl != null and !doc.imageUrl.isEmpty()}"
-                                        th:src="${doc.imageUrl}" th:alt="${doc.documentType}" class="document-image"
-                                        onclick="window.open(this.src, '_blank')"
-                                        onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                    <!-- Images -->
+                                    <img th:if="${doc.imageUrl != null and !doc.imageUrl.isEmpty() 
+                                                 and !#strings.endsWith(#strings.toLowerCase(doc.imageUrl), '.pdf')}"
+                                         th:src="${doc.imageUrl}" th:alt="${doc.documentType}" class="document-image"
+                                         onclick="window.open(this.src, '_blank')"
+                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+
+                                    <!-- Non-image (e.g., PDF) -->
+                                    <div th:if="${doc.imageUrl != null and #strings.endsWith(#strings.toLowerCase(doc.imageUrl), '.pdf')}"
+                                         class="document-placeholder" style="display: flex;">
+                                        <svg width="64" height="64" viewBox="0 0 64 64" fill="none"
+                                             xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M24 20H40M24 28H40M24 36H32" stroke="currentColor" stroke-width="2"
+                                                  stroke-linecap="round" stroke-linejoin="round" />
+                                            <path
+                                                d="M42.6667 8H21.3333C18.3878 8 16 10.3878 16 13.3333V50.6667C16 53.6122 18.3878 56 21.3333 56H42.6667C45.6122 56 48 53.6122 48 50.6667V13.3333C48 10.3878 45.6122 8 42.6667 8Z"
+                                                stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                                stroke-linejoin="round" />
+                                        </svg>
+                                        <div style="display:flex; flex-direction:column; gap:4px; align-items:center;">
+                                            <p class="placeholder-text">Tài liệu</p>
+                                            <a th:href="${doc.imageUrl}" target="_blank" class="btn btn-primary btn-sm">Xem / tải</a>
+                                        </div>
+                                    </div>
 
                                     <!-- Placeholder when no image or load error -->
                                     <div class="document-placeholder"
-                                        th:style="${doc.imageUrl == null or doc.imageUrl.isEmpty()} ? 'display: flex;' : 'display: none;'">
+                                         th:style="${doc.imageUrl == null or doc.imageUrl.isEmpty()} ? 'display: flex;' : 'display: none;'">
                                         <svg width="64" height="64" viewBox="0 0 64 64" fill="none"
-                                            xmlns="http://www.w3.org/2000/svg">
+                                             xmlns="http://www.w3.org/2000/svg">
                                             <path
                                                 d="M42.6667 8H21.3333C18.3878 8 16 10.3878 16 13.3333V50.6667C16 53.6122 18.3878 56 21.3333 56H42.6667C45.6122 56 48 53.6122 48 50.6667V13.3333C48 10.3878 45.6122 8 42.6667 8Z"
                                                 stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                                 stroke-linejoin="round" />
                                             <path d="M24 20H40M24 28H40M24 36H32" stroke="currentColor" stroke-width="2"
-                                                stroke-linecap="round" stroke-linejoin="round" />
+                                                  stroke-linecap="round" stroke-linejoin="round" />
                                         </svg>
                                         <p class="placeholder-text">Chưa có ảnh</p>
                                     </div>

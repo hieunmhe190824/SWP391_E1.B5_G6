@@ -43,9 +43,16 @@
                     </div>
 
                     <div th:if="${document.imageUrl}" class="form-group">
-                        <label>Ảnh hiện tại:</label>
-                        <div>
+                        <label>Tài liệu hiện tại:</label>
+                        <div th:if="${!#strings.endsWith(#strings.toLowerCase(document.imageUrl), '.pdf')}">
                             <img th:src="${document.imageUrl}" alt="Document Image" style="max-width: 300px; max-height: 300px; border-radius: 4px; border: 1px solid #e5e7eb;">
+                        </div>
+                        <div th:if="${#strings.endsWith(#strings.toLowerCase(document.imageUrl), '.pdf')}" style="display:flex; align-items:center; gap:8px;">
+                            <svg width="32" height="32" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M24 20H40M24 28H40M24 36H32" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M42.6667 8H21.3333C18.3878 8 16 10.3878 16 13.3333V50.6667C16 53.6122 18.3878 56 21.3333 56H42.6667C45.6122 56 48 53.6122 48 50.6667V13.3333C48 10.3878 45.6122 8 42.6667 8Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <a th:href="${document.imageUrl}" target="_blank" class="btn btn-primary btn-sm">Xem / tải PDF</a>
                         </div>
                     </div>
 

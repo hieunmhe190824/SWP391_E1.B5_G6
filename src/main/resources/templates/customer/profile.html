@@ -172,7 +172,8 @@
                                 </div>
                                 
                                 <div th:if="${doc.imageUrl}" class="document-image-section">
-                                    <div class="document-image-wrapper">
+                                    <div class="document-image-wrapper" 
+                                         th:if="${!#strings.endsWith(#strings.toLowerCase(doc.imageUrl), '.pdf')}">
                                         <img th:src="${doc.imageUrl}" alt="Document Image" class="document-image">
                                         <div class="document-image-overlay">
                                             <a th:href="${doc.imageUrl}" target="_blank" class="btn-view-image">
@@ -183,6 +184,17 @@
                                                 Xem ảnh
                                             </a>
                                         </div>
+                                    </div>
+                                    <div class="document-image-wrapper" 
+                                         th:if="${#strings.endsWith(#strings.toLowerCase(doc.imageUrl), '.pdf')}"
+                                         style="display:flex; align-items:center; justify-content:center; flex-direction:column; gap:8px;">
+                                        <div class="document-image document-placeholder" style="display:flex; align-items:center; justify-content:center;">
+                                            <svg width="48" height="48" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M24 20H40M24 28H40M24 36H32" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                                <path d="M42.6667 8H21.3333C18.3878 8 16 10.3878 16 13.3333V50.6667C16 53.6122 18.3878 56 21.3333 56H42.6667C45.6122 56 48 53.6122 48 50.6667V13.3333C48 10.3878 45.6122 8 42.6667 8Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                            </svg>
+                                        </div>
+                                        <a th:href="${doc.imageUrl}" target="_blank" class="btn btn-primary btn-sm" style="width:max-content;">Xem / tải tài liệu</a>
                                     </div>
                                 </div>
                             </div>

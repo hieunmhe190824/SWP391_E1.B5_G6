@@ -1,6 +1,6 @@
 
 
- FEATURE 1: AUTHENTICATION & USER MANAGEMENT
+ FEATURE 1: AUTHENTICATION & USER MANAGEMENT - done
 
  UC01: Register Account - done
 - Roles: Guest
@@ -16,7 +16,7 @@
 
 ---
 
- FEATURE 2: VEHICLE CATALOG
+ FEATURE 2: VEHICLE CATALOG - done
 
  UC04: Browse Vehicles - done
 - Roles: Customer, Guest
@@ -30,14 +30,14 @@
 
 ---
 
- FEATURE 3: BOOKING MANAGEMENT
+ FEATURE 3: BOOKING MANAGEMENT - done
 
  UC06: Create Booking - done
 - Roles: Customer
 - Mô tả: Tạo đặt xe mới, chọn thời gian, địa điểm, submit giấy tờ
 - Gộp: Schedule rental + Submit documents
 
- UC07: Approve/Reject Booking - donedone
+ UC07: Approve/Reject Booking - done
 - Roles: Staff
 - Mô tả: Xem yêu cầu đặt xe, kiểm tra giấy tờ, phê duyệt hoặc từ chối
 - Gộp: Check documents + 
@@ -52,7 +52,7 @@
 
 ---
 
- FEATURE 4: CONTRACT & PAYMENT
+ FEATURE 4: CONTRACT & PAYMENT - done
 
  UC10: Create Contract - done
 - Roles: Staff
@@ -65,21 +65,21 @@
 
 ---
 
- FEATURE 5: RENTAL TRACKING
+ FEATURE 5: RENTAL TRACKING - done
 
- UC12: Check-in Vehicle (Pickup)
+ UC12: Check-in Vehicle (Pickup) - done
 - Roles: Staff
 - Mô tả: Ghi nhận customer đã nhận xe, upload ảnh tình trạng xe, cập nhật odometer
 - Gộp: Inspect + Confirm acceptance + Update status to "Rented"
 - Lưu ý: Nếu có vấn đề → Cancel contract + Refund 
 
- UC13: Track Active Rentals
+ UC13: Track Active Rentals - done
 - Roles: Customer, Staff, Admin
 - Mô tả: Xem danh sách và trạng thái các xe đang được thuê
 
 ---
 
- FEATURE 6: VEHICLE RETURN
+ FEATURE 6: VEHICLE RETURN 
 
  UC14: Check-in Return
 - Roles: Staff
@@ -137,7 +137,7 @@
 
  FEATURE 9: REPORTS & ANALYTICS - done
 
- UC22: View Reports
+ UC22: View Reports - done
 - Roles: Admin, Staff
 - Mô tả: Xem các báo cáo (doanh thu, xe sử dụng, khách hàng, v.v.)
 - Gộp: Revenue report + Vehicle usage + Customer stats + Dashboard

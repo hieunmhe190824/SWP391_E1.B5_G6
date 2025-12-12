@@ -127,7 +127,7 @@
                         </a>
                     </li>
                     <li class="sidebar-menu-item">
-                        <a th:href="@{/staff/handover/return}" class="sidebar-menu-link">
+                        <a th:href="@{/staff/returns/list}" class="sidebar-menu-link">
                             <span class="sidebar-menu-icon">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                                     stroke="currentColor" stroke-width="2">
@@ -135,7 +135,7 @@
                                     <path d="M12 19l-7-7 7-7"></path>
                                 </svg>
                             </span>
-                            <span class="sidebar-menu-text">Thu hồi xe</span>
+                            <span class="sidebar-menu-text">Trả xe</span>
                         </a>
                     </li>
                     <li class="sidebar-menu-item">
@@ -158,6 +158,18 @@
                 <div class="sidebar-menu-label">Cọc & Vi phạm</div>
                 <ul class="sidebar-menu-list">
                     <li class="sidebar-menu-item">
+                        <a th:href="@{/staff/deposits/holds}" class="sidebar-menu-link">
+                            <span class="sidebar-menu-icon">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2">
+                                    <line x1="12" y1="1" x2="12" y2="23"></line>
+                                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+                                </svg>
+                            </span>
+                            <span class="sidebar-menu-text">Quản lý tiền cọc</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
                         <a th:href="@{/staff/violations}" class="sidebar-menu-link">
                             <span class="sidebar-menu-icon">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
@@ -170,18 +182,6 @@
                                 </svg>
                             </span>
                             <span class="sidebar-menu-text">Phạt vi phạm</span>
-                        </a>
-                    </li>
-                    <li class="sidebar-menu-item">
-                        <a th:href="@{/staff/deposits/refund}" class="sidebar-menu-link">
-                            <span class="sidebar-menu-icon">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                                    stroke="currentColor" stroke-width="2">
-                                    <line x1="12" y1="1" x2="12" y2="23"></line>
-                                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
-                                </svg>
-                            </span>
-                            <span class="sidebar-menu-text">Hoàn trả cọc</span>
                         </a>
                     </li>
                 </ul>

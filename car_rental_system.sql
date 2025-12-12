@@ -423,20 +423,20 @@ INSERT INTO users (email, password_hash, full_name, phone, address, role, status
 -- 2. USER DOCUMENTS
 INSERT INTO user_documents (user_id, document_type, document_number, image_url, expiry_date, status, verified_by) VALUES
 -- Customer 1 - Approved
-(5, 'ID_Card', '001234567890', '/uploads/docs/cmnd_nguyen_minh_tuan.jpg', '2030-05-15', 'Approved', 2),
+(5, 'ID_Card', '001234567890', '/uploads/docs/cmnd_nguyen_minh_tuan.webp', '2030-05-15', 'Approved', 2),
 (5, 'Driver_License', 'B2-123456', '/uploads/docs/gplx_nguyen_minh_tuan.jpg', '2028-03-20', 'Approved', 2),
 
 -- Customer 2 - Approved
 (6, 'ID_Card', '001234567891', '/uploads/docs/cmnd_le_thi_lan_anh.jpg', '2029-08-10', 'Approved', 2),
-(6, 'Driver_License', 'B2-234567', '/uploads/docs/gplx_le_thi_lan_anh.jpg', '2027-11-30', 'Approved', 3),
+(6, 'Driver_License', 'B2-234567', '/uploads/docs/gplx_le_thi_lan_anh.webp', '2027-11-30', 'Approved', 3),
 
 -- Customer 3 - Approved
 (7, 'ID_Card', '001234567892', '/uploads/docs/cmnd_tran_duc_minh.jpg', '2031-02-25', 'Approved', 2),
-(7, 'Driver_License', 'B2-345678', '/uploads/docs/gplx_tran_duc_minh.jpg', '2029-06-15', 'Approved', 2),
+(7, 'Driver_License', 'B2-345678', '/uploads/docs/gplx_tran_duc_minh.webp', '2029-06-15', 'Approved', 2),
 
 -- Customer 4 - Approved
-(8, 'ID_Card', '001234567893', '/uploads/docs/cmnd_pham_thi_thu_ha.jpg', '2030-12-05', 'Approved', 3),
-(8, 'Driver_License', 'B2-456789', '/uploads/docs/gplx_pham_thi_thu_ha.jpg', '2028-09-20', 'Approved', 3),
+(8, 'ID_Card', '001234567893', '/uploads/docs/cmnd_pham_thi_thu_ha.webp', '2030-12-05', 'Approved', 3),
+(8, 'Driver_License', 'B2-456789', '/uploads/docs/gplx_pham_thi_thu_ha.webp', '2028-09-20', 'Approved', 3),
 
 -- Customer 5 - Approved
 (9, 'ID_Card', '001234567894', '/uploads/docs/cmnd_hoang_van_hai.jpg', '2032-04-18', 'Approved', 2),
@@ -452,11 +452,11 @@ INSERT INTO user_documents (user_id, document_type, document_number, image_url, 
 
 -- Customer 8 - Approved
 (12, 'ID_Card', '001234567897', '/uploads/docs/cmnd_vo_thi_kim_loan.jpg', '2030-03-08', 'Approved', 3),
-(12, 'Driver_License', 'B2-890123', '/uploads/docs/gplx_vo_thi_kim_loan.jpg', '2028-12-15', 'Approved', 2),
+(12, 'Driver_License', 'B2-890123', '/uploads/docs/gplx_vo_thi_kim_loan.webp', '2028-12-15', 'Approved', 2),
 
 -- Customer 9 - Pending
-(13, 'ID_Card', '001234567898', '/uploads/docs/cmnd_nguyen_thi_bich.jpg', '2031-06-20', 'Pending', NULL),
-(13, 'Driver_License', 'B2-901234', '/uploads/docs/gplx_nguyen_thi_bich.jpg', '2029-08-05', 'Pending', NULL),
+(13, 'ID_Card', '001234567898', '/uploads/docs/cmnd_nguyen_thi_bich.png', '2031-06-20', 'Pending', NULL),
+(13, 'Driver_License', 'B2-901234', '/uploads/docs/gplx_nguyen_thi_bich.webp', '2029-08-05', 'Pending', NULL),
 
 -- Customer 10 - Rejected
 (14, 'ID_Card', '001234567899', '/uploads/docs/cmnd_tran_van_phuc.jpg', '2028-11-30', 'Rejected', 2),
