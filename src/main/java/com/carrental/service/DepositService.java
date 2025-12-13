@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -40,4 +41,46 @@ public class DepositService {
         deposit.setStatus(DepositStatus.REFUNDED);
         return depositHoldRepository.save(deposit);
     }
+
+    /**
+     * Get deposits ready for refund (14 days passed)
+     */
+    public List<DepositHold> getDepositsReadyForRefund() {
+        return depositHoldRepository.findByHoldEndDateBeforeAndStatus(
+            LocalDateTime.now(), 
+            DepositStatus.HOLDING
+        );
+    }
+
+    /**
+     * Get deposits by status
+     */
+    public List<DepositHold> getDepositsByStatus(DepositStatus status) {
+        return depositHoldRepository.findByStatus(status);
+    }
+
+    /**
+     * Get all deposit holds
+     */
+    public List<DepositHold> getAllDeposits() {
+        return depositHoldRepository.findAll();
+    }
+
+    /**
+     * Get deposit hold by ID
+     */
+    public Optional<DepositHold> getDepositById(Long id) {
+        return depositHoldRepository.findById(id);
+    }
+
+    /**
+     * Update deposit status
+     */
+    public DepositHold updateDepositStatus(Long holdId, DepositStatus status) {
+        DepositHold deposit = depositHoldRepository.findById(holdId)
+                .orElseThrow(() -> new RuntimeException("Deposit hold not found"));
+        deposit.setStatus(status);
+        return depositHoldRepository.save(deposit);
+    }
 }
+

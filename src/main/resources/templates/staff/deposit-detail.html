@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi Tiết Tiền Cọc - Staff</title>
+    <link rel="stylesheet" th:href="@{/css/variables.css}">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <style>
+        body {
+            background: var(--section-dark-bg);
+        }
+
+        .dashboard-content {
+            background: var(--section-dark-bg);
+            width: 100%;
+        }
+
+        .page {
+            max-width: 1100px;
+            margin: 0 auto 2rem;
+            padding: 2rem 1.5rem;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .title {
+            color: var(--color-text-white);
+            font-size: 1.9rem;
+            font-weight: 800;
+        }
+
+        .back-link {
+            color: var(--color-primary);
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .stack {
+            display: grid;
+            gap: 1.25rem;
+        }
+
+        .panel {
+            background: rgba(20, 27, 38, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            padding: 1.5rem;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .panel-title {
+            color: var(--color-text-white);
+            font-weight: 800;
+            font-size: 1.1rem;
+        }
+
+        .status-badge {
+            padding: 0.4rem 0.85rem;
+            border-radius: 999px;
+            font-size: 0.9rem;
+            font-weight: 700;
+        }
+
+        .status-holding {
+            background: rgba(234, 179, 8, 0.15);
+            color: #fbbf24;
+        }
+
+        .status-ready {
+            background: rgba(34, 197, 94, 0.15);
+            color: #4ade80;
+        }
+
+        .status-refunded {
+            background: rgba(148, 163, 184, 0.15);
+            color: #94a3b8;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 0.75rem 1rem;
+        }
+
+        .info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+
+        .label {
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: rgba(255, 255, 255, 0.65);
+            font-weight: 700;
+        }
+
+        .value {
+            color: var(--color-text-white);
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .violations-list {
+            display: grid;
+            gap: 0.75rem;
+        }
+
+        .violation-card {
+            background: rgba(15, 22, 32, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            padding: 1rem;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 1rem;
+            align-items: start;
+        }
+
+        .violation-info {
+            display: grid;
+            gap: 0.5rem;
+        }
+
+        .violation-type {
+            color: var(--color-text-white);
+            font-weight: 700;
+            font-size: 1.05rem;
+        }
+
+        .violation-detail {
+            color: rgba(255, 255, 255, 0.75);
+            font-size: 0.9rem;
+        }
+
+        .violation-fine {
+            color: #ef4444;
+            font-weight: 800;
+            font-size: 1.1rem;
+        }
+
+        .btn-delete {
+            padding: 0.5rem 0.85rem;
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: background 0.2s;
+        }
+
+        .btn-delete:hover {
+            background: rgba(239, 68, 68, 0.25);
+        }
+
+        .add-form {
+            background: rgba(15, 22, 32, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 1.25rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1rem;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .field label {
+            color: var(--color-text-white);
+            font-weight: 700;
+        }
+
+        .required {
+            color: #ef4444;
+        }
+
+        .input,
+        textarea.input {
+            background: rgba(10, 15, 25, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            border-radius: 10px;
+            padding: 0.75rem 0.9rem;
+            color: var(--color-text-white);
+            transition: border-color 0.2s;
+        }
+
+        .input:focus,
+        textarea.input:focus {
+            outline: none;
+            border-color: var(--color-primary);
+        }
+
+        textarea.input {
+            min-height: 90px;
+            resize: vertical;
+        }
+
+        .refund-preview {
+            background: rgba(59, 130, 246, 0.08);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 12px;
+            padding: 1.25rem;
+        }
+
+        .refund-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .refund-row:last-child {
+            border-bottom: none;
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--color-primary);
+            margin-top: 0.5rem;
+            padding-top: 0.75rem;
+            border-top: 2px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .refund-label {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .refund-value {
+            color: var(--color-text-white);
+            font-weight: 700;
+        }
+
+        .actions {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 12px;
+            padding: 0.85rem 1.3rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: transform 0.15s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+            color: #fff;
+            box-shadow: 0 10px 28px rgba(59, 130, 246, 0.32);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: #fff;
+            box-shadow: 0 10px 28px rgba(34, 197, 94, 0.32);
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .alert {
+            padding: 0.9rem 1.1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+
+        .alert-success {
+            background: rgba(34, 197, 94, 0.12);
+            border: 1px solid rgba(34, 197, 94, 0.35);
+            color: #4ade80;
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.35);
+            color: #f87171;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: rgba(255, 255, 255, 0.6);
+        }
+    </style>
+</head>
+
+<body>
+    <div th:replace="~{fragments/dashboard-layout :: layout-staff(pageTitle='Chi Tiết Tiền Cọc', content=~{::main})}">
+        <main class="dashboard-content page">
+            <div class="header">
+                <div class="title">Chi Tiết Tiền Cọc</div>
+                <a th:href="@{/staff/deposits/holds}" class="back-link">← Quay lại danh sách</a>
+            </div>
+
+            <div th:if="${successMessage}" class="alert alert-success">
+                <span th:text="${successMessage}">Thành công</span>
+            </div>
+            <div th:if="${errorMessage}" class="alert alert-error">
+                <span th:text="${errorMessage}">Lỗi</span>
+            </div>
+
+            <div class="stack">
+                <section class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title">Thông tin tiền cọc</div>
+                        <span class="status-badge"
+                            th:classappend="${depositHold.status.name() == 'HOLDING'} ? 'status-holding' : (${depositHold.status.name() == 'READY'} ? 'status-ready' : 'status-refunded')"
+                            th:text="${depositHold.status.name() == 'HOLDING'} ? 'Đang giữ' : (${depositHold.status.name() == 'READY'} ? 'Sẵn sàng hoàn' : 'Đã hoàn')">
+                            Đang giữ
+                        </span>
+                    </div>
+                    <div class="info-grid">
+                        <div class="info">
+                            <span class="label">Hợp đồng</span>
+                            <span class="value" th:text="${depositHold.contract.contractNumber}">CT-0001</span>
+                        </div>
+                        <div class="info">
+                            <span class="label">Khách hàng</span>
+                            <span class="value" th:text="${depositHold.contract.customer.fullName}">Nguyễn Văn A</span>
+                        </div>
+                        <div class="info">
+                            <span class="label">Tiền cọc gốc</span>
+                            <span class="value"
+                                th:text="${#numbers.formatDecimal(depositHold.depositAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">50,000,000
+                                VNĐ</span>
+                        </div>
+                        <div class="info">
+                            <span class="label">Đã khấu trừ khi trả xe</span>
+                            <span class="value"
+                                th:text="${#numbers.formatDecimal(depositHold.deductedAtReturn, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">0
+                                VNĐ</span>
+                        </div>
+                        <div class="info">
+                            <span class="label">Bắt đầu giữ</span>
+                            <span class="value"
+                                th:text="${#temporals.format(depositHold.holdStartDate, 'dd/MM/yyyy HH:mm')}">01/01/2024
+                                08:00</span>
+                        </div>
+                        <div class="info">
+                            <span class="label">Kết thúc giữ</span>
+                            <span class="value"
+                                th:text="${#temporals.format(depositHold.holdEndDate, 'dd/MM/yyyy HH:mm')}">15/01/2024
+                                08:00</span>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title">Vi phạm giao thông</div>
+                    </div>
+
+                    <div th:if="${violations != null and !violations.isEmpty()}" class="violations-list">
+                        <div class="violation-card" th:each="violation : ${violations}">
+                            <div class="violation-info">
+                                <div class="violation-type" th:text="${violation.violationType}">Vượt đèn đỏ</div>
+                                <div class="violation-detail">
+                                    <span
+                                        th:text="${#temporals.format(violation.violationDate, 'dd/MM/yyyy HH:mm')}">10/01/2024
+                                        14:30</span>
+                                    <span th:if="${violation.description}"
+                                        th:text="' - ' + ${violation.description}"></span>
+                                </div>
+                                <div class="violation-fine"
+                                    th:text="${#numbers.formatDecimal(violation.fineAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">
+                                    500,000 VNĐ</div>
+                            </div>
+                            <form th:action="@{/staff/deposits/violations/{id}/delete(id=${violation.id})}"
+                                method="post">
+                                <input type="hidden" name="holdId" th:value="${depositHold.id}">
+                                <button type="submit" class="btn-delete"
+                                    onclick="return confirm('Xác nhận xóa vi phạm này?')">Xóa</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div th:if="${violations == null or violations.isEmpty()}" class="empty-state">
+                        Chưa có vi phạm giao thông nào
+                    </div>
+
+                    <div class="add-form" style="margin-top: 1.25rem;">
+                        <div class="panel-title" style="margin-bottom: 1rem;">Thêm vi phạm mới</div>
+                        <form th:action="@{/staff/deposits/{id}/violations(id=${depositHold.id})}" method="post"
+                            enctype="multipart/form-data">
+                            <div class="form-grid">
+                                <div class="field">
+                                    <label for="violationType">Loại vi phạm <span class="required">*</span></label>
+                                    <input class="input" id="violationType" name="violationType" type="text" required
+                                        placeholder="Ví dụ: Vượt đèn đỏ">
+                                </div>
+                                <div class="field">
+                                    <label for="violationDate">Ngày vi phạm <span class="required">*</span></label>
+                                    <input class="input" id="violationDate" name="violationDate" type="datetime-local"
+                                        required>
+                                </div>
+                                <div class="field">
+                                    <label for="fineAmount">Số tiền phạt (VNĐ) <span class="required">*</span></label>
+                                    <input class="input" id="fineAmount" name="fineAmount" type="number" min="0"
+                                        required placeholder="Ví dụ: 500000">
+                                </div>
+                                <div class="field" style="grid-column: 1 / -1;">
+                                    <label for="description">Mô tả</label>
+                                    <textarea class="input" id="description" name="description"
+                                        placeholder="Mô tả chi tiết vi phạm..."></textarea>
+                                </div>
+                                <div class="field" style="grid-column: 1 / -1;">
+                                    <label for="evidenceFile">Bằng chứng (ảnh)</label>
+                                    <input class="input" id="evidenceFile" name="evidenceFile" type="file"
+                                        accept="image/*">
+                                </div>
+                            </div>
+                            <div style="margin-top: 1rem;">
+                                <button type="submit" class="btn btn-primary">Thêm vi phạm</button>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+
+                <section class="panel">
+                    <div class="panel-title">Dự kiến hoàn tiền</div>
+                    <div class="refund-preview">
+                        <div class="refund-row">
+                            <span class="refund-label">Tiền cọc gốc:</span>
+                            <span class="refund-value"
+                                th:text="${#numbers.formatDecimal(depositHold.depositAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">50,000,000
+                                VNĐ</span>
+                        </div>
+                        <div class="refund-row">
+                            <span class="refund-label">Khấu trừ khi trả xe:</span>
+                            <span class="refund-value"
+                                th:text="'-' + ${#numbers.formatDecimal(depositHold.deductedAtReturn, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">-0
+                                VNĐ</span>
+                        </div>
+                        <div class="refund-row">
+                            <span class="refund-label">Phạt vi phạm giao thông:</span>
+                            <span class="refund-value"
+                                th:text="'-' + ${#numbers.formatDecimal(totalFines, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">-500,000
+                                VNĐ</span>
+                        </div>
+                        <div class="refund-row">
+                            <span class="refund-label">Số tiền hoàn lại:</span>
+                            <span class="refund-value"
+                                th:text="${#numbers.formatDecimal(refundPreview, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">49,500,000
+                                VNĐ</span>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="panel" th:if="${depositHold.status.name() == 'READY'}">
+                    <div class="actions">
+                        <a th:href="@{/staff/deposits/{id}/refund(id=${depositHold.id})}" class="btn btn-success">
+                            Xử lý hoàn tiền
+                        </a>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+</body>
+
+</html>

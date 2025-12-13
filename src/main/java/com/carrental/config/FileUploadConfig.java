@@ -15,6 +15,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class FileUploadConfig implements WebMvcConfigurer {
 
+    private static final String UPLOAD_DIR = "uploads";
+
     /**
      * Configure static resource handlers
      * Map /images/** to serve from both classpath (for existing static images)
@@ -32,5 +34,12 @@ public class FileUploadConfig implements WebMvcConfigurer {
         registry.addResourceHandler("/uploads/**")
                 .addResourceLocations("file:uploads/")
                 .addResourceLocations("classpath:/static/uploads/");
+    }
+
+    /**
+     * Get the upload directory path
+     */
+    public String getUploadDir() {
+        return UPLOAD_DIR;
     }
 }

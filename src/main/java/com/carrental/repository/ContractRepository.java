@@ -14,6 +14,7 @@ import java.util.Optional;
 public interface ContractRepository extends JpaRepository<Contract, Long> {
     Optional<Contract> findByBookingId(Long bookingId);
     Optional<Contract> findByContractNumber(String contractNumber);
+    List<Contract> findByStatus(Contract.ContractStatus status);
     
     // ========== ANALYTICS QUERIES FOR REPORTS ==========
     
