@@ -112,6 +112,53 @@ public class PaymentService {
     }
 
     /**
+     * Create rental payment (for rental fees after return)
+     * @param contractId Contract ID
+     * @param amount Rental amount (total rental fee + any additional fees)
+     * @param paymentMethod Payment method
+     * @return Created payment record
+     */
+    public Payment createRentalPayment(Long contractId, BigDecimal amount, PaymentMethod paymentMethod) {
+        // Get contract
+        Contract contract = contractService.getContractById(contractId)
+                .orElseThrow(() -> new RuntimeException("Contract not found"));
+
+        // Verify contract is completed
+        if (contract.getStatus() != Contract.ContractStatus.COMPLETED) {
+            throw new RuntimeException("Can only create rental payment for completed contracts");
+        }
+
+        // Check if rental payment already exists
+        List<Payment> existingPayments = paymentRepository.findByContractId(contractId);
+        boolean rentalExists = existingPayments.stream()
+                .anyMatch(p -> p.getPaymentType() == PaymentType.RENTAL);
+
+        if (rentalExists) {
+            throw new RuntimeException("Rental payment already exists for this contract");
+        }
+
+        // Create rental payment
+        Payment payment = new Payment();
+        payment.setContract(contract);
+        payment.setPaymentType(PaymentType.RENTAL);
+        payment.setAmount(amount);
+        payment.setPaymentMethod(paymentMethod);
+        payment.setStatus(PaymentStatus.COMPLETED);
+        payment.setPaymentDate(LocalDateTime.now());
+
+        return paymentRepository.save(payment);
+    }
+
+    /**
+     * Get rental payment for a contract
+     */
+    public Optional<Payment> getRentalPayment(Long contractId) {
+        return paymentRepository.findByContractId(contractId).stream()
+                .filter(p -> p.getPaymentType() == PaymentType.RENTAL)
+                .findFirst();
+    }
+
+    /**
      * Create refund payment when contract is cancelled
      * Used when pickup fails or contract is cancelled before pickup
      * 
@@ -146,5 +193,93 @@ public class PaymentService {
         refund.setPaymentDate(LocalDateTime.now());
 
         return paymentRepository.save(refund);
+    }
+
+    /**
+     * Create bill payment after vehicle return (replaces BillService)
+     * This creates a RENTAL payment with detailed bill information
+     * @param contractId Contract ID
+     * @param returnFee ReturnFee containing fee details
+     * @return Created payment record with bill details
+     */
+    public Payment createBillPaymentAfterReturn(Long contractId, com.carrental.model.ReturnFee returnFee) {
+        // Check if rental payment already exists
+        Optional<Payment> existingPayment = getRentalPayment(contractId);
+        if (existingPayment.isPresent()) {
+            return existingPayment.get();
+        }
+
+        Contract contract = contractService.getContractById(contractId)
+                .orElseThrow(() -> new RuntimeException("Contract not found"));
+
+        // Calculate rental adjustment (difference between actual and original)
+        // returnFee.getTotalFees() = rentalAdjustment + lateFee + damageFee + oneWayFee
+        BigDecimal rentalAdjustment = returnFee.getTotalFees()
+                .subtract(returnFee.getLateFee() != null ? returnFee.getLateFee() : BigDecimal.ZERO)
+                .subtract(returnFee.getDamageFee() != null ? returnFee.getDamageFee() : BigDecimal.ZERO)
+                .subtract(returnFee.getOneWayFee() != null ? returnFee.getOneWayFee() : BigDecimal.ZERO);
+
+        // Calculate actual rental fee = original + adjustment
+        BigDecimal actualRentalFee = contract.getTotalRentalFee().add(rentalAdjustment);
+
+        // Calculate total additional fees (late + damage + one-way)
+        BigDecimal totalAdditionalFees = (returnFee.getLateFee() != null ? returnFee.getLateFee() : BigDecimal.ZERO)
+                .add(returnFee.getDamageFee() != null ? returnFee.getDamageFee() : BigDecimal.ZERO)
+                .add(returnFee.getOneWayFee() != null ? returnFee.getOneWayFee() : BigDecimal.ZERO);
+
+        // Total amount = actual rental fee + additional fees
+        BigDecimal totalAmount = actualRentalFee.add(totalAdditionalFees);
+
+        // Generate bill number
+        String billNumber = generateBillNumber();
+
+        // Create rental payment with bill details
+        Payment payment = new Payment();
+        payment.setContract(contract);
+        payment.setPaymentType(PaymentType.RENTAL);
+        payment.setAmount(totalAmount);
+        payment.setPaymentMethod(PaymentMethod.ONLINE); // Default, can be changed when customer pays
+        payment.setStatus(PaymentStatus.PENDING); // Waiting for customer payment
+        payment.setPaymentDate(null); // Will be set when paid
+
+        // Set bill details
+        payment.setBillNumber(billNumber);
+        payment.setOriginalRentalFee(contract.getTotalRentalFee());
+        payment.setRentalAdjustment(rentalAdjustment);
+        payment.setActualRentalFee(actualRentalFee);
+        payment.setLateFee(returnFee.getLateFee() != null ? returnFee.getLateFee() : BigDecimal.ZERO);
+        payment.setDamageFee(returnFee.getDamageFee() != null ? returnFee.getDamageFee() : BigDecimal.ZERO);
+        payment.setOneWayFee(returnFee.getOneWayFee() != null ? returnFee.getOneWayFee() : BigDecimal.ZERO);
+        payment.setTotalAdditionalFees(totalAdditionalFees);
+        payment.setDepositAmount(contract.getDepositAmount()); // 50,000,000 VND - still held
+        payment.setAmountPaid(BigDecimal.ZERO);
+        payment.setAmountDue(totalAmount);
+        payment.setNotes("Hóa đơn được tạo tự động sau khi trả xe. Tiền cọc 50,000,000 VND vẫn được giữ lại.");
+
+        return paymentRepository.save(payment);
+    }
+
+    /**
+     * Generate unique bill number (format: BILL-YYYYMMDD-XXXX)
+     */
+    private String generateBillNumber() {
+        String datePrefix = LocalDateTime.now().format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd"));
+        String randomSuffix = String.format("%04d", (int)(Math.random() * 10000));
+        String billNumber = "BILL-" + datePrefix + "-" + randomSuffix;
+        
+        // Ensure uniqueness
+        while (paymentRepository.findByBillNumber(billNumber).isPresent()) {
+            randomSuffix = String.format("%04d", (int)(Math.random() * 10000));
+            billNumber = "BILL-" + datePrefix + "-" + randomSuffix;
+        }
+        
+        return billNumber;
+    }
+
+    /**
+     * Get bill payment (RENTAL payment with bill details) by contract ID
+     */
+    public Optional<Payment> getBillPaymentByContractId(Long contractId) {
+        return getRentalPayment(contractId);
     }
 }

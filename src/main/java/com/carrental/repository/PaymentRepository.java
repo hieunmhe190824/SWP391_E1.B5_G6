@@ -25,6 +25,11 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
      * Find payment by transaction reference
      */
     Optional<Payment> findByTransactionRef(String transactionRef);
+
+    /**
+     * Find payment by bill number
+     */
+    Optional<Payment> findByBillNumber(String billNumber);
     
     // ========== ANALYTICS QUERIES FOR REPORTS ==========
     
