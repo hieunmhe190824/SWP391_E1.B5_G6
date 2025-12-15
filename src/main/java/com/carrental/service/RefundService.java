@@ -28,9 +28,8 @@ public class RefundService {
     @Autowired
     private PaymentRepository paymentRepository;
 
-    // TODO: Add NotificationService when available
-    // @Autowired
-    // private NotificationService notificationService;
+    @Autowired
+    private NotificationService notificationService;
 
     /**
      * Process deposit refund
@@ -152,20 +151,15 @@ public class RefundService {
      * Send refund notification to customer
      */
     private void sendRefundNotification(User customer, Refund refund) {
-        // TODO: Implement notification when NotificationService is available
-        /*
-        String message = String.format(
-            "Hoàn tiền cọc đã được xử lý. Số tiền: %,.0f VNĐ. Phương thức: %s. Hợp đồng: %s",
-            refund.getRefundAmount(),
-            refund.getRefundMethod() == RefundMethod.TRANSFER ? "Chuyển khoản" : "Tiền mặt",
-            refund.getContract().getContractNumber()
-        );
-        
-        notificationService.createNotification(
-            customer.getId(),
-            "Hoàn tiền cọc",
-            message
-        );
-        */
+        try {
+            notificationService.createRefundCompletedNotification(
+                customer.getId(),
+                refund.getContract().getContractNumber(),
+                refund.getRefundAmount(),
+                refund.getRefundMethod().toString()
+            );
+        } catch (Exception e) {
+            System.err.println("Failed to send refund notification: " + e.getMessage());
+        }
     }
 }

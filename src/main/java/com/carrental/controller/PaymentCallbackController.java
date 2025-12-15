@@ -137,7 +137,12 @@ public class PaymentCallbackController {
                     if ("00".equals(responseCode) && "00".equals(transactionStatus)) {
                         // Payment successful
                         paymentStatus = "success";
-                        message = "Thanh toán cọc thành công! Hợp đồng của bạn đã được kích hoạt.";
+                        boolean isDeposit = payment.getPaymentType() == Payment.PaymentType.DEPOSIT;
+                        if (isDeposit) {
+                            message = "Thanh toán cọc thành công! Hợp đồng của bạn đã được kích hoạt.";
+                        } else {
+                            message = "Thanh toán hóa đơn thành công! Cảm ơn bạn.";
+                        }
 
                         // Update payment record
                         payment.setStatus(Payment.PaymentStatus.COMPLETED);
@@ -152,8 +157,12 @@ public class PaymentCallbackController {
                         paymentRepository.save(payment);
                         log.info("Payment completed for contractId={}, vnPayTxn={}, bankCode={}", contractId, transactionNo, bankCode);
 
-                        // Update contract status to ACTIVE
-                        contractService.updateContractStatus(contractId, Contract.ContractStatus.ACTIVE);
+                        // Update contract status based on payment type
+                        if (isDeposit) {
+                            contractService.updateContractStatus(contractId, Contract.ContractStatus.ACTIVE);
+                        } else if (payment.getPaymentType() == Payment.PaymentType.RENTAL) {
+                            contractService.updateContractStatus(contractId, Contract.ContractStatus.COMPLETED);
+                        }
 
                     } else {
                         // Payment failed

@@ -66,13 +66,13 @@ public class Payment {
     @Column(name = "bill_number", unique = true, length = 50)
     private String billNumber;
 
-    @Column(name = "original_rental_fee")
+    @Column(name = "original_rental_fee", precision = 18, scale = 2)
     private BigDecimal originalRentalFee;
 
-    @Column(name = "rental_adjustment")
+    @Column(name = "rental_adjustment", precision = 18, scale = 2)
     private BigDecimal rentalAdjustment; // Can be negative (early return) or positive (late return)
 
-    @Column(name = "actual_rental_fee")
+    @Column(name = "actual_rental_fee", precision = 18, scale = 2)
     private BigDecimal actualRentalFee;
 
     @Column(name = "late_fee")

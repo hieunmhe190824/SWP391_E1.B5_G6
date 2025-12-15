@@ -47,6 +47,15 @@
                     <a th:href="@{/contracts/my-contracts}" class="nav-link">Hợp đồng của tôi</a>
                 </li>
 
+                <!-- Notifications - CHỈ hiển thị khi đã đăng nhập -->
+                <li sec:authorize="isAuthenticated()" class="nav-notification">
+                    <a th:href="@{/notifications}" class="nav-link">
+                        Thông báo
+                        <span class="badge" th:if="${unreadNotificationCount != null and unreadNotificationCount > 0}"
+                              th:text="${unreadNotificationCount}">0</span>
+                    </a>
+                </li>
+
                 <!-- Support - CHỈ hiển thị khi đã đăng nhập -->
                 <li sec:authorize="isAuthenticated()">
                     <a th:href="@{/support/tickets}" class="nav-link">Hỗ trợ</a>

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -111,28 +112,36 @@
         }
     </style>
 </head>
+
 <body>
-    <div th:replace="~{fragments/layout :: layout(content=~{::main})}">
+    <!-- Empty extraCss fragment for layout -->
+    <th:block th:fragment="extraCss"></th:block>
+
+    <div th:replace="~{fragments/layout :: layout(title='Thông Báo', content=~{::main}, extraCss=~{::extraCss})}">
         <main class="notifications-page">
             <div class="page-container">
                 <div class="page-header">
                     <h1 class="page-title">Thông Báo</h1>
-                    <form th:if="${unreadCount > 0}" th:action="@{/notifications/read-all}" method="post" style="display: inline;">
+                    <form th:if="${unreadCount > 0}" th:action="@{/notifications/read-all}" method="post"
+                        style="display: inline;">
                         <button type="submit" class="mark-all-read-btn">Đánh dấu tất cả đã đọc</button>
                     </form>
                 </div>
 
                 <div th:if="${notifications != null and !notifications.isEmpty()}">
-                    <div th:each="notification : ${notifications}" 
-                         class="notification-item" 
-                         th:classappend="${!notification.isRead} ? 'unread'">
-                        <form th:action="@{/notifications/{id}/read(id=${notification.id})}" method="get" style="display: contents;">
+                    <div th:each="notification : ${notifications}" class="notification-item"
+                        th:classappend="${!notification.isRead} ? 'unread'">
+                        <form th:action="@{/notifications/{id}/read(id=${notification.id})}" method="get"
+                            style="display: contents;">
                             <div style="cursor: pointer;" onclick="this.closest('form').submit();">
-                        <div class="notification-header">
-                            <h3 class="notification-title" th:text="${notification.title}">Tiêu đề</h3>
-                            <span class="notification-time" th:text="${#temporals.format(notification.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2024 10:00</span>
-                        </div>
-                        <div class="notification-message" th:text="${notification.message}">Nội dung thông báo</div>
+                                <div class="notification-header">
+                                    <h3 class="notification-title" th:text="${notification.title}">Tiêu đề</h3>
+                                    <span class="notification-time"
+                                        th:text="${#temporals.format(notification.createdAt, 'dd/MM/yyyy HH:mm')}">01/01/2024
+                                        10:00</span>
+                                </div>
+                                <div class="notification-message" th:text="${notification.message}">Nội dung thông báo
+                                </div>
                             </div>
                         </form>
                     </div>
@@ -146,5 +155,5 @@
         </main>
     </div>
 </body>
-</html>
 
+</html>

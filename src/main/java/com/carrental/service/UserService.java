@@ -80,4 +80,13 @@ public class UserService {
         return userRepository.findByEmail(username)
                 .orElseThrow(() -> new RuntimeException("User not found with username: " + username));
     }
+    
+    /**
+     * Find all staff members (for ticket assignment)
+     */
+    public List<User> findAllStaff() {
+        return userRepository.findAll().stream()
+                .filter(user -> user.getRole() == User.UserRole.STAFF || user.getRole() == User.UserRole.ADMIN)
+                .toList();
+    }
 }

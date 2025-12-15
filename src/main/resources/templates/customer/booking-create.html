@@ -321,10 +321,17 @@
             return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
         }
 
-        // Set minimum date to today
-        const today = new Date().toISOString().slice(0, 16);
-        document.getElementById('startDate').min = today;
-        document.getElementById('endDate').min = today;
+        // Set minimum date to current day in Vietnam timezone (UTC+7) so users can pick any time today
+        const toVnDate = () => {
+            const now = new Date();
+            const vnString = now.toLocaleString('en-US', { timeZone: 'Asia/Ho_Chi_Minh' });
+            return new Date(vnString);
+        };
+        const pad = (num) => String(num).padStart(2, '0');
+        const vnNow = toVnDate();
+        const startOfTodayVn = `${vnNow.getFullYear()}-${pad(vnNow.getMonth() + 1)}-${pad(vnNow.getDate())}T00:00`;
+        document.getElementById('startDate').min = startOfTodayVn;
+        document.getElementById('endDate').min = startOfTodayVn;
 
         // Update end date minimum when start date changes
         document.getElementById('startDate').addEventListener('change', function() {

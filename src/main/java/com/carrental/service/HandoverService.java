@@ -43,6 +43,9 @@ public class HandoverService {
     @Autowired
     private PaymentService paymentService;
 
+    @Autowired
+    private NotificationService notificationService;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
     
     // File upload configuration
@@ -120,11 +123,8 @@ public class HandoverService {
         // Validate pickup data
         validatePickupData(odometer, fuelLevel, conditionNotes);
 
-        // Upload images
+        // Upload images (optional - allow pickup without images)
         List<String> imageUrls = uploadHandoverImages(images, contractId);
-        if (imageUrls.isEmpty()) {
-            throw new RuntimeException("At least one vehicle condition image is required");
-        }
 
         // Create handover record
         Handover handover = new Handover();
@@ -136,11 +136,13 @@ public class HandoverService {
         handover.setFuelLevel(fuelLevel);
         handover.setConditionNotes(conditionNotes);
         
-        // Convert image URLs to JSON array
-        try {
-            handover.setImages(objectMapper.writeValueAsString(imageUrls));
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to save image URLs", e);
+        // Convert image URLs to JSON array if any images were uploaded
+        if (!imageUrls.isEmpty()) {
+            try {
+                handover.setImages(objectMapper.writeValueAsString(imageUrls));
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to save image URLs", e);
+            }
         }
 
         // Save handover
@@ -148,6 +150,17 @@ public class HandoverService {
 
         // Update vehicle status to Rented
         vehicleService.updateVehicleStatus(contract.getVehicle().getId(), Vehicle.VehicleStatus.Rented);
+
+        // Send notification to customer about successful pickup
+        try {
+            notificationService.createPickupCompletedNotification(
+                contract.getCustomer().getId(),
+                contract.getContractNumber(),
+                contract.getVehicle().getModel().getModelName()
+            );
+        } catch (Exception e) {
+            System.err.println("Failed to send pickup notification: " + e.getMessage());
+        }
 
         return savedHandover;
     }

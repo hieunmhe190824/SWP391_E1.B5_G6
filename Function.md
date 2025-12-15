@@ -79,7 +79,7 @@
 
 ---
 
- FEATURE 6: VEHICLE RETURN 
+ FEATURE 6: VEHICLE RETURN - done
 
  UC14: Check-in Return - done
 - Roles: Staff
@@ -92,12 +92,12 @@
   - Upload ảnh tình trạng xe
   - Cập nhật odometer
 
- UC15: Process Rental Payment
+ UC15: Process Rental Payment - done
 - Roles: Staff, System
 - Mô tả: Tạo hóa đơn tiền thuê, customer thanh toán online/offline, trừ các khoản phí từ cọc
 - Gộp: Generate invoice + Pay rental fee + Process payment
 
- UC16: Hold Deposit
+ UC16: Hold Deposit - done
 - Roles: System
 - Mô tả: Giữ tiền cọc 14 ngày, tracking trạng thái
 - Note: Tự động, không có interaction
@@ -117,7 +117,7 @@
 
 ---
 
- FEATURE 8: CUSTOMER SUPPORT
+ FEATURE 8: CUSTOMER SUPPORT 
 
  UC19: Submit Support Request
 - Roles: Customer, Guest
@@ -144,7 +144,7 @@
 
 ---
 
- FEATURE 10: NOTIFICATIONS
+ FEATURE 10: NOTIFICATIONS - done
 
  UC23: Manage Notifications
 - Roles: Customer, Staff, Admin

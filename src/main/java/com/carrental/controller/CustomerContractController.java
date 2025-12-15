@@ -181,6 +181,62 @@ public class CustomerContractController {
     }
 
     /**
+     * Show bill payment page (rental fees after return)
+     * GET /contracts/{id}/pay-bill
+     */
+    @GetMapping("/{id}/pay-bill")
+    public String showPayBillPage(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
+        try {
+            User currentUser = getCurrentUser();
+            Contract contract = contractService.getContractById(id)
+                    .orElseThrow(() -> new RuntimeException("Contract not found"));
+
+            // Verify contract belongs to current user
+            if (!contract.getCustomer().getId().equals(currentUser.getId())) {
+                throw new RuntimeException("You don't have permission to access this contract");
+            }
+
+            // Verify contract is awaiting bill payment and bill exists
+            if (contract.getStatus() != Contract.ContractStatus.BILL_PENDING
+                    && contract.getStatus() != Contract.ContractStatus.COMPLETED) {
+                throw new RuntimeException("Hợp đồng chưa hoàn tất trả xe");
+            }
+
+            Payment billPayment = paymentService.getBillPaymentByContractId(id)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy bill cần thanh toán"));
+
+            if (billPayment.getStatus() != Payment.PaymentStatus.PENDING) {
+                throw new RuntimeException("Bill đã được thanh toán hoặc không ở trạng thái chờ");
+            }
+
+            model.addAttribute("contract", contract);
+            model.addAttribute("billPayment", billPayment);
+            return "customer/contract-pay-bill";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            return "redirect:/contracts/my-contracts";
+        }
+    }
+
+    /**
+     * Process bill payment (VNPay) - POST to redirect to gateway
+     */
+    @PostMapping("/{id}/pay-bill")
+    public String payBill(@PathVariable Long id,
+                          HttpServletRequest request,
+                          RedirectAttributes redirectAttributes) {
+        try {
+            // Always route through VNPay
+            String paymentUrl = paymentGatewayService.initiateBillPayment(id, request);
+            return "redirect:" + paymentUrl;
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage",
+                    "Lỗi khi thanh toán bill: " + e.getMessage());
+            return "redirect:/contracts/" + id + "/pay-bill";
+        }
+    }
+
+    /**
      * Export contract PDF for customer (only their own contract)
      * GET /contracts/{id}/export
      */

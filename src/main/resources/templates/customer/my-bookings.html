@@ -548,6 +548,10 @@
                             th:classappend="${selectedStatus == 'Cancelled' ? 'active' : ''}">
                             Đã hủy
                         </a>
+                        <a th:href="@{/bookings/my-bookings(status='Completed')}" class="filter-btn"
+                           th:classappend="${selectedStatus == 'Completed' ? 'active' : ''}">
+                            Đã hoàn thành
+                        </a>
                     </div>
                 </div>
             </div>
@@ -672,6 +676,25 @@
                             style="background: transparent; color: var(--color-primary); border-color: var(--color-primary);">
                             Xem hợp đồng
                         </a>
+
+                        <a th:if="${contract != null
+                                  and billMap != null
+                                  and billMap.containsKey(booking.id)
+                                  and billMap.get(booking.id).status.name() == 'PENDING'}"
+                           th:href="@{/contracts/{id}/pay-bill(id=${contract.id})}"
+                           class="btn-view"
+                           style="background: #10b981; border-color: #10b981;">
+                            Thanh toán bill
+                        </a>
+
+                        <span th:if="${contract != null
+                                  and billMap != null
+                                  and billMap.containsKey(booking.id)
+                                  and billMap.get(booking.id).status.name() != 'PENDING'}"
+                              style="color: rgba(255,255,255,0.7); font-size: 0.9rem;">
+                            Bill đã xử lý (trạng thái:
+                            <strong th:text="${billMap.get(booking.id).status}">COMPLETED</strong>)
+                        </span>
 
                         <a th:if="${contract != null and contract.status.name() == 'PENDING_PAYMENT'}"
                             th:href="@{/contracts/{id}/pay-deposit(id=${contract.id})}" class="btn-view">

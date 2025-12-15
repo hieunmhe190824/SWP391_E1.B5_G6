@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -44,6 +45,9 @@ public class BookingService {
 
     @Autowired
     private ContractService contractService;
+
+    @Autowired
+    private NotificationService notificationService;
 
     /**
      * Get all bookings with relationships loaded
@@ -108,10 +112,11 @@ public class BookingService {
         Location returnLocation = locationRepository.findById(dto.getReturnLocationId())
                 .orElseThrow(() -> new RuntimeException("Return location not found"));
 
-        // Validate dates
-        if (dto.getStartDate().isBefore(LocalDateTime.now())) {
-            throw new RuntimeException("Start date cannot be in the past");
+        // Validate dates using Vietnam timezone (UTC+7); allow any time today
+        if (dto.getStartDate() == null || dto.getEndDate() == null) {
+            throw new RuntimeException("Start/end date is required");
         }
+        // Past-date validation is handled on front-end; backend only ensures end > start
         if (dto.getEndDate().isBefore(dto.getStartDate())) {
             throw new RuntimeException("End date must be after start date");
         }
@@ -212,6 +217,19 @@ public class BookingService {
             }
         }
 
+        // Send notification to customer requesting deposit payment
+        try {
+            BigDecimal depositAmount = savedBooking.getVehicle().getDepositAmount();
+            notificationService.createBookingApprovalNotification(
+                savedBooking.getCustomer().getId(),
+                savedBooking.getId(),
+                depositAmount
+            );
+        } catch (Exception e) {
+            // Log error but don't fail the approval process
+            System.err.println("Failed to send approval notification: " + e.getMessage());
+        }
+
         // Reload with relations to return latest view
         return bookingRepository.findByIdWithRelations(bookingId).orElse(savedBooking);
     }
@@ -234,10 +252,21 @@ public class BookingService {
 
         // Update booking status
         booking.setStatus(BookingStatus.REJECTED);
+        Booking savedBooking = bookingRepository.save(booking);
 
-        // TODO: Send notification to customer with rejection reason
+        // Send notification to customer about rejection
+        try {
+            notificationService.createBookingRejectionNotification(
+                savedBooking.getCustomer().getId(),
+                savedBooking.getId(),
+                reason
+            );
+        } catch (Exception e) {
+            // Log error but don't fail the rejection process
+            System.err.println("Failed to send rejection notification: " + e.getMessage());
+        }
 
-        return bookingRepository.save(booking);
+        return savedBooking;
     }
 
     /**

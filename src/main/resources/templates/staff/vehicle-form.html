@@ -170,8 +170,9 @@
                                     <input type="number"
                                            id="depositAmount"
                                            name="depositAmount"
-                                           th:value="${vehicle.depositAmount}"
-                                           placeholder="3000000"
+                                           th:value="${vehicle != null ? vehicle.depositAmount : 50000000}"
+                                           value="50000000"
+                                           placeholder="50000000"
                                            min="0"
                                            step="100000"
                                            class="form-control"
@@ -806,6 +807,14 @@
             isVehicleFormInitialized = true;
 
             console.log('Initializing vehicle form...');
+
+            // Auto-fill deposit amount to 50,000,000 VND when creating new vehicle
+            const form = document.getElementById('vehicleForm');
+            const isEdit = form.getAttribute('data-is-edit') === 'true';
+            const depositAmountInput = document.getElementById('depositAmount');
+            if (!isEdit && depositAmountInput && !depositAmountInput.value) {
+                depositAmountInput.value = '50000000';
+            }
 
             // Setup real-time validation
             setupVehicleFormRealTimeValidation();

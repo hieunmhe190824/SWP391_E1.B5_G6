@@ -60,7 +60,8 @@ public class Contract {
     public enum ContractStatus {
         PENDING_PAYMENT,  // Contract created, waiting for customer deposit payment
         ACTIVE,           // Deposit paid, contract is active
-        COMPLETED,        // Rental completed
+        BILL_PENDING,     // Vehicle returned, waiting for bill payment
+        COMPLETED,        // Rental completed after bill payment
         CANCELLED         // Contract cancelled
     }
 

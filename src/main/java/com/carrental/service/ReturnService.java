@@ -49,6 +49,9 @@ public class ReturnService {
     @Autowired
     private NotificationService notificationService;
 
+    @Autowired
+    private BookingRepository bookingRepository;
+
     /**
      * Get contracts ready for return (active rentals with pickup completed but no return)
      */
@@ -206,9 +209,16 @@ public class ReturnService {
         // Create deposit hold (14 days from return)
         createDepositHold(contract, totalFees, returnTime);
 
-        // Update contract status to completed
-        contract.setStatus(Contract.ContractStatus.COMPLETED);
+        // Update contract status to bill pending until customer pays the return bill
+        contract.setStatus(Contract.ContractStatus.BILL_PENDING);
         contractRepository.save(contract);
+
+        // Also mark the linked booking as completed so customer filters work
+        Booking linkedBooking = contract.getBooking();
+        if (linkedBooking != null) {
+            linkedBooking.setStatus(Booking.BookingStatus.COMPLETED);
+            bookingRepository.save(linkedBooking);
+        }
 
         // Create bill payment after return (replaces Bill)
         Payment billPayment = paymentService.createBillPaymentAfterReturn(contractId, returnFee);
@@ -376,22 +386,47 @@ public class ReturnService {
     /**
      * Create deposit hold record
      */
-    private void createDepositHold(Contract contract, BigDecimal deductedAtReturn, LocalDateTime returnTime) {
+    private void createDepositHold(Contract contract, BigDecimal totalFees, LocalDateTime returnTime) {
         String holdDaysStr = systemSettingsRepository.findById("deposit_hold_days")
                 .map(s -> s.getSettingValue())
                 .orElse("14");
-        
+
         int holdDays = Integer.parseInt(holdDaysStr);
         LocalDateTime holdEndDate = returnTime.plusDays(holdDays);
 
         DepositHold depositHold = new DepositHold();
         depositHold.setContract(contract);
         depositHold.setDepositAmount(contract.getDepositAmount());
-        depositHold.setDeductedAtReturn(deductedAtReturn);
+
+        // Calculate actual deduction from deposit:
+        // - If totalFees is negative (early return refund), deduction is 0
+        // - If totalFees is positive but less than deposit, deduction equals totalFees
+        // - If totalFees exceeds deposit, deduction equals deposit (customer owes more)
+        BigDecimal actualDeduction;
+        if (totalFees.compareTo(BigDecimal.ZERO) <= 0) {
+            // Early return or no fees - no deduction from deposit
+            actualDeduction = BigDecimal.ZERO;
+        } else if (totalFees.compareTo(contract.getDepositAmount()) <= 0) {
+            // Fees within deposit amount
+            actualDeduction = totalFees;
+        } else {
+            // Fees exceed deposit - deduct entire deposit
+            actualDeduction = contract.getDepositAmount();
+        }
+
+        depositHold.setDeductedAtReturn(actualDeduction);
         depositHold.setHoldStartDate(returnTime);
         depositHold.setHoldEndDate(holdEndDate);
         depositHold.setStatus(DepositHold.DepositStatus.HOLDING);
-        
+
+        // Debug logging
+        System.out.println("=== Creating DepositHold ===");
+        System.out.println("Contract ID: " + contract.getId());
+        System.out.println("Deposit Amount: " + contract.getDepositAmount());
+        System.out.println("Total Fees: " + totalFees);
+        System.out.println("Actual Deduction: " + actualDeduction);
+        System.out.println("===========================");
+
         depositHoldRepository.save(depositHold);
     }
 

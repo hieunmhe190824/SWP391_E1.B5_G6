@@ -30,7 +30,7 @@
 
         .page {
             max-width: 1100px;
-            margin: 0 auto 2rem;
+            margin: 0 0 2rem;
             padding: 2rem 1.5rem 2.5rem;
         }
 
@@ -301,7 +301,7 @@
                 </div>
             </section>
 
-            <form th:action="@{/staff/handover/pickup/{id}(id=${contract.id})}" method="post" enctype="multipart/form-data" id="pickupForm" class="stack">
+            <form th:action="@{/staff/handover/pickup/{id}(id=${contract.id})}" method="post" enctype="multipart/form-data" id="pickupForm" class="stack" novalidate>
                 <section class="panel">
                     <div class="panel-header">
                         <div class="panel-title">Ghi chú tình trạng xe</div>
@@ -320,7 +320,7 @@
                         <div class="upload-icon">📸</div>
                         <div class="upload-text">Kéo thả hoặc bấm để chọn ảnh</div>
                         <div class="upload-hint">Hỗ trợ JPG/PNG/WEBP, tối đa 5MB mỗi ảnh</div>
-                        <input type="file" id="imageInput" name="images" accept="image/*" multiple required style="display:none">
+                        <input type="file" id="imageInput" name="images" accept="image/*" multiple style="display:none">
                     </div>
                     <div class="preview-grid" id="previewGrid"></div>
                 </section>
@@ -411,11 +411,12 @@
         }
     });
 
+    // Form validation - images are optional
     document.getElementById('pickupForm').addEventListener('submit', (e) => {
-        if (selectedFiles.length === 0) {
-            e.preventDefault();
-            alert('Vui lòng tải lên ít nhất một hình ảnh xe.');
-        }
+        // Ensure files are synced to input before submit (if any)
+        syncInput();
+        console.log('Form submit event triggered');
+        console.log('Selected files count:', selectedFiles.length);
     });
 
     const cancelBtn = document.getElementById('cancelBtn');

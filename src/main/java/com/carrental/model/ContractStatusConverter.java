@@ -14,6 +14,7 @@ public class ContractStatusConverter implements AttributeConverter<Contract.Cont
         return switch (attribute) {
             case PENDING_PAYMENT -> "Pending_Payment";
             case ACTIVE -> "Active";
+            case BILL_PENDING -> "Bill_Pending";
             case COMPLETED -> "Completed";
             case CANCELLED -> "Cancelled";
         };
@@ -27,6 +28,7 @@ public class ContractStatusConverter implements AttributeConverter<Contract.Cont
         return switch (dbData) {
             case "Pending_Payment" -> Contract.ContractStatus.PENDING_PAYMENT;
             case "Active" -> Contract.ContractStatus.ACTIVE;
+            case "Bill_Pending" -> Contract.ContractStatus.BILL_PENDING;
             case "Completed" -> Contract.ContractStatus.COMPLETED;
             case "Cancelled" -> Contract.ContractStatus.CANCELLED;
             default -> throw new IllegalArgumentException("Unknown contract status: " + dbData);

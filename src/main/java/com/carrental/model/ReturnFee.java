@@ -22,10 +22,10 @@ public class ReturnFee {
     @Column(name = "is_late", nullable = false)
     private Boolean isLate;
 
-    @Column(name = "hours_late")
+    @Column(name = "hours_late", precision = 18, scale = 2)
     private BigDecimal hoursLate;
 
-    @Column(name = "late_fee")
+    @Column(name = "late_fee", precision = 18, scale = 2)
     private BigDecimal lateFee;
 
     @Column(name = "has_damage")
@@ -34,16 +34,16 @@ public class ReturnFee {
     @Column(name = "damage_description")
     private String damageDescription;
 
-    @Column(name = "damage_fee")
+    @Column(name = "damage_fee", precision = 18, scale = 2)
     private BigDecimal damageFee;
 
     @Column(name = "is_different_location")
     private Boolean isDifferentLocation;
 
-    @Column(name = "one_way_fee")
+    @Column(name = "one_way_fee", precision = 18, scale = 2)
     private BigDecimal oneWayFee;
 
-    @Column(name = "total_fees", nullable = false)
+    @Column(name = "total_fees", nullable = false, precision = 18, scale = 2)
     private BigDecimal totalFees;
 
     @Column(name = "created_at", insertable = false, updatable = false)

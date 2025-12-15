@@ -128,9 +128,10 @@ public class ReturnController {
             Contract contract = contractService.getContractById(contractId)
                     .orElseThrow(() -> new RuntimeException("Contract not found"));
 
-            // Verify contract is completed
-            if (contract.getStatus() != Contract.ContractStatus.COMPLETED) {
-                redirectAttributes.addFlashAttribute("errorMessage", "Contract is not completed yet");
+            // Verify contract is awaiting bill payment
+            if (contract.getStatus() != Contract.ContractStatus.BILL_PENDING
+                    && contract.getStatus() != Contract.ContractStatus.COMPLETED) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Contract is not ready for bill payment");
                 return "redirect:/staff/returns/list";
             }
 

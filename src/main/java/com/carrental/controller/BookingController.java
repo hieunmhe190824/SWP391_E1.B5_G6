@@ -3,6 +3,7 @@ package com.carrental.controller;
 import com.carrental.model.Booking;
 import com.carrental.model.Contract;
 import com.carrental.model.Location;
+import com.carrental.model.Payment;
 import com.carrental.model.User;
 import com.carrental.model.UserDocument;
 import com.carrental.model.Vehicle;
@@ -10,6 +11,7 @@ import com.carrental.repository.UserRepository;
 import com.carrental.service.BookingService;
 import com.carrental.service.ContractService;
 import com.carrental.service.LocationService;
+import com.carrental.service.PaymentService;
 import com.carrental.service.UserDocumentService;
 import com.carrental.service.VehicleService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,6 +55,9 @@ public class BookingController {
 
     @Autowired
     private ContractService contractService;
+
+    @Autowired
+    private PaymentService paymentService;
 
     /**
      * Get current authenticated user
@@ -168,30 +173,50 @@ public class BookingController {
         log.info("[MY-BOOKINGS] Current user: {} (ID: {})", currentUser.getEmail(), currentUser.getId());
 
         List<Booking> bookings;
+        bookings = bookingService.getBookingsByCustomer(currentUser.getId());
+
         if (status != null && !status.isEmpty()) {
-            // Filter by status
-            try {
-                Booking.BookingStatus bookingStatus = Booking.BookingStatus.valueOf(status.toUpperCase());
-                bookings = bookingService.getBookingsByCustomer(currentUser.getId()).stream()
-                        .filter(b -> b.getStatus() == bookingStatus)
+            // Special filter: show completed bookings
+            if (status.equalsIgnoreCase("Completed")) {
+                bookings = bookings.stream()
+                        .filter(b -> {
+                            // If booking status already marked completed, keep it
+                            if (b.getStatus() == Booking.BookingStatus.COMPLETED) {
+                                return true;
+                            }
+                            // Otherwise, consider completed when contract is completed and bill exists (any status)
+                            return contractService.getContractByBookingId(b.getId())
+                                    .filter(c -> c.getStatus() == Contract.ContractStatus.COMPLETED)
+                                    .isPresent();
+                        })
                         .toList();
-            } catch (IllegalArgumentException e) {
-                bookings = bookingService.getBookingsByCustomer(currentUser.getId());
+            } else {
+                try {
+                    Booking.BookingStatus bookingStatus = Booking.BookingStatus.valueOf(status.toUpperCase());
+                    bookings = bookings.stream()
+                            .filter(b -> b.getStatus() == bookingStatus)
+                            .toList();
+                } catch (IllegalArgumentException ignored) {
+                    // Keep original list if status param is invalid
+                }
             }
-        } else {
-            bookings = bookingService.getBookingsByCustomer(currentUser.getId());
         }
 
         // Map bookingId -> contract (if staff already created one)
         // Build contract map from all contracts of current customer to ensure visibility
         // Build contract map by fetching per booking to avoid missing entries
         Map<Long, Contract> contractMap = new java.util.HashMap<>();
+        Map<Long, Payment> billMap = new java.util.HashMap<>();
         for (Booking booking : bookings) {
             contractService.getContractByBookingId(booking.getId())
                     .ifPresent(contract -> {
                         contractMap.put(booking.getId(), contract);
                         log.info("[MY-BOOKINGS] Contract found for bookingId={} contractId={} status={}",
                                 booking.getId(), contract.getId(), contract.getStatus());
+
+                        // Attach bill payment (RENTAL) if exists
+                        paymentService.getBillPaymentByContractId(contract.getId())
+                                .ifPresent(p -> billMap.put(booking.getId(), p));
                     });
         }
 
@@ -202,6 +227,7 @@ public class BookingController {
         model.addAttribute("bookings", bookings);
         model.addAttribute("selectedStatus", status);
         model.addAttribute("contractMap", contractMap);
+        model.addAttribute("billMap", billMap);
 
         return "customer/my-bookings";
     }

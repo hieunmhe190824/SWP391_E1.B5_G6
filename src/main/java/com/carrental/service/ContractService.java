@@ -20,6 +20,9 @@ public class ContractService {
     @Autowired
     private ContractRepository contractRepository;
 
+    @Autowired
+    private NotificationService notificationService;
+
     // Fixed deposit amount for all cars: 50 million VND
     private static final BigDecimal FIXED_DEPOSIT_AMOUNT = new BigDecimal("50000000");
 
@@ -73,7 +76,20 @@ public class ContractService {
         contract.setDepositAmount(FIXED_DEPOSIT_AMOUNT); // Fixed 50M VND deposit
         contract.setStatus(Contract.ContractStatus.PENDING_PAYMENT); // Waiting for deposit payment
 
-        return contractRepository.save(contract);
+        Contract savedContract = contractRepository.save(contract);
+
+        // Send notification to customer about contract creation
+        try {
+            notificationService.createContractCreatedNotification(
+                booking.getCustomer().getId(),
+                savedContract.getContractNumber(),
+                FIXED_DEPOSIT_AMOUNT
+            );
+        } catch (Exception e) {
+            System.err.println("Failed to send contract created notification: " + e.getMessage());
+        }
+
+        return savedContract;
     }
 
     public Contract createContract(Contract contract) {
@@ -85,8 +101,34 @@ public class ContractService {
     public Contract updateContractStatus(Long id, Contract.ContractStatus status) {
         Contract contract = contractRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Contract not found"));
+        
+        Contract.ContractStatus oldStatus = contract.getStatus();
         contract.setStatus(status);
-        return contractRepository.save(contract);
+        Contract savedContract = contractRepository.save(contract);
+
+        // Send notifications based on status change
+        try {
+            if (status == Contract.ContractStatus.ACTIVE && oldStatus != Contract.ContractStatus.ACTIVE) {
+                // Contract activated (deposit paid)
+                notificationService.createContractActivatedNotification(
+                    contract.getCustomer().getId(),
+                    contract.getContractNumber(),
+                    contract.getStartDate().toString(),
+                    contract.getEndDate().toString()
+                );
+            } else if (status == Contract.ContractStatus.CANCELLED && oldStatus != Contract.ContractStatus.CANCELLED) {
+                // Contract cancelled
+                notificationService.createContractCancelledNotification(
+                    contract.getCustomer().getId(),
+                    contract.getContractNumber(),
+                    "Hợp đồng đã bị hủy bởi hệ thống"
+                );
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to send contract status notification: " + e.getMessage());
+        }
+
+        return savedContract;
     }
 
     /**

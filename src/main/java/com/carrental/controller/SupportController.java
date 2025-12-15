@@ -38,8 +38,11 @@ public class SupportController {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.isAuthenticated() && !auth.getPrincipal().equals("anonymousUser")) {
             String email = auth.getName();
-            return userService.findByEmail(email)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
+            User user = userService.findByEmail(email);
+            if (user == null) {
+                throw new RuntimeException("User not found");
+            }
+            return user;
         }
         return null;
     }

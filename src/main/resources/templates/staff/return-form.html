@@ -439,7 +439,7 @@
                 </section>
 
                 <form th:action="@{/staff/returns/{id}(id=${contract.id})}" method="post" enctype="multipart/form-data"
-                    id="returnForm" class="stack">
+                    id="returnForm" class="stack" novalidate>
                     <section class="panel">
                         <div class="panel-header">
                             <div class="panel-title">Thông tin trả xe</div>
@@ -519,7 +519,7 @@
                             <div class="upload-icon">📸</div>
                             <div class="upload-text">Kéo thả hoặc bấm để chọn ảnh</div>
                             <div class="upload-hint">Hỗ trợ JPG/PNG/WEBP, tối đa 5MB mỗi ảnh</div>
-                            <input type="file" id="imageInput" name="images" accept="image/*" multiple required
+                            <input type="file" id="imageInput" name="images" accept="image/*" multiple
                                 style="display:none">
                         </div>
                         <div class="preview-grid" id="previewGrid"></div>
@@ -589,13 +589,19 @@
         // Wait for DOM to be ready
         document.addEventListener('DOMContentLoaded', function() {
             // Get actual return date input element and set default to now
+            const formatLocalDateTime = (dateObj) => {
+                // Convert to local time string compatible with datetime-local (no TZ)
+                const local = new Date(dateObj.getTime() - dateObj.getTimezoneOffset() * 60000);
+                return local.toISOString().slice(0, 16);
+            };
+
             let actualReturnDateInput = document.getElementById('actualReturnDate');
             if (actualReturnDateInput) {
                 const now = new Date();
-                // Format: YYYY-MM-DDTHH:mm
-                const nowStr = now.toISOString().slice(0, 16);
-                actualReturnDateInput.value = nowStr; // Always set to current date/time
-                actualReturnDateInput.min = contractStartDate.toISOString().slice(0, 16);
+                // Format local time instead of UTC to avoid VN offset issue
+                const nowStr = formatLocalDateTime(now);
+                actualReturnDateInput.value = nowStr; // Always set to current local date/time
+                actualReturnDateInput.min = formatLocalDateTime(contractStartDate);
             }
 
             const uploadZone = document.getElementById('uploadZone');
@@ -729,7 +735,7 @@
             // If no value, set to current date/time
             if (!actualReturnDateStr) {
                 const now = new Date();
-                actualReturnDateStr = now.toISOString().slice(0, 16);
+                actualReturnDateStr = formatLocalDateTime(now);
                 actualReturnDateInput.value = actualReturnDateStr;
             }
             
@@ -815,7 +821,7 @@
             if (actualReturnDateInput) {
                 if (!actualReturnDateInput.value) {
                     const now = new Date();
-                    const nowStr = now.toISOString().slice(0, 16);
+                    const nowStr = formatLocalDateTime(now);
                     actualReturnDateInput.value = nowStr;
                 }
             }
@@ -831,11 +837,39 @@
             // Form validation
             const returnForm = document.getElementById('returnForm');
             if (returnForm) {
-                returnForm.addEventListener('submit', (e) => {
-                    if (selectedFiles.length === 0) {
+                returnForm.addEventListener('submit', function(e) {
+                    console.log('Form submit event triggered');
+                    console.log('Selected files count:', selectedFiles.length);
+                    
+                    // Ensure all required fields are filled
+                    const actualReturnDate = document.getElementById('actualReturnDate').value;
+                    const odometer = document.getElementById('odometer').value;
+                    const fuelLevel = document.getElementById('fuelLevel').value;
+                    const returnLocationId = document.getElementById('returnLocationId').value;
+                    const conditionNotes = document.getElementById('conditionNotes').value;
+                    
+                    if (!actualReturnDate || !odometer || !fuelLevel || !returnLocationId || !conditionNotes) {
                         e.preventDefault();
-                        alert('Vui lòng tải lên ít nhất một hình ảnh xe.');
+                        alert('Vui lòng điền đầy đủ các trường bắt buộc.');
+                        return false;
                     }
+                    
+                    // Validate damage fields if damage is checked
+                    if (hasDamageCheckbox && hasDamageCheckbox.checked) {
+                        const damageDesc = document.getElementById('damageDescription').value;
+                        const damageFee = document.getElementById('damageFee').value;
+                        if (!damageDesc || !damageFee || parseFloat(damageFee) <= 0) {
+                            e.preventDefault();
+                            alert('Vui lòng điền đầy đủ thông tin hư hỏng và phí sửa chữa.');
+                            return false;
+                        }
+                    }
+                    
+                    // Ensure files are synced to input before submit
+                    syncInput();
+                    
+                    console.log('Form validation passed, submitting...');
+                    return true;
                 });
             }
         }); // End of DOMContentLoaded

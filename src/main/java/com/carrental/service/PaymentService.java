@@ -123,9 +123,10 @@ public class PaymentService {
         Contract contract = contractService.getContractById(contractId)
                 .orElseThrow(() -> new RuntimeException("Contract not found"));
 
-        // Verify contract is completed
-        if (contract.getStatus() != Contract.ContractStatus.COMPLETED) {
-            throw new RuntimeException("Can only create rental payment for completed contracts");
+        // Verify contract is waiting for bill payment
+        if (contract.getStatus() != Contract.ContractStatus.BILL_PENDING
+                && contract.getStatus() != Contract.ContractStatus.COMPLETED) {
+            throw new RuntimeException("Can only create rental payment for contracts waiting for bill payment");
         }
 
         // Check if rental payment already exists
@@ -146,7 +147,15 @@ public class PaymentService {
         payment.setStatus(PaymentStatus.COMPLETED);
         payment.setPaymentDate(LocalDateTime.now());
 
-        return paymentRepository.save(payment);
+        Payment savedPayment = paymentRepository.save(payment);
+
+        // When rental payment is processed manually, mark contract as completed
+        if (contract.getStatus() != Contract.ContractStatus.COMPLETED) {
+            contract.setStatus(Contract.ContractStatus.COMPLETED);
+            contractService.updateContractStatus(contractId, Contract.ContractStatus.COMPLETED);
+        }
+
+        return savedPayment;
     }
 
     /**

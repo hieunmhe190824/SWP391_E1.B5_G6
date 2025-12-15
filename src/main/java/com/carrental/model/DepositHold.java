@@ -16,11 +16,11 @@ public class DepositHold {
     @JoinColumn(name = "contract_id", nullable = false, unique = true)
     private Contract contract;
 
-    @Column(name = "deposit_amount", nullable = false)
+    @Column(name = "deposit_amount", nullable = false, precision = 18, scale = 2)
     private BigDecimal depositAmount;
 
-    @Column(name = "deducted_at_return", nullable = false)
-    private BigDecimal deductedAtReturn;
+    @Column(name = "deducted_at_return", precision = 18, scale = 2)
+    private BigDecimal deductedAtReturn = BigDecimal.ZERO;
 
     @Column(name = "hold_start_date", nullable = false)
     private LocalDateTime holdStartDate;

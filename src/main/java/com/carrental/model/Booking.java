@@ -49,7 +49,8 @@ public class Booking {
         PENDING("Pending"),
         APPROVED("Approved"),
         REJECTED("Rejected"),
-        CANCELLED("Cancelled");
+        CANCELLED("Cancelled"),
+        COMPLETED("Completed");
 
         private final String value;
 
