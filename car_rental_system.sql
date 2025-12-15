@@ -101,8 +101,8 @@ CREATE TABLE vehicles (
     license_plate VARCHAR(20) NOT NULL UNIQUE,           -- Biển số
     color VARCHAR(30),
     status ENUM('Available', 'Rented', 'Maintenance') DEFAULT 'Available',
-    daily_rate DECIMAL(10, 2) NOT NULL,                  -- Giá/ngày
-    deposit_amount DECIMAL(10, 2) NOT NULL,              -- Tiền cọc (Fixed: 50,000,000 VND for all vehicles)
+    daily_rate DECIMAL(18, 2) NOT NULL,                  -- Giá/ngày
+    deposit_amount DECIMAL(18, 2) NOT NULL,              -- Tiền cọc (Fixed: 50,000,000 VND for all vehicles)
     images JSON,                                         -- Array URL ảnh: ["url1", "url2"]
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (model_id) REFERENCES vehicle_models(model_id) ON DELETE CASCADE,
@@ -127,7 +127,7 @@ CREATE TABLE bookings (
     start_date DATETIME NOT NULL,
     end_date DATETIME NOT NULL,
     total_days INT NOT NULL,
-    status ENUM('Pending', 'Approved', 'Rejected', 'Cancelled') DEFAULT 'Pending',
+    status ENUM('Pending', 'Approved', 'Rejected', 'Cancelled', 'Completed') DEFAULT 'Pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (customer_id) REFERENCES users(user_id) ON DELETE CASCADE,
     FOREIGN KEY (vehicle_id) REFERENCES vehicles(vehicle_id) ON DELETE CASCADE,
@@ -151,6 +151,7 @@ CREATE TABLE booking_documents (
 -- Bảng: contracts - Hợp đồng thuê xe
 -- WORKFLOW STEP 3: Auto-created when staff approves booking
 -- WORKFLOW STEP 4: Contract sent to customer with PENDING_PAYMENT status
+-- WORKFLOW STEP 5: After vehicle return, status moves to BILL_PENDING until bill is paid
 -- WORKFLOW STEP 5: Customer pays deposit, status changes to ACTIVE
 -- FIXED DEPOSIT: 50,000,000 VND for all cars
 -- NOTE: booking_id is nullable to allow contracts to exist independently (e.g., when booking is cancelled)
@@ -164,10 +165,10 @@ CREATE TABLE contracts (
     start_date DATETIME NOT NULL,
     end_date DATETIME NOT NULL,
     total_days INT NOT NULL,
-    daily_rate DECIMAL(10, 2) NOT NULL,
-    total_rental_fee DECIMAL(10, 2) NOT NULL,
-    deposit_amount DECIMAL(10, 2) NOT NULL,              -- Fixed: 50,000,000 VND
-    status ENUM('Pending_Payment', 'Active', 'Completed', 'Cancelled') DEFAULT 'Pending_Payment',
+    daily_rate DECIMAL(18, 2) NOT NULL,
+    total_rental_fee DECIMAL(18, 2) NOT NULL,
+    deposit_amount DECIMAL(18, 2) NOT NULL,              -- Fixed: 50,000,000 VND
+    status ENUM('Pending_Payment', 'Active', 'Bill_Pending', 'Completed', 'Cancelled') DEFAULT 'Pending_Payment',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (booking_id) REFERENCES bookings(booking_id) ON DELETE SET NULL,
     FOREIGN KEY (customer_id) REFERENCES users(user_id) ON DELETE CASCADE,
@@ -187,7 +188,7 @@ CREATE TABLE payments (
     payment_id INT PRIMARY KEY AUTO_INCREMENT,
     contract_id INT NOT NULL,
     payment_type ENUM('DEPOSIT', 'RENTAL', 'REFUND') NOT NULL,  -- Deposit = 50M VND
-    amount DECIMAL(10, 2) NOT NULL,
+    amount DECIMAL(18, 2) NOT NULL,
     method ENUM('CASH', 'CARD', 'TRANSFER', 'ONLINE') NOT NULL DEFAULT 'ONLINE',  -- Default: ONLINE
     status ENUM('PENDING', 'PROCESSING', 'COMPLETED', 'FAILED', 'CANCELLED') DEFAULT 'PENDING',  -- Added PROCESSING and CANCELLED
     payment_date DATETIME,
@@ -205,16 +206,16 @@ CREATE TABLE payments (
 
     -- Bill details (for RENTAL payment type, nullable for other types)
     bill_number VARCHAR(50) UNIQUE,                  -- Bill number (e.g., BILL-20241213-1234)
-    original_rental_fee DECIMAL(10, 2),              -- Original rental fee from contract
-    rental_adjustment DECIMAL(10, 2),                -- Adjustment (negative if early return, positive if late)
-    actual_rental_fee DECIMAL(10, 2),                -- Actual rental fee after adjustment
-    late_fee DECIMAL(10, 2) DEFAULT 0,              -- Late return fee
-    damage_fee DECIMAL(10, 2) DEFAULT 0,             -- Damage fee
-    one_way_fee DECIMAL(10, 2) DEFAULT 0,            -- One-way return fee
-    total_additional_fees DECIMAL(10, 2) DEFAULT 0,  -- Sum of late_fee + damage_fee + one_way_fee
-    deposit_amount DECIMAL(10, 2),                   -- 50,000,000 VND - still held (for RENTAL payment)
-    amount_paid DECIMAL(10, 2) DEFAULT 0,            -- Amount paid so far
-    amount_due DECIMAL(10, 2),                       -- Amount due (total_amount - amount_paid)
+    original_rental_fee DECIMAL(18, 2),              -- Original rental fee from contract
+    rental_adjustment DECIMAL(18, 2),                -- Adjustment (negative if early return, positive if late)
+    actual_rental_fee DECIMAL(18, 2),                -- Actual rental fee after adjustment
+    late_fee DECIMAL(18, 2) DEFAULT 0,              -- Late return fee
+    damage_fee DECIMAL(18, 2) DEFAULT 0,             -- Damage fee
+    one_way_fee DECIMAL(18, 2) DEFAULT 0,            -- One-way return fee
+    total_additional_fees DECIMAL(18, 2) DEFAULT 0,  -- Sum of late_fee + damage_fee + one_way_fee
+    deposit_amount DECIMAL(18, 2),                   -- 50,000,000 VND - still held (for RENTAL payment)
+    amount_paid DECIMAL(18, 2) DEFAULT 0,            -- Amount paid so far
+    amount_due DECIMAL(18, 2),                       -- Amount due (total_amount - amount_paid)
     notes TEXT,                                       -- Additional notes
 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -255,17 +256,17 @@ CREATE TABLE return_fees (
     handover_id INT NOT NULL,                            -- Link đến handover return
     
     is_late BOOLEAN NOT NULL,
-    hours_late DECIMAL(10, 2) DEFAULT 0,
-    late_fee DECIMAL(10, 2) DEFAULT 0,
+    hours_late DECIMAL(18, 2) DEFAULT 0,
+    late_fee DECIMAL(18, 2) DEFAULT 0,
     
     has_damage BOOLEAN DEFAULT FALSE,
     damage_description TEXT,
-    damage_fee DECIMAL(10, 2) DEFAULT 0,
+    damage_fee DECIMAL(18, 2) DEFAULT 0,
     
     is_different_location BOOLEAN DEFAULT FALSE,
-    one_way_fee DECIMAL(10, 2) DEFAULT 0,
+    one_way_fee DECIMAL(18, 2) DEFAULT 0,
     
-    total_fees DECIMAL(10, 2) NOT NULL,                  -- Tổng phí
+    total_fees DECIMAL(18, 2) NOT NULL,                  -- Tổng phí
     
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (contract_id) REFERENCES contracts(contract_id) ON DELETE CASCADE,
@@ -281,8 +282,8 @@ CREATE TABLE return_fees (
 CREATE TABLE deposit_holds (
     hold_id INT PRIMARY KEY AUTO_INCREMENT,
     contract_id INT NOT NULL UNIQUE,
-    deposit_amount DECIMAL(10, 2) NOT NULL,
-    deducted_at_return DECIMAL(10, 2) DEFAULT 0,        -- Đã trừ khi trả xe
+    deposit_amount DECIMAL(18, 2) NOT NULL,
+    deducted_at_return DECIMAL(18, 2) DEFAULT 0,        -- Đã trừ khi trả xe
     hold_start_date DATETIME NOT NULL,
     hold_end_date DATETIME NOT NULL,
     status ENUM('Holding', 'Ready', 'Refunded') DEFAULT 'Holding',
@@ -298,7 +299,7 @@ CREATE TABLE traffic_violations (
     contract_id INT NOT NULL,
     violation_type VARCHAR(100) NOT NULL,                -- Loại vi phạm
     violation_date DATETIME NOT NULL,
-    fine_amount DECIMAL(10, 2) NOT NULL,
+    fine_amount DECIMAL(18, 2) NOT NULL,
     description TEXT,
     evidence_url VARCHAR(255),                           -- Link ảnh chứng cứ
     status ENUM('Pending', 'Confirmed') DEFAULT 'Pending',
@@ -315,16 +316,16 @@ CREATE TABLE refunds (
     hold_id INT NOT NULL UNIQUE,
     contract_id INT NOT NULL,
     customer_id INT NOT NULL,
-    
-    original_deposit DECIMAL(10, 2) NOT NULL,
-    deducted_at_return DECIMAL(10, 2) DEFAULT 0,
-    traffic_fines DECIMAL(10, 2) DEFAULT 0,             -- Tổng phạt (tính từ traffic_violations)
-    
-    refund_amount DECIMAL(10, 2) NOT NULL,
+
+    original_deposit DECIMAL(18, 2) NOT NULL,
+    deducted_at_return DECIMAL(18, 2) DEFAULT 0,
+    traffic_fines DECIMAL(18, 2) DEFAULT 0,             -- Tổng phạt (tính từ traffic_violations)
+
+    refund_amount DECIMAL(18, 2) NOT NULL,
     refund_method ENUM('Transfer', 'Cash') NOT NULL,
     status ENUM('Pending', 'Completed') DEFAULT 'Pending',
     processed_at DATETIME,
-    
+
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (hold_id) REFERENCES deposit_holds(hold_id) ON DELETE CASCADE,
     FOREIGN KEY (contract_id) REFERENCES contracts(contract_id) ON DELETE CASCADE,
@@ -697,11 +698,15 @@ INSERT INTO contracts (contract_id, booking_id, contract_number, customer_id, ve
 -- This shows that booking_id can reference a cancelled booking
 (8, 10, 'HD-2025-0008', 6, 7, 2, '2025-02-25 09:00:00', '2025-02-28 18:00:00', 3, 800000, 2400000, 50000000, 'Cancelled', '2025-02-24 13:00:00'),
 
+-- Contract 9: Returned, waiting customer to pay bill (new Bill_Pending status)
+-- Note: booking_id is NULL here to avoid unique booking_id conflict in seed data
+(9, NULL, 'HD-2025-0009', 5, 1, 2, '2025-01-10 09:00:00', '2025-01-13 18:00:00', 3, 950000, 2850000, 50000000, 'Bill_Pending', '2025-01-09 12:00:00'),
+
 -- Pending payment contract with cancelled booking (demonstrating the nullable booking scenario)
 -- Customer created booking #11 for Mitsubishi Xpander (vehicle_id=8), contract was created,
 -- but then customer cancelled the booking before payment
 -- Contract still exists with booking_id=11 (which is now cancelled)
-(9, 11, 'HD-2025-0009', 5, 8, 2, '2025-03-22 09:00:00', '2025-03-25 18:00:00', 3, 800000, 2400000, 50000000, 'Pending_Payment', '2025-03-21 16:00:00'),
+(200, 11, 'HD-2025-0200', 5, 8, 2, '2025-03-22 09:00:00', '2025-03-25 18:00:00', 3, 800000, 2400000, 50000000, 'Pending_Payment', '2025-03-21 16:00:00'),
 
 -- TEST CONTRACTS for handover pickup testing (contracts 10-14)
 -- These contracts have Active status with deposit paid but NO pickup handover

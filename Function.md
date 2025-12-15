@@ -81,7 +81,7 @@
 
  FEATURE 6: VEHICLE RETURN 
 
- UC14: Check-in Return
+ UC14: Check-in Return - done
 - Roles: Staff
 - Mô tả: Ghi nhận xe trả về, kiểm tra xe, tính toán các khoản phí
 - Bao gồm:
