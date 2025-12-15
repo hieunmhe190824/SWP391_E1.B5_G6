@@ -32,15 +32,59 @@ public class NotificationController {
             @AuthenticationPrincipal UserDetails userDetails,
             Model model) {
         try {
+            System.out.println("=== NOTIFICATIONS DEBUG START ===");
+            
+            // Check if user is authenticated
+            if (userDetails == null) {
+                System.out.println("ERROR: userDetails is null");
+                return "redirect:/auth/login";
+            }
+            System.out.println("User email: " + userDetails.getUsername());
+            
             User user = getUserByEmail(userDetails.getUsername());
+            System.out.println("User found: " + user.getId() + " - " + user.getFullName());
+            
+            // Check if user exists and has a role
+            if (user == null) {
+                System.out.println("ERROR: user is null");
+                model.addAttribute("errorMessage", "Không tìm thấy thông tin người dùng");
+                return "error";
+            }
+            
+            if (user.getRole() == null) {
+                System.out.println("ERROR: user role is null");
+                model.addAttribute("errorMessage", "Người dùng không có quyền hạn được gán");
+                return "error";
+            }
+            System.out.println("User role: " + user.getRole());
+            
+            System.out.println("Fetching notifications for user: " + user.getId());
             List<Notification> notifications = notificationService.getNotificationsByUserId(user.getId());
+            System.out.println("Found " + notifications.size() + " notifications");
+            
             long unreadCount = notificationService.getUnreadCount(user.getId());
+            System.out.println("Unread count: " + unreadCount);
 
             model.addAttribute("notifications", notifications);
             model.addAttribute("unreadCount", unreadCount);
-            return getNotificationView(user.getRole().toString());
+            // Provide unread count for header badge on this page
+            model.addAttribute("unreadNotificationCount", unreadCount);
+            
+            String viewName = getNotificationView(user.getRole().toString());
+            System.out.println("Returning view: " + viewName);
+            System.out.println("=== NOTIFICATIONS DEBUG END ===");
+            
+            return viewName;
         } catch (Exception e) {
+            // Log the full exception for debugging
+            System.out.println("=== EXCEPTION CAUGHT ===");
+            System.out.println("Exception type: " + e.getClass().getName());
+            System.out.println("Exception message: " + e.getMessage());
+            e.printStackTrace();
+            System.out.println("=== END EXCEPTION ===");
+            
             model.addAttribute("errorMessage", "Lỗi khi tải thông báo: " + e.getMessage());
+            model.addAttribute("errorDetails", e.getClass().getName());
             return "error";
         }
     }
