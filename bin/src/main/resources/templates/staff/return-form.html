@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xử Lý Trả Xe - Staff</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/variables.css}">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <style>
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        body {
+            background: var(--section-dark-bg);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            font-size: 15px;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        .dashboard-content {
+            background: var(--section-dark-bg);
+            width: 100%;
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        .page {
+            width: 100%;
+            max-width: 100%;
+            margin: 0 0 2rem 0;
+            padding: 2rem 1.5rem 2.5rem;
+        }
+
+        .header {
+            margin-bottom: 1.5rem;
+        }
+
+        .title {
+            color: var(--color-text-white);
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            line-height: 1.3;
+        }
+
+        .subtitle {
+            color: rgba(255, 255, 255, 0.78);
+            font-size: 1rem;
+            font-weight: 400;
+            margin-top: 0.5rem;
+        }
+
+        .stack {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .panel {
+            background: rgba(20, 27, 38, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            padding: 1.25rem 1.35rem;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .panel-title {
+            color: var(--color-text-white);
+            font-weight: 600;
+            font-size: 0.95rem;
+            letter-spacing: -0.01em;
+            line-height: 1.4;
+        }
+
+        .badge {
+            padding: 0.35rem 0.65rem;
+            border-radius: 10px;
+            background: rgba(59, 130, 246, 0.15);
+            color: var(--color-primary);
+            font-weight: 600;
+            font-family: 'Inter', 'Courier New', monospace;
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 0.75rem 1rem;
+        }
+
+        .info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.15rem;
+        }
+
+        .label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: rgba(255, 255, 255, 0.65);
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .value {
+            color: var(--color-text-white);
+            font-weight: 500;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1rem;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .field label {
+            color: var(--color-text-white);
+            font-weight: 600;
+            font-size: 0.95rem;
+            letter-spacing: -0.01em;
+            line-height: 1.5;
+        }
+
+        .field .required {
+            color: #ef4444;
+        }
+
+        .input,
+        textarea.input,
+        select.input {
+            background: rgba(15, 22, 32, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            border-radius: 12px;
+            padding: 0.85rem 1rem;
+            color: var(--color-text-white);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-size: 0.95rem;
+            font-weight: 400;
+            line-height: 1.5;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .input:focus,
+        textarea.input:focus,
+        select.input:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.18);
+        }
+
+        textarea.input {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .checkbox-field {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            background: rgba(15, 22, 32, 0.5);
+            border-radius: 10px;
+        }
+
+        .checkbox-field input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .checkbox-field label {
+            margin: 0;
+            cursor: pointer;
+            color: var(--color-text-white);
+            font-weight: 500;
+        }
+
+        .upload {
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 1.75rem;
+            text-align: center;
+            background: rgba(15, 22, 32, 0.75);
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+        }
+
+        .upload:hover,
+        .upload.drag-over {
+            border-color: var(--color-primary);
+            background: rgba(59, 130, 246, 0.08);
+        }
+
+        .upload-icon {
+            font-size: 2.3rem;
+            opacity: 0.75;
+            margin-bottom: 0.3rem;
+        }
+
+        .upload-text {
+            color: var(--color-text-white);
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .upload-hint {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+            font-weight: 400;
+            margin-top: 0.25rem;
+        }
+
+        .preview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 0.85rem;
+            margin-top: 1rem;
+        }
+
+        .preview-item {
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            aspect-ratio: 4/3;
+        }
+
+        .preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .remove-btn {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            width: 26px;
+            height: 26px;
+            border: none;
+            border-radius: 50%;
+            background: rgba(239, 68, 68, 0.9);
+            color: #fff;
+            cursor: pointer;
+        }
+
+        .fee-summary {
+            background: rgba(59, 130, 246, 0.08);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .fee-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .fee-row:last-child {
+            border-bottom: none;
+            font-weight: 700;
+            font-size: 1.15rem;
+            color: var(--color-primary);
+            margin-top: 0.5rem;
+            padding-top: 0.75rem;
+        }
+
+        .fee-label {
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .fee-value {
+            color: var(--color-text-white);
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .actions {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 12px;
+            padding: 0.9rem 1.3rem;
+            font-weight: 600;
+            font-size: 0.95rem;
+            letter-spacing: -0.01em;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+            color: #fff;
+            box-shadow: 0 10px 28px rgba(59, 130, 246, 0.32);
+        }
+
+        .btn-ghost {
+            background: rgba(255, 255, 255, 0.04);
+            color: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .alert {
+            padding: 0.9rem 1.1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.35);
+            color: #f87171;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div th:replace="~{fragments/dashboard-layout :: layout-staff(pageTitle='Xử Lý Trả Xe', content=~{::main})}">
+        <main class="dashboard-content page">
+            <div class="header">
+                <div class="title">Xử Lý Trả Xe</div>
+                <div class="subtitle">Kiểm tra xe và tính toán các khoản phí</div>
+            </div>
+
+            <div th:if="${errorMessage}" class="alert alert-error">
+                <span th:text="${errorMessage}">Đã có lỗi xảy ra</span>
+            </div>
+
+            <div class="stack">
+                <section class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title">Thông tin hợp đồng</div>
+                        <span class="badge" th:text="${contract.contractNumber}">CT-0001</span>
+                    </div>
+                    <div class="info-grid">
+                        <div class="info">
+                            <span class="label">Khách hàng</span>
+                            <span class="value" th:text="${contract.customer.fullName}">Nguyễn Văn A</span>
+                        </div>
+                        <div class="info">
+                            <span class="label">Số điện thoại</span>
+                            <span class="value" th:text="${contract.customer.phone}">0900 000 000</span>
+                        </div>
+                        <div class="info">
+                            <span class="label">Xe</span>
+                            <span class="value"
+                                th:text="${contract.vehicle.model.brand.brandName + ' ' + contract.vehicle.model.modelName}">
+                                Toyota Vios
+                            </span>
+                        </div>
+                        <div class="info">
+                            <span class="label">Biển số</span>
+                            <span class="value" th:text="${contract.vehicle.licensePlate}">30A-12345</span>
+                        </div>
+                        <div class="info" th:if="${contract.vehicle.model.year != null}">
+                            <span class="label">Năm sản xuất</span>
+                            <span class="value" th:text="${contract.vehicle.model.year}">2020</span>
+                        </div>
+                        <div class="info" th:if="${contract.vehicle.model.category != null}">
+                            <span class="label">Loại xe</span>
+                            <span class="value" th:text="${contract.vehicle.model.category}">Sedan</span>
+                        </div>
+                        <div class="info">
+                            <span class="label">Giá thuê / ngày</span>
+                            <span class="value" th:text="${#numbers.formatDecimal(contract.dailyRate, 0, 'COMMA', 0, 'POINT')} + ' VND'">500,000 VND</span>
+                        </div>
+                        <div class="info">
+                            <span class="label">Tiền cọc</span>
+                            <span class="value" th:text="${#numbers.formatDecimal(contract.depositAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">50,000,000 VND</span>
+                        </div>
+                        <div class="info">
+                            <span class="label">Ngày bắt đầu</span>
+                            <span class="value"
+                                th:text="${#temporals.format(contract.startDate, 'dd/MM/yyyy HH:mm')}">01/01/2024 08:00</span>
+                        </div>
+                        <div class="info">
+                            <span class="label">Ngày trả dự kiến</span>
+                            <span class="value"
+                                th:text="${#temporals.format(contract.endDate, 'dd/MM/yyyy HH:mm')}">01/01/2024 08:00</span>
+                        </div>
+                        <div class="info">
+                            <span class="label">Số ngày thuê (dự kiến)</span>
+                            <span class="value" th:text="${contract.totalDays} + ' ngày'">3 ngày</span>
+                        </div>
+                        <div class="info" th:if="${contract.booking != null and contract.booking.pickupLocation != null}">
+                            <span class="label">Địa điểm nhận xe</span>
+                            <span class="value" th:text="${contract.booking.pickupLocation.locationName + ' - ' + contract.booking.pickupLocation.city}">Chi nhánh Hoàn Kiếm - Hà Nội</span>
+                        </div>
+                        <div class="info" th:if="${contract.booking != null and contract.booking.returnLocation != null}">
+                            <span class="label">Địa điểm trả xe (dự kiến)</span>
+                            <span class="value" th:text="${contract.booking.returnLocation.locationName + ' - ' + contract.booking.returnLocation.city}">Chi nhánh Hoàn Kiếm - Hà Nội</span>
+                        </div>
+                    </div>
+                </section>
+
+                <form th:action="@{/staff/returns/{id}(id=${contract.id})}" method="post" enctype="multipart/form-data"
+                    id="returnForm" class="stack" novalidate>
+                    <section class="panel">
+                        <div class="panel-header">
+                            <div class="panel-title">Thông tin trả xe</div>
+                        </div>
+                        <div class="form-grid">
+                            <div class="field" style="grid-column: 1 / -1;">
+                                <label for="actualReturnDate">Ngày trả xe thực tế <span class="required">*</span></label>
+                                <input class="input" id="actualReturnDate" name="actualReturnDate" type="datetime-local" required>
+                                <small style="color: rgba(255, 255, 255, 0.6); font-size: 0.85rem; margin-top: 0.25rem; display: block;">
+                                    Ngày trả xe thực tế (mặc định là thời điểm hiện tại)
+                                </small>
+                            </div>
+                            <div class="field">
+                                <label for="odometer">Số km hiện tại <span class="required">*</span></label>
+                                <input class="input" id="odometer" name="odometer" type="number" min="0" required
+                                    placeholder="Ví dụ: 45000">
+                            </div>
+                            <div class="field">
+                                <label for="fuelLevel">Mức nhiên liệu (%) <span class="required">*</span></label>
+                                <input class="input" id="fuelLevel" name="fuelLevel" type="number" min="0" max="100"
+                                    required placeholder="Ví dụ: 80">
+                            </div>
+                            <div class="field" style="grid-column: 1 / -1;">
+                                <label for="returnLocationId">Địa điểm trả xe <span class="required">*</span></label>
+                                <select class="input" id="returnLocationId" name="returnLocationId" required>
+                                    <option value="">-- Chọn địa điểm --</option>
+                                    <option th:each="location : ${locations}" th:value="${location.id}"
+                                        th:text="${location.locationName + ' - ' + location.city}"
+                                        th:selected="${contract.booking != null and contract.booking.returnLocation != null and location.id == contract.booking.returnLocation.id}">
+                                        Chi nhánh Hoàn Kiếm - Hà Nội
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="panel">
+                        <div class="panel-header">
+                            <div class="panel-title">Ghi chú tình trạng xe</div>
+                        </div>
+                        <div class="field">
+                            <label for="conditionNotes">Chi tiết <span class="required">*</span></label>
+                            <textarea class="input" id="conditionNotes" name="conditionNotes" required
+                                placeholder="Mô tả ngoại thất, nội thất, thiết bị đi kèm..."></textarea>
+                        </div>
+                    </section>
+
+                    <section class="panel">
+                        <div class="panel-header">
+                            <div class="panel-title">Hư hỏng (nếu có)</div>
+                        </div>
+                        <div class="checkbox-field">
+                            <input type="checkbox" id="hasDamage" name="hasDamage" value="true">
+                            <label for="hasDamage">Xe có hư hỏng</label>
+                        </div>
+                        <div id="damageFields" class="hidden" style="margin-top: 1rem;">
+                            <div class="form-grid">
+                                <div class="field" style="grid-column: 1 / -1;">
+                                    <label for="damageDescription">Mô tả hư hỏng <span class="required">*</span></label>
+                                    <textarea class="input" id="damageDescription" name="damageDescription"
+                                        placeholder="Mô tả chi tiết vị trí và mức độ hư hỏng..."></textarea>
+                                </div>
+                                <div class="field">
+                                    <label for="damageFee">Phí sửa chữa (VNĐ) <span class="required">*</span></label>
+                                    <input class="input" id="damageFee" name="damageFee" type="number" min="0"
+                                        placeholder="Ví dụ: 2000000">
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="panel">
+                        <div class="panel-header">
+                            <div class="panel-title">Hình ảnh xe</div>
+                        </div>
+                        <div class="upload" id="uploadZone">
+                            <div class="upload-icon">📸</div>
+                            <div class="upload-text">Kéo thả hoặc bấm để chọn ảnh</div>
+                            <div class="upload-hint">Hỗ trợ JPG/PNG/WEBP, tối đa 5MB mỗi ảnh</div>
+                            <input type="file" id="imageInput" name="images" accept="image/*" multiple
+                                style="display:none">
+                        </div>
+                        <div class="preview-grid" id="previewGrid"></div>
+                    </section>
+
+                    <section class="panel">
+                        <div class="panel-title">Tổng kết phí</div>
+                        <div class="fee-summary" id="feeSummary">
+                            <div class="fee-row">
+                                <span class="fee-label">Tiền thuê xe ban đầu:</span>
+                                <span class="fee-value" id="originalRentalFeeDisplay">0 VNĐ</span>
+                            </div>
+                            <div class="fee-row" id="rentalAdjustmentRow" style="display: none;">
+                                <span class="fee-label" id="rentalAdjustmentLabel">Điều chỉnh tiền thuê:</span>
+                                <span class="fee-value" id="rentalAdjustmentDisplay" style="color: var(--color-primary);">0 VNĐ</span>
+                            </div>
+                            <div class="fee-row">
+                                <span class="fee-label">Tiền thuê xe thực tế:</span>
+                                <span class="fee-value" id="actualRentalFeeDisplay" style="font-weight: 700;">0 VNĐ</span>
+                            </div>
+                            <div class="fee-row">
+                                <span class="fee-label">Phí trễ hạn:</span>
+                                <span class="fee-value" id="lateFeeDisplay">0 VNĐ</span>
+                            </div>
+                            <div class="fee-row">
+                                <span class="fee-label">Phí hư hỏng:</span>
+                                <span class="fee-value" id="damageFeeDisplay">0 VNĐ</span>
+                            </div>
+                            <div class="fee-row">
+                                <span class="fee-label">Phí trả khác địa điểm:</span>
+                                <span class="fee-value" id="oneWayFeeDisplay">0 VNĐ</span>
+                            </div>
+                            <div class="fee-row">
+                                <span class="fee-label">Tổng phí phát sinh:</span>
+                                <span class="fee-value" id="totalFeeDisplay">0 VNĐ</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="panel">
+                        <div class="actions">
+                            <button type="submit" class="btn btn-primary">Hoàn tất trả xe</button>
+                            <a th:href="@{/staff/returns/list}" class="btn btn-ghost">Quay lại</a>
+                        </div>
+                    </section>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <script th:inline="javascript">
+        // Contract data - Format dates as ISO strings to avoid LocalDateTime serialization issues
+        // Format as "yyyy-MM-dd HH:mm:ss" then replace space with 'T' for ISO format
+        const contractStartDateStr = /*[[${#temporals.format(contract.startDate, 'yyyy-MM-dd HH:mm:ss')}]]*/ '';
+        const contractEndDateStr = /*[[${#temporals.format(contract.endDate, 'yyyy-MM-dd HH:mm:ss')}]]*/ '';
+        const contractStartDate = new Date(contractStartDateStr.replace(' ', 'T'));
+        const contractEndDate = new Date(contractEndDateStr.replace(' ', 'T'));
+        const originalRentalFee = [[${ contract.totalRentalFee }]];
+        const dailyRate = [[${ contract.dailyRate }]];
+        const originalTotalDays = [[${ contract.totalDays }]];
+        
+        // Return location from booking (for auto-select)
+        const returnLocationFromBooking = [[${ contract.booking != null and contract.booking.returnLocation != null ? contract.booking.returnLocation.id : null }]];
+        // Original vehicle location (for calculating one-way fee)
+        const originalVehicleLocationId = [[${ contract.vehicle.location.id }]];
+        
+        // Wait for DOM to be ready
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get actual return date input element and set default to now
+            const formatLocalDateTime = (dateObj) => {
+                // Convert to local time string compatible with datetime-local (no TZ)
+                const local = new Date(dateObj.getTime() - dateObj.getTimezoneOffset() * 60000);
+                return local.toISOString().slice(0, 16);
+            };
+
+            let actualReturnDateInput = document.getElementById('actualReturnDate');
+            if (actualReturnDateInput) {
+                const now = new Date();
+                // Format local time instead of UTC to avoid VN offset issue
+                const nowStr = formatLocalDateTime(now);
+                actualReturnDateInput.value = nowStr; // Always set to current local date/time
+                actualReturnDateInput.min = formatLocalDateTime(contractStartDate);
+            }
+
+            const uploadZone = document.getElementById('uploadZone');
+        const imageInput = document.getElementById('imageInput');
+        const previewGrid = document.getElementById('previewGrid');
+        const selectedFiles = [];
+
+        // Image upload handling
+        uploadZone.addEventListener('click', () => imageInput.click());
+        uploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadZone.classList.add('drag-over');
+        });
+        uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.classList.remove('drag-over');
+            const files = Array.from(e.dataTransfer.files || []).filter(f => f.type.startsWith('image/'));
+            addFiles(files);
+        });
+        imageInput.addEventListener('change', (e) => addFiles(Array.from(e.target.files || [])));
+
+        function addFiles(files) {
+            files.forEach(f => selectedFiles.push(f));
+            syncInput();
+            renderPreview();
+        }
+
+        function syncInput() {
+            const dt = new DataTransfer();
+            selectedFiles.forEach(f => dt.items.add(f));
+            imageInput.files = dt.files;
+        }
+
+        function renderPreview() {
+            previewGrid.innerHTML = '';
+            selectedFiles.forEach((file, idx) => {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'preview-item';
+                    wrapper.innerHTML = `
+                    <img src="${ev.target.result}" alt="Ảnh xe">
+                    <button type="button" class="remove-btn" aria-label="Xóa ảnh" data-index="${idx}">×</button>
+                `;
+                    previewGrid.appendChild(wrapper);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        previewGrid.addEventListener('click', (e) => {
+            if (e.target.classList.contains('remove-btn')) {
+                const idx = Number(e.target.dataset.index);
+                selectedFiles.splice(idx, 1);
+                syncInput();
+                renderPreview();
+            }
+        });
+
+        // Damage checkbox handling
+        const hasDamageCheckbox = document.getElementById('hasDamage');
+        const damageFields = document.getElementById('damageFields');
+        const damageDescInput = document.getElementById('damageDescription');
+        const damageFeeInput = document.getElementById('damageFee');
+
+        // Function to toggle damage fields visibility
+        function toggleDamageFields() {
+            if (hasDamageCheckbox && damageFields && damageDescInput && damageFeeInput) {
+                if (hasDamageCheckbox.checked) {
+                    damageFields.classList.remove('hidden');
+                    damageFields.style.display = 'block';
+                    damageDescInput.required = true;
+                    damageFeeInput.required = true;
+                    // Auto-focus on damage fee input for better UX
+                    setTimeout(() => {
+                        if (damageFeeInput) {
+                            damageFeeInput.focus();
+                        }
+                    }, 100);
+                } else {
+                    damageFields.classList.add('hidden');
+                    damageFields.style.display = 'none';
+                    damageDescInput.required = false;
+                    damageFeeInput.required = false;
+                    damageDescInput.value = '';
+                    damageFeeInput.value = '';
+                }
+                calculateFees();
+            }
+        }
+
+        // Add event listeners when elements are available
+        if (hasDamageCheckbox) {
+            hasDamageCheckbox.addEventListener('change', toggleDamageFields);
+            hasDamageCheckbox.addEventListener('click', function() {
+                setTimeout(toggleDamageFields, 10);
+            });
+        }
+
+        // Fee calculation
+        const returnLocationSelect = document.getElementById('returnLocationId');
+        
+        // Re-get actualReturnDateInput to ensure it's available for event listeners
+        actualReturnDateInput = document.getElementById('actualReturnDate');
+        
+        // Listen to multiple events to ensure fee calculation updates
+        if (actualReturnDateInput) {
+            actualReturnDateInput.addEventListener('change', calculateFees);
+            actualReturnDateInput.addEventListener('input', calculateFees);
+        }
+        if (damageFeeInput) {
+            damageFeeInput.addEventListener('input', calculateFees);
+            damageFeeInput.addEventListener('keyup', calculateFees);
+            damageFeeInput.addEventListener('change', calculateFees);
+        }
+        if (returnLocationSelect) {
+            returnLocationSelect.addEventListener('change', calculateFees);
+        }
+
+        function calculateFees() {
+            // Get actual return date input element
+            const actualReturnDateInput = document.getElementById('actualReturnDate');
+            if (!actualReturnDateInput) {
+                return;
+            }
+            
+            // Get actual return date
+            let actualReturnDateStr = actualReturnDateInput.value;
+            
+            // If no value, set to current date/time
+            if (!actualReturnDateStr) {
+                const now = new Date();
+                actualReturnDateStr = formatLocalDateTime(now);
+                actualReturnDateInput.value = actualReturnDateStr;
+            }
+            
+            const actualReturnDate = new Date(actualReturnDateStr);
+            
+            // Calculate actual rental days
+            const diffTime = actualReturnDate - contractStartDate;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            const actualDays = diffDays < 1 ? 1 : diffDays;
+            
+            // Calculate actual rental fee
+            const actualRentalFee = dailyRate * actualDays;
+            
+            // Calculate rental adjustment (positive if late, negative if early)
+            const rentalAdjustment = actualRentalFee - originalRentalFee;
+            
+            // Calculate late fee (only if return after expected end date)
+            // Phí trễ hạn tính theo ngày
+            let lateFee = 0;
+            if (actualReturnDate > contractEndDate) {
+                const diffMs = actualReturnDate - contractEndDate;
+                const daysLate = Math.ceil(diffMs / (1000 * 60 * 60 * 24)); // Làm tròn lên
+                const lateFeePerDay = 500000; // 500,000 VND/ngày (có thể lấy từ system settings)
+                lateFee = daysLate * lateFeePerDay;
+            }
+
+            // Get damage fee
+            const damageFee = (hasDamageCheckbox && hasDamageCheckbox.checked && damageFeeInput) 
+                ? (parseInt(damageFeeInput.value) || 0) 
+                : 0;
+
+            // Calculate one-way fee (compare with original vehicle location, not booking return location)
+            let oneWayFee = 0;
+            if (returnLocationSelect && returnLocationSelect.value) {
+                const selectedLocationId = parseInt(returnLocationSelect.value);
+                if (selectedLocationId && selectedLocationId !== originalVehicleLocationId) {
+                    oneWayFee = Math.round(actualRentalFee * 0.05); // 5% from system settings
+                }
+            }
+
+            // Calculate total fees (rental adjustment + late fee + damage fee + one-way fee)
+            const totalFees = rentalAdjustment + lateFee + damageFee + oneWayFee;
+
+            // Update display
+            document.getElementById('originalRentalFeeDisplay').textContent = originalRentalFee.toLocaleString('vi-VN') + ' VNĐ';
+            
+            // Show/hide rental adjustment row
+            const rentalAdjustmentRow = document.getElementById('rentalAdjustmentRow');
+            const rentalAdjustmentLabel = document.getElementById('rentalAdjustmentLabel');
+            const rentalAdjustmentDisplay = document.getElementById('rentalAdjustmentDisplay');
+            
+            if (rentalAdjustment !== 0) {
+                rentalAdjustmentRow.style.display = 'flex';
+                if (rentalAdjustment > 0) {
+                    rentalAdjustmentLabel.textContent = 'Tiền thuê thêm (trả muộn):';
+                    rentalAdjustmentDisplay.textContent = '+' + rentalAdjustment.toLocaleString('vi-VN') + ' VNĐ';
+                    rentalAdjustmentDisplay.style.color = '#ef4444'; // Red for additional charge
+                } else {
+                    rentalAdjustmentLabel.textContent = 'Tiền hoàn lại (trả sớm):';
+                    rentalAdjustmentDisplay.textContent = rentalAdjustment.toLocaleString('vi-VN') + ' VNĐ';
+                    rentalAdjustmentDisplay.style.color = '#22c55e'; // Green for refund
+                }
+            } else {
+                rentalAdjustmentRow.style.display = 'none';
+            }
+            
+            document.getElementById('actualRentalFeeDisplay').textContent = actualRentalFee.toLocaleString('vi-VN') + ' VNĐ';
+            document.getElementById('lateFeeDisplay').textContent = lateFee.toLocaleString('vi-VN') + ' VNĐ';
+            document.getElementById('damageFeeDisplay').textContent = damageFee.toLocaleString('vi-VN') + ' VNĐ';
+            document.getElementById('oneWayFeeDisplay').textContent = oneWayFee.toLocaleString('vi-VN') + ' VNĐ';
+            document.getElementById('totalFeeDisplay').textContent = totalFees.toLocaleString('vi-VN') + ' VNĐ';
+        }
+
+        // Auto-select return location from booking
+        if (returnLocationSelect && returnLocationFromBooking) {
+            returnLocationSelect.value = returnLocationFromBooking;
+        }
+
+        // Initial calculation - ensure it runs after all elements are ready
+        function initializeCalculation() {
+            // Make sure actual return date is set to current date/time
+            const actualReturnDateInput = document.getElementById('actualReturnDate');
+            if (actualReturnDateInput) {
+                if (!actualReturnDateInput.value) {
+                    const now = new Date();
+                    const nowStr = formatLocalDateTime(now);
+                    actualReturnDateInput.value = nowStr;
+                }
+            }
+            // Calculate fees
+            calculateFees();
+        }
+        
+            // Run initialization after a short delay to ensure DOM is ready
+            setTimeout(function() {
+                initializeCalculation();
+            }, 100);
+
+            // Form validation
+            const returnForm = document.getElementById('returnForm');
+            if (returnForm) {
+                returnForm.addEventListener('submit', function(e) {
+                    console.log('Form submit event triggered');
+                    console.log('Selected files count:', selectedFiles.length);
+                    
+                    // Ensure all required fields are filled
+                    const actualReturnDate = document.getElementById('actualReturnDate').value;
+                    const odometer = document.getElementById('odometer').value;
+                    const fuelLevel = document.getElementById('fuelLevel').value;
+                    const returnLocationId = document.getElementById('returnLocationId').value;
+                    const conditionNotes = document.getElementById('conditionNotes').value;
+                    
+                    if (!actualReturnDate || !odometer || !fuelLevel || !returnLocationId || !conditionNotes) {
+                        e.preventDefault();
+                        alert('Vui lòng điền đầy đủ các trường bắt buộc.');
+                        return false;
+                    }
+                    
+                    // Validate damage fields if damage is checked
+                    if (hasDamageCheckbox && hasDamageCheckbox.checked) {
+                        const damageDesc = document.getElementById('damageDescription').value;
+                        const damageFee = document.getElementById('damageFee').value;
+                        if (!damageDesc || !damageFee || parseFloat(damageFee) <= 0) {
+                            e.preventDefault();
+                            alert('Vui lòng điền đầy đủ thông tin hư hỏng và phí sửa chữa.');
+                            return false;
+                        }
+                    }
+                    
+                    // Ensure files are synced to input before submit
+                    syncInput();
+                    
+                    console.log('Form validation passed, submitting...');
+                    return true;
+                });
+            }
+        }); // End of DOMContentLoaded
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <!-- ===== HEADER COMPONENT =====
+         Navigation bar chuyên nghiệp với phân quyền
+         Theme: Black & Blue từ variables.css
+         - Background: Black (#111827)
+         - Hover: Blue (#3b82f6)
+
+         PHÂN QUYỀN HIỂN THỊ:
+         - Guest (chưa đăng nhập): Home, Vehicles, Login, Register
+         - User (đã đăng nhập): Home, Vehicles, My Bookings, Support, Profile, Logout
+    -->
+    <header th:fragment="header">
+        <nav class="navbar">
+            <!-- Logo/Brand - Hiển thị cho tất cả user -->
+            <a th:href="@{/}" class="navbar-brand">
+                <span class="brand-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M5 17h14l-1-7H6l-1 7z"></path>
+                        <path d="M7 10V7a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v3"></path>
+                        <circle cx="7" cy="17" r="2"></circle>
+                        <circle cx="17" cy="17" r="2"></circle>
+                    </svg>
+                </span>
+                <span class="brand-text">Car Rental System</span>
+            </a>
+
+            <ul class="navbar-nav">
+                <!-- Home - Hiển thị cho tất cả -->
+                <li><a th:href="@{/}" class="nav-link">Trang chủ</a></li>
+
+                <!-- Vehicles - Hiển thị cho tất cả -->
+                <li><a th:href="@{/vehicles}" class="nav-link">Danh sách xe</a></li>
+
+                <!-- My Bookings - CHỈ hiển thị khi đã đăng nhập -->
+                <li sec:authorize="isAuthenticated()">
+                    <a th:href="@{/bookings/my-bookings}" class="nav-link">Đơn thuê của tôi</a>
+                </li>
+
+                <!-- My Contracts - CHỈ hiển thị khi đã đăng nhập -->
+                <li sec:authorize="isAuthenticated()">
+                    <a th:href="@{/contracts/my-contracts}" class="nav-link">Hợp đồng của tôi</a>
+                </li>
+
+                <!-- Notifications - CHỈ hiển thị khi đã đăng nhập -->
+                <li sec:authorize="isAuthenticated()" class="nav-notification">
+                    <a th:href="@{/notifications}" class="nav-link">
+                        Thông báo
+                        <span class="badge" th:if="${unreadNotificationCount != null and unreadNotificationCount > 0}"
+                              th:text="${unreadNotificationCount}">0</span>
+                    </a>
+                </li>
+
+                <!-- Support - CHỈ hiển thị khi đã đăng nhập -->
+                <li sec:authorize="isAuthenticated()">
+                    <a th:href="@{/support/tickets}" class="nav-link">Hỗ trợ</a>
+                </li>
+
+                <!-- User Menu - CHỈ hiển thị khi đã đăng nhập -->
+                <li sec:authorize="isAuthenticated()" class="nav-item-dropdown">
+                    <a href="#" class="nav-link dropdown-toggle" id="userDropdownToggle">
+                        <span th:if="${currentUser != null}" th:text="${currentUser.fullName}">Full Name</span>
+                        <span th:if="${currentUser == null}" sec:authentication="name">User</span> ▾
+                    </a>
+                    <ul class="dropdown-menu" id="userDropdownMenu">
+                        <li><a th:href="@{/profile}">Thông tin cá nhân</a></li>
+                        <li>
+                            <form th:action="@{/auth/logout}" method="post">
+                                <button type="submit">Đăng xuất</button>
+                            </form>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- Login/Register - CHỈ hiển thị khi CHƯA đăng nhập (Guest) -->
+                <li sec:authorize="!isAuthenticated()">
+                    <a th:href="@{/auth/login}" class="nav-link btn-login">Đăng nhập</a>
+                </li>
+                <li sec:authorize="!isAuthenticated()">
+                    <a th:href="@{/auth/register}" class="nav-link btn-register">Đăng ký</a>
+                </li>
+            </ul>
+        </nav>
+    </header>
+</body>
+</html>

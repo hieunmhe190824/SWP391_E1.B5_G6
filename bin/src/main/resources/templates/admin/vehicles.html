@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý xe - Car Rental System</title>
+
+    <!-- ===== CSS FILES ===== -->
+    <link rel="stylesheet" th:href="@{/css/variables.css}">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/admin-vehicles.css}">
+</head>
+<body>
+    <!-- ===== DASHBOARD LAYOUT ===== -->
+    <div class="dashboard-layout">
+        <!-- Sidebar -->
+        <aside th:replace="~{fragments/components/sidebar-admin :: sidebar-admin}"></aside>
+
+        <!-- Sidebar Overlay (Mobile) -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <!-- Main Content -->
+        <div class="dashboard-main">
+            <!-- Header -->
+            <header th:replace="~{fragments/components/dashboard-header :: dashboard-header}"></header>
+            
+            <!-- Page Content -->
+            <main class="dashboard-content">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <div class="page-header-content">
+                        <h1 class="page-title">Quản lý xe</h1>
+                        <p class="page-description">Quản lý thông tin xe, cập nhật trạng thái, thêm mới và chỉnh sửa</p>
+                    </div>
+                    <div class="page-header-actions">
+                        <a th:href="@{/admin/vehicles/create}" class="btn btn-primary">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            Thêm xe mới
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Flash Messages -->
+                <div th:if="${successMessage}" class="alert alert-success" role="alert">
+                    <svg class="alert-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                    <span th:text="${successMessage}"></span>
+                </div>
+                <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
+                    <svg class="alert-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <span th:text="${errorMessage}"></span>
+                </div>
+
+                <!-- Search & Filter Section -->
+                <div class="filter-section">
+                    <form th:action="@{/admin/vehicles}" method="get" class="filter-form">
+                        <div class="filter-row">
+                            <!-- Search Keyword -->
+                            <div class="filter-group">
+                                <label for="keyword" class="filter-label">Tìm kiếm</label>
+                                <input type="text" 
+                                       id="keyword" 
+                                       name="keyword" 
+                                       th:value="${searchKeyword}"
+                                       placeholder="Nhập biển số, tên xe..."
+                                       class="form-control">
+                            </div>
+
+                            <!-- Brand Filter -->
+                            <div class="filter-group">
+                                <label for="brandId" class="filter-label">Hãng xe</label>
+                                <select id="brandId" name="brandId" class="form-control">
+                                    <option value="">Tất cả</option>
+                                    <option th:each="brand : ${brands}"
+                                            th:value="${brand.id}"
+                                            th:text="${brand.brandName}"
+                                            th:selected="${selectedBrandId == brand.id}">
+                                    </option>
+                                </select>
+                            </div>
+
+                            <!-- Category Filter -->
+                            <div class="filter-group">
+                                <label for="category" class="filter-label">Loại xe</label>
+                                <select id="category" name="category" class="form-control">
+                                    <option value="">Tất cả</option>
+                                    <option th:each="cat : ${categories}"
+                                            th:value="${cat}"
+                                            th:text="${cat}"
+                                            th:selected="${selectedCategory == cat}">
+                                    </option>
+                                </select>
+                            </div>
+
+                            <!-- Status Filter -->
+                            <div class="filter-group">
+                                <label for="status" class="filter-label">Trạng thái</label>
+                                <select id="status" name="status" class="form-control">
+                                    <option value="">Tất cả</option>
+                                    <option th:each="st : ${statuses}"
+                                            th:value="${st.name()}"
+                                            th:text="${st.name()}"
+                                            th:selected="${selectedStatus == st.name()}">
+                                    </option>
+                                </select>
+                            </div>
+
+                            <!-- Filter Actions -->
+                            <div class="filter-actions">
+                                <button type="submit" class="btn btn-primary">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="11" cy="11" r="8"></circle>
+                                        <path d="m21 21-4.35-4.35"></path>
+                                    </svg>
+                                    Lọc
+                                </button>
+                                <a th:href="@{/admin/vehicles}" class="btn btn-secondary">Xóa bộ lọc</a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Vehicle Cards Grid -->
+                <div class="vehicle-grid-modern" th:if="${vehicles != null && !vehicles.isEmpty()}">
+                    <div th:each="vehicle : ${vehicles}">
+                        <div th:replace="~{fragments/components/cards :: vehicle-card-admin(${vehicle}, '/admin/vehicles')}"></div>
+                    </div>
+                </div>
+                
+                <!-- Empty State -->
+                <div class="empty-state" th:if="${vehicles == null || vehicles.isEmpty()}">
+                    <svg class="empty-icon" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 17h14l-1-7H6l-1 7z"></path>
+                        <circle cx="7" cy="17" r="2"></circle>
+                        <circle cx="17" cy="17" r="2"></circle>
+                    </svg>
+                    <h3>Không tìm thấy xe nào</h3>
+                    <p>Không có xe nào phù hợp với tiêu chí tìm kiếm của bạn.</p>
+                    <a th:href="@{/admin/vehicles}" class="btn btn-primary">Xem tất cả xe</a>
+                </div>
+
+                <!-- Pagination -->
+                <div class="pagination-container" th:if="${totalPages > 1}">
+                    <nav class="pagination">
+                        <!-- Previous Button -->
+                        <a th:href="@{/admin/vehicles(page=${currentPage > 0 ? currentPage - 1 : 0}, 
+                                    brandId=${selectedBrandId}, 
+                                    category=${selectedCategory}, 
+                                    status=${selectedStatus}, 
+                                    keyword=${searchKeyword})}"
+                           class="pagination-btn"
+                           th:classappend="${currentPage == 0} ? 'disabled'">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M10 12L6 8L10 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            Trước
+                        </a>
+
+                        <!-- Page Numbers -->
+                        <div class="pagination-numbers">
+                            <a th:each="pageNum : ${#numbers.sequence(0, totalPages - 1)}"
+                               th:href="@{/admin/vehicles(page=${pageNum}, 
+                                        brandId=${selectedBrandId}, 
+                                        category=${selectedCategory}, 
+                                        status=${selectedStatus}, 
+                                        keyword=${searchKeyword})}"
+                               class="pagination-number"
+                               th:classappend="${pageNum == currentPage} ? 'active'"
+                               th:text="${pageNum + 1}">
+                                1
+                            </a>
+                        </div>
+
+                        <!-- Next Button -->
+                        <a th:href="@{/admin/vehicles(page=${currentPage < totalPages - 1 ? currentPage + 1 : totalPages - 1}, 
+                                    brandId=${selectedBrandId}, 
+                                    category=${selectedCategory}, 
+                                    status=${selectedStatus}, 
+                                    keyword=${searchKeyword})}"
+                           class="pagination-btn"
+                           th:classappend="${currentPage >= totalPages - 1} ? 'disabled'">
+                            Sau
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </a>
+                    </nav>
+                </div>
+
+                <!-- Statistics -->
+                <div class="stats-summary">
+                    <div class="stat-item">
+                        <span class="stat-label">Tổng số xe:</span>
+                        <span class="stat-value" th:text="${totalElements != null ? totalElements : 0}">0</span>
+                    </div>
+                    <div class="stat-item" th:if="${totalPages > 1}">
+                        <span class="stat-label">Trang:</span>
+                        <span class="stat-value" th:text="${currentPage + 1} + ' / ' + ${totalPages}">1 / 1</span>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Footer -->
+            <footer th:replace="~{fragments/footer :: footer}"></footer>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <div th:replace="~{fragments/components/dashboard-header :: dashboard-scripts}"></div>
+    <script>
+        // Auto-hide flash messages after 3 seconds
+        document.addEventListener('DOMContentLoaded', function() {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                setTimeout(() => {
+                    alert.style.transition = 'opacity 0.5s ease-out';
+                    alert.style.opacity = '0';
+                    setTimeout(() => {
+                        alert.remove();
+                    }, 500);
+                }, 3000);
+            });
+        });
+    </script>
+</body>
+</html>

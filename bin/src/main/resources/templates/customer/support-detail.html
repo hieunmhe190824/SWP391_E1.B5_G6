@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi Tiết Yêu Cầu Hỗ Trợ - Car Rental System</title>
+    <link rel="stylesheet" th:href="@{/css/variables.css}">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+    <style>
+        .support-page-dark {
+            padding: 2rem 0;
+            background: var(--section-dark-bg);
+            min-height: calc(100vh - 200px);
+            position: relative;
+        }
+
+        .support-page-dark::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent 0%, var(--color-primary) 50%, transparent 100%);
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+        }
+
+        .support-page-dark::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--section-dark-overlay);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .support-page-dark > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .ticket-detail-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        .ticket-info-card {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .messages-container {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .message {
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 8px;
+            background: var(--color-background);
+        }
+
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .message-sender {
+            font-weight: 600;
+            color: var(--color-primary);
+        }
+
+        .message-time {
+            color: var(--color-text-secondary);
+        }
+
+        .message-text {
+            line-height: 1.6;
+        }
+
+        .reply-form {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .rating-section {
+            background: #fef3c7;
+            border: 2px solid #fbbf24;
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .star-rating {
+            display: flex;
+            gap: 0.5rem;
+            font-size: 2rem;
+            margin: 1rem 0;
+        }
+
+        .star {
+            cursor: pointer;
+            color: #d1d5db;
+            transition: color 0.2s;
+        }
+
+        .star:hover,
+        .star.active {
+            color: #fbbf24;
+        }
+
+        .status-badge {
+            padding: 0.35rem 0.85rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .status-open {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status-in_progress {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-resolved {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-closed {
+            background: #e5e7eb;
+            color: #374151;
+        }
+    </style>
+</head>
+
+<body>
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <main class="support-page-dark">
+        <div class="ticket-detail-container">
+        <div style="margin-bottom: 1.5rem;">
+            <a th:href="@{/customer/support/tickets}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Quay lại
+            </a>
+        </div>
+
+        <!-- Messages -->
+        <div th:if="${success}" class="alert alert-success" style="margin-bottom: 1.5rem;">
+            <span th:text="${success}">Success</span>
+        </div>
+        <div th:if="${error}" class="alert alert-error" style="margin-bottom: 1.5rem;">
+            <span th:text="${error}">Error</span>
+        </div>
+
+        <!-- Ticket Info -->
+        <div class="ticket-info-card">
+            <h2 style="margin-bottom: 1.5rem;" th:text="${ticket.subject}">Ticket Subject</h2>
+            <div class="info-row">
+                <strong>Mã ticket:</strong>
+                <span th:text="${ticket.ticketNumber}">TK-2025-0001</span>
+            </div>
+            <div class="info-row">
+                <strong>Danh mục:</strong>
+                <span
+                    th:text="${ticket.category == T(com.carrental.model.SupportTicket$Category).BOOKING ? 'Đặt xe' :
+                                ticket.category == T(com.carrental.model.SupportTicket$Category).PAYMENT ? 'Thanh toán' :
+                                ticket.category == T(com.carrental.model.SupportTicket$Category).VEHICLE ? 'Xe' : 'Khác'}">Category</span>
+            </div>
+            <div class="info-row">
+                <strong>Trạng thái:</strong>
+                <span class="status-badge" th:classappend="${'status-' + ticket.status.toString().toLowerCase()}"
+                    th:text="${ticket.status == T(com.carrental.model.SupportTicket$TicketStatus).OPEN ? 'Mở' :
+                                ticket.status == T(com.carrental.model.SupportTicket$TicketStatus).IN_PROGRESS ? 'Đang xử lý' :
+                                ticket.status == T(com.carrental.model.SupportTicket$TicketStatus).RESOLVED ? 'Đã giải quyết' : 'Đã đóng'}">Status</span>
+            </div>
+            <div class="info-row">
+                <strong>Tạo lúc:</strong>
+                <span th:text="${#temporals.format(ticket.createdAt, 'dd/MM/yyyy HH:mm')}">Date</span>
+            </div>
+            <div class="info-row" th:if="${ticket.assignedTo != null}">
+                <strong>Nhân viên phụ trách:</strong>
+                <span th:text="${ticket.assignedTo.fullName}">Staff Name</span>
+            </div>
+        </div>
+
+        <!-- Messages Thread -->
+        <div class="messages-container">
+            <h3 style="margin-bottom: 1.5rem;">Cuộc trò chuyện</h3>
+            <div th:if="${messages != null and !messages.isEmpty()}">
+                <div th:each="msg : ${messages}" class="message" th:if="${msg.rating == null}">
+                    <div class="message-header">
+                        <span class="message-sender" th:text="${msg.sender.fullName}">Sender</span>
+                        <span class="message-time"
+                            th:text="${#temporals.format(msg.createdAt, 'dd/MM/yyyy HH:mm')}">Time</span>
+                    </div>
+                    <div class="message-text" th:text="${msg.messageText}">Message text</div>
+                </div>
+            </div>
+            <div th:if="${messages == null or messages.isEmpty()}"
+                style="text-align: center; color: var(--color-text-secondary); padding: 2rem;">
+                Chưa có tin nhắn nào
+            </div>
+        </div>
+
+        <!-- Reply Form -->
+        <div class="reply-form">
+            <h3 style="margin-bottom: 1rem;">Trả lời</h3>
+            <form th:action="@{/customer/support/tickets/{id}/message(id=${ticket.id})}" method="post">
+                <textarea name="messageText" class="form-control" rows="4" placeholder="Nhập tin nhắn của bạn..."
+                    required
+                    style="width: 100%; padding: 0.75rem; border: 1px solid var(--color-border); border-radius: 8px; margin-bottom: 1rem; resize: vertical;"></textarea>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-paper-plane"></i> Gửi tin nhắn
+                </button>
+            </form>
+        </div>
+
+        <!-- Rating Section (only if canRate) -->
+        <div th:if="${canRate}" class="rating-section">
+            <h3 style="margin-bottom: 1rem;">Đánh giá hỗ trợ</h3>
+            <p style="margin-bottom: 1rem;">Vui lòng đánh giá chất lượng hỗ trợ của chúng tôi</p>
+            <form th:action="@{/customer/support/tickets/{id}/rate(id=${ticket.id})}" method="post" id="ratingForm">
+                <div class="star-rating" id="starRating">
+                    <span class="star" data-rating="1">★</span>
+                    <span class="star" data-rating="2">★</span>
+                    <span class="star" data-rating="3">★</span>
+                    <span class="star" data-rating="4">★</span>
+                    <span class="star" data-rating="5">★</span>
+                </div>
+                <input type="hidden" name="rating" id="ratingInput" required>
+                <textarea name="feedback" class="form-control" rows="3" placeholder="Nhận xét của bạn (tùy chọn)..."
+                    style="width: 100%; padding: 0.75rem; border: 1px solid var(--color-border); border-radius: 8px; margin-bottom: 1rem; resize: vertical;"></textarea>
+                <button type="submit" class="btn btn-primary">Gửi đánh giá</button>
+            </form>
+        </div>
+
+        <!-- Display Rating (if rated) -->
+        <div th:if="${rating != null}" class="rating-section" style="background: #d1fae5; border-color: #10b981;">
+            <h3 style="margin-bottom: 1rem;">Đánh giá của bạn</h3>
+            <div style="font-size: 1.5rem; color: #fbbf24; margin-bottom: 0.5rem;">
+                <span th:each="i : ${#numbers.sequence(1, rating.rating)}">★</span>
+                <span th:each="i : ${#numbers.sequence(rating.rating + 1, 5)}" style="color: #d1d5db;">★</span>
+            </div>
+            <p th:if="${rating.messageText != null and !rating.messageText.isEmpty()}" th:text="${rating.messageText}"
+                style="font-style: italic; color: var(--color-text-secondary);">Feedback</p>
+            <small style="color: var(--color-text-secondary);">
+                Đánh giá lúc: <span th:text="${#temporals.format(rating.createdAt, 'dd/MM/yyyy HH:mm')}">Date</span>
+            </small>
+        </div>
+        </div>
+        </main>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+
+    <script th:src="@{/js/main.js}"></script>
+    <script>
+        // Star rating functionality
+        const stars = document.querySelectorAll('.star');
+        const ratingInput = document.getElementById('ratingInput');
+
+        stars.forEach(star => {
+            star.addEventListener('click', function () {
+                const rating = this.getAttribute('data-rating');
+                ratingInput.value = rating;
+
+                stars.forEach(s => {
+                    if (s.getAttribute('data-rating') <= rating) {
+                        s.classList.add('active');
+                    } else {
+                        s.classList.remove('active');
+                    }
+                });
+            });
+
+            star.addEventListener('mouseenter', function () {
+                const rating = this.getAttribute('data-rating');
+                stars.forEach(s => {
+                    if (s.getAttribute('data-rating') <= rating) {
+                        s.style.color = '#fbbf24';
+                    } else {
+                        s.style.color = '#d1d5db';
+                    }
+                });
+            });
+        });
+
+        document.getElementById('starRating')?.addEventListener('mouseleave', function () {
+            const currentRating = ratingInput.value;
+            stars.forEach(s => {
+                if (currentRating && s.getAttribute('data-rating') <= currentRating) {
+                    s.style.color = '#fbbf24';
+                } else {
+                    s.style.color = '#d1d5db';
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <!-- ===== BUTTON COMPONENTS =====
+         Tất cả buttons sử dụng CSS Variables từ variables.css
+         Theme: Black & Blue
+         - .btn-primary = Blue (#3b82f6)
+         - .btn-secondary = Dark Gray (#1f2937)
+         - .btn-danger = Red (#ef4444)
+    -->
+
+    <!-- Primary Button - Blue Theme -->
+    <th:block th:fragment="btn-primary(text, href)">
+        <a th:href="${href}" class="btn btn-primary">
+            <span th:text="${text}"></span>
+        </a>
+    </th:block>
+
+    <!-- Secondary Button -->
+    <th:block th:fragment="btn-secondary(text, href)">
+        <a th:href="${href}" class="btn btn-secondary">
+            <span th:text="${text}"></span>
+        </a>
+    </th:block>
+
+    <!-- Danger Button -->
+    <th:block th:fragment="btn-danger(text, href)">
+        <a th:href="${href}" class="btn btn-danger">
+            <span th:text="${text}"></span>
+        </a>
+    </th:block>
+
+    <!-- Submit Button -->
+    <button th:fragment="btn-submit(text)" type="submit" class="btn btn-primary">
+        <span th:text="${text}">Submit</span>
+    </button>
+</body>
+</html>

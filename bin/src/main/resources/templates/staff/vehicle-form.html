@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${isEdit} ? 'Chỉnh sửa xe' : 'Thêm xe mới'">Quản lý xe</title>
+
+    <!-- ===== CSS FILES ===== -->
+    <link rel="stylesheet" th:href="@{/css/variables.css}">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/admin-vehicles.css}">
+</head>
+<body>
+    <!-- ===== STAFF DASHBOARD LAYOUT ===== -->
+    <div class="dashboard-container">
+        <!-- Sidebar Overlay for mobile -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <!-- Sidebar - STAFF ONLY -->
+        <aside th:replace="~{fragments/components/sidebar-staff :: sidebar-staff}"></aside>
+
+        <!-- Main Content Area -->
+        <div class="dashboard-main">
+            <!-- Dashboard Header -->
+            <header th:replace="~{fragments/components/dashboard-header :: dashboard-header}"></header>
+
+            <!-- Dashboard Content -->
+            <main class="dashboard-content">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <div class="page-header-content">
+                        <h1 class="page-title" th:text="${isEdit} ? 'Chỉnh sửa xe' : 'Thêm xe mới'">Thêm xe mới</h1>
+                        <p class="page-description">Nhập đầy đủ thông tin xe để thêm vào hệ thống</p>
+                    </div>
+                    <div class="page-header-actions">
+                        <a th:href="@{/staff/vehicles}" class="btn btn-secondary">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="19" y1="12" x2="5" y2="12"></line>
+                                <polyline points="12 19 5 12 12 5"></polyline>
+                            </svg>
+                            Quay lại
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Flash Messages -->
+                <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
+                    <svg class="alert-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <span th:text="${errorMessage}"></span>
+                </div>
+
+                <!-- Form Container -->
+                <div class="form-container">
+                    <form id="vehicleForm"
+                          th:action="${isEdit} ? @{/staff/vehicles/{id}/edit(id=${vehicle.id})} : @{/staff/vehicles/create}"
+                          method="post"
+                          enctype="multipart/form-data"
+                          class="vehicle-form"
+                          th:attr="data-vehicle-id=${isEdit ? vehicle.id : ''}, data-is-edit=${isEdit}">
+
+                        <!-- Basic Information Section -->
+                        <div class="form-section">
+                            <h2 class="form-section-title">Thông tin cơ bản</h2>
+
+                            <div class="form-row">
+                                <!-- License Plate -->
+                                <div class="form-group">
+                                    <label for="licensePlate">
+                                        Biển số xe
+                                        <span class="required-asterisk">*</span>
+                                    </label>
+                                    <input type="text"
+                                           id="licensePlate"
+                                           name="licensePlate"
+                                           th:value="${vehicle.licensePlate}"
+                                           placeholder="VD: 30A-12345"
+                                           class="form-control"
+                                           required>
+                                    <small class="form-help">Biển số xe phải là duy nhất</small>
+                                </div>
+
+                                <!-- Color -->
+                                <div class="form-group">
+                                    <label for="color">Màu sắc</label>
+                                    <input type="text"
+                                           id="color"
+                                           name="color"
+                                           th:value="${vehicle.color}"
+                                           placeholder="VD: Trắng, Đen, Bạc..."
+                                           class="form-control">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Vehicle Model Section -->
+                        <div class="form-section">
+                            <h2 class="form-section-title">Thông tin mẫu xe</h2>
+
+                            <div class="form-row">
+                                <!-- Vehicle Model -->
+                                <div class="form-group">
+                                    <label for="modelId">
+                                        Mẫu xe
+                                        <span class="required-asterisk">*</span>
+                                    </label>
+                                    <select id="modelId" name="model.id" class="form-control" required>
+                                        <option value="">-- Chọn mẫu xe --</option>
+                                        <option th:each="model : ${vehicleModels}"
+                                                th:value="${model.id}"
+                                                th:text="${model.brand.brandName + ' ' + model.modelName + ' ' + model.year + ' (' + model.category + ')'}"
+                                                th:selected="${isEdit and vehicle.model.id == model.id}">
+                                        </option>
+                                    </select>
+                                    <small class="form-help">Hãng xe, model, năm sản xuất và loại xe</small>
+                                </div>
+
+                                <!-- Location -->
+                                <div class="form-group">
+                                    <label for="locationId">
+                                        Vị trí hiện tại
+                                        <span class="required-asterisk">*</span>
+                                    </label>
+                                    <select id="locationId" name="location.id" class="form-control" required>
+                                        <option value="">-- Chọn địa điểm --</option>
+                                        <option th:each="location : ${locations}"
+                                                th:value="${location.id}"
+                                                th:text="${location.locationName + ' - ' + location.city}"
+                                                th:selected="${isEdit and vehicle.location.id == location.id}">
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pricing Section -->
+                        <div class="form-section">
+                            <h2 class="form-section-title">Thông tin giá cả</h2>
+
+                            <div class="form-row">
+                                <!-- Daily Rate -->
+                                <div class="form-group">
+                                    <label for="dailyRate">
+                                        Giá thuê/ngày (VNĐ)
+                                        <span class="required-asterisk">*</span>
+                                    </label>
+                                    <input type="number"
+                                           id="dailyRate"
+                                           name="dailyRate"
+                                           th:value="${vehicle.dailyRate}"
+                                           placeholder="500000"
+                                           min="0"
+                                           step="10000"
+                                           class="form-control"
+                                           required>
+                                </div>
+
+                                <!-- Deposit Amount -->
+                                <div class="form-group">
+                                    <label for="depositAmount">
+                                        Tiền đặt cọc (VNĐ)
+                                        <span class="required-asterisk">*</span>
+                                    </label>
+                                    <input type="number"
+                                           id="depositAmount"
+                                           name="depositAmount"
+                                           th:value="${vehicle != null ? vehicle.depositAmount : 50000000}"
+                                           value="50000000"
+                                           placeholder="50000000"
+                                           min="0"
+                                           step="100000"
+                                           class="form-control"
+                                           required>
+                                    <small class="form-help">Tiền cọc phải lớn hơn giá thuê/ngày</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Status Section -->
+                        <div class="form-section">
+                            <h2 class="form-section-title">Trạng thái</h2>
+
+                            <div class="form-row">
+                                <!-- Status -->
+                                <div class="form-group">
+                                    <label for="status">
+                                        Trạng thái xe
+                                        <span class="required-asterisk">*</span>
+                                    </label>
+                                    <select id="status" name="status" class="form-control" required>
+                                        <option th:each="st : ${statuses}"
+                                                th:value="${st.name()}"
+                                                th:text="${st.name()}"
+                                                th:selected="${isEdit and vehicle.status.name() == st.name()}">
+                                        </option>
+                                    </select>
+                                    <small class="form-help">
+                                        Available: Sẵn sàng cho thuê | Rented: Đang được thuê | Maintenance: Đang bảo trì
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Images Section -->
+                        <div class="form-section">
+                            <h2 class="form-section-title">Hình ảnh xe</h2>
+
+                            <!-- Current Images (Edit mode only) -->
+                            <div th:if="${isEdit}" class="current-images-section">
+                                <div th:if="${vehicle.images != null and !vehicle.images.isEmpty()}" class="current-images">
+                                    <p class="form-help" style="margin-bottom: 1rem; font-weight: 600; color: var(--color-text-white);">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                                            <polyline points="21 15 16 10 5 21"></polyline>
+                                        </svg>
+                                        Hình ảnh hiện tại:
+                                    </p>
+                                    <div class="current-images-grid" th:attr="data-images=${vehicle.images}">
+                                        <!-- Fallback: Hiển thị ít nhất ảnh đầu tiên -->
+                                        <div class="current-image-item">
+                                            <img th:src="@{${vehicle.firstImageUrl}}"
+                                                 alt="Vehicle Image"
+                                                 class="current-image-preview"
+                                                 onerror="this.src='/images/vehicle-placeholder.jpg'">
+                                            <div class="image-overlay">
+                                                <span class="image-label">Ảnh hiện tại</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p class="form-help" style="margin-top: 0.5rem; font-size: 0.875rem; color: var(--color-text-light);">
+                                        💡 Upload ảnh mới bên dưới để thay thế ảnh hiện tại
+                                    </p>
+                                </div>
+                                <div th:unless="${vehicle.images != null and !vehicle.images.isEmpty()}" class="no-current-images">
+                                    <p class="form-help" style="color: var(--color-text-light); font-style: italic;">
+                                        Chưa có hình ảnh nào. Vui lòng upload ảnh bên dưới.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Upload New Images -->
+                            <div class="form-group" style="margin-top: 1.5rem;">
+                                <label for="imageFiles">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                        <polyline points="17 8 12 3 7 8"></polyline>
+                                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                                    </svg>
+                                    <span th:text="${isEdit} ? 'Tải lên hình ảnh mới (tùy chọn)' : 'Hình ảnh xe'"></span>
+                                    <span th:unless="${isEdit}" class="required-asterisk">*</span>
+                                </label>
+                                <input type="file"
+                                       id="imageFiles"
+                                       name="imageFiles"
+                                       accept="image/*"
+                                       multiple
+                                       class="form-control"
+                                       th:required="${!isEdit}">
+                                <small class="form-help">
+                                    Chọn nhiều ảnh (Ctrl/Cmd + Click). Định dạng: JPG, PNG, WEBP. Tối đa 5MB/ảnh.
+                                    <span th:if="${isEdit}" style="display: block; margin-top: 4px; color: var(--color-warning);">
+                                        ⚠️ Ảnh mới sẽ thay thế hoàn toàn ảnh hiện tại
+                                    </span>
+                                </small>
+                            </div>
+
+                            <!-- New Image Preview Area -->
+                            <div id="imagePreview" class="new-images-preview" style="display: none;">
+                                <p class="form-help" style="margin-bottom: 0.75rem; font-weight: 600; color: var(--color-primary);">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                    Xem trước ảnh mới:
+                                </p>
+                                <div id="imagePreviewGrid" class="image-preview-grid">
+                                    <!-- Preview sẽ được thêm vào đây bằng JavaScript -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                                    <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                                    <polyline points="7 3 7 8 15 8"></polyline>
+                                </svg>
+                                <span th:text="${isEdit} ? 'Cập nhật' : 'Tạo mới'">Tạo mới</span>
+                            </button>
+                            <a th:href="@{/staff/vehicles}" class="btn btn-secondary btn-lg">Hủy</a>
+                        </div>
+                    </form>
+                </div>
+            </main>
+
+            <!-- Footer -->
+            <footer th:replace="~{fragments/footer :: footer}"></footer>
+        </div>
+
+        <!-- Scripts -->
+        <div th:replace="~{fragments/components/dashboard-header :: dashboard-scripts}"></div>
+    </div>
+
+    <script>
+        // ============================================
+        // HELPER FUNCTIONS - Show/Clear Error Messages
+        // ============================================
+
+        // Show error message dưới input (consistent with login-validation.js)
+        function showError(input, message) {
+            // Remove existing error class
+            input.classList.remove('error');
+            input.classList.add('error');
+
+            // Remove existing error message
+            const existingError = input.parentElement.querySelector('.error-message');
+            if (existingError) {
+                existingError.remove();
+            }
+
+            // Add new error message
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.textContent = message;
+            input.parentElement.appendChild(errorDiv);
+        }
+
+        // Clear error message
+        function clearError(input) {
+            input.classList.remove('error');
+            const errorMessage = input.parentElement.querySelector('.error-message');
+            if (errorMessage) {
+                errorMessage.remove();
+            }
+        }
+
+        // ============================================
+        // VEHICLE FORM VALIDATION FUNCTIONS
+        // ============================================
+
+        // Validate license plate format (Vietnamese format)
+        function validateLicensePlateFormat(plate) {
+            if (!plate || plate.trim().length === 0) {
+                return { valid: false, message: 'Vui lòng nhập biển số xe' };
+            }
+
+            // Vietnamese license plate format: 30A-12345 or 30AA-12345
+            const re = /^[0-9]{2}[A-Z]{1,2}-[0-9]{4,5}$/;
+            if (!re.test(plate.trim())) {
+                return { valid: false, message: 'Biển số xe không hợp lệ. Định dạng: 30A-12345' };
+            }
+
+            return { valid: true };
+        }
+
+        // Check if license plate exists (real-time duplicate check)
+        function checkLicensePlateExists(plate, element) {
+            if (!plate || plate.trim().length === 0) {
+                return;
+            }
+
+            const validation = validateLicensePlateFormat(plate);
+            if (!validation.valid) {
+                return;
+            }
+
+            // Get vehicle ID and construct proper URL
+            const form = document.getElementById('vehicleForm');
+            const isEdit = form.getAttribute('data-is-edit') === 'true';
+            const vehicleId = form.getAttribute('data-vehicle-id');
+
+            // Detect admin or staff role from URL
+            const currentPath = window.location.pathname;
+            const isAdmin = currentPath.includes('/admin/');
+            const baseUrl = isAdmin ? '/admin/vehicles/check-license-plate' : '/staff/vehicles/check-license-plate';
+
+            // Build URL with parameters
+            let url = baseUrl + '?licensePlate=' + encodeURIComponent(plate.trim());
+            if (isEdit && vehicleId) {
+                url += '&vehicleId=' + vehicleId;
+            }
+
+            console.log('Checking license plate:', plate, 'URL:', url);
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    console.log('License plate check result:', data);
+                    if (data.exists) {
+                        showError(element, 'Biển số xe này đã tồn tại trong hệ thống');
+                    } else {
+                        clearError(element);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking license plate:', error);
+                });
+        }
+
+        // Validate color (optional but if provided, must be valid)
+        function validateColor(color) {
+            // Color is optional, but if provided should not be just numbers or special chars
+            if (color && color.trim().length > 0) {
+                if (/^[0-9]+$/.test(color.trim())) {
+                    return { valid: false, message: 'Màu sắc không được chỉ chứa số' };
+                }
+                if (color.trim().length < 2) {
+                    return { valid: false, message: 'Màu sắc phải có ít nhất 2 ký tự' };
+                }
+            }
+            return { valid: true };
+        }
+
+        // Validate daily rate
+        function validateDailyRate(rate) {
+            if (!rate || rate.trim().length === 0) {
+                return { valid: false, message: 'Vui lòng nhập giá thuê/ngày' };
+            }
+
+            const rateValue = parseFloat(rate);
+            if (isNaN(rateValue)) {
+                return { valid: false, message: 'Giá thuê phải là số' };
+            }
+
+            if (rateValue <= 0) {
+                return { valid: false, message: 'Giá thuê phải lớn hơn 0' };
+            }
+
+            if (rateValue < 100000) {
+                return { valid: false, message: 'Giá thuê tối thiểu 100,000 VNĐ/ngày' };
+            }
+
+            if (rateValue > 50000000) {
+                return { valid: false, message: 'Giá thuê tối đa 50,000,000 VNĐ/ngày' };
+            }
+
+            return { valid: true };
+        }
+
+        // Validate deposit amount
+        function validateDepositAmount(deposit, dailyRate) {
+            if (!deposit || deposit.trim().length === 0) {
+                return { valid: false, message: 'Vui lòng nhập tiền đặt cọc' };
+            }
+
+            const depositValue = parseFloat(deposit);
+            if (isNaN(depositValue)) {
+                return { valid: false, message: 'Tiền đặt cọc phải là số' };
+            }
+
+            if (depositValue <= 0) {
+                return { valid: false, message: 'Tiền đặt cọc phải lớn hơn 0' };
+            }
+
+            if (depositValue < 500000) {
+                return { valid: false, message: 'Tiền đặt cọc tối thiểu 500,000 VNĐ' };
+            }
+
+            if (depositValue > 100000000) {
+                return { valid: false, message: 'Tiền đặt cọc tối đa 100,000,000 VNĐ' };
+            }
+
+            // Check if deposit is greater than daily rate
+            if (dailyRate && dailyRate.trim().length > 0) {
+                const dailyRateValue = parseFloat(dailyRate);
+                if (!isNaN(dailyRateValue) && depositValue <= dailyRateValue) {
+                    return { valid: false, message: 'Tiền đặt cọc phải lớn hơn giá thuê/ngày' };
+                }
+            }
+
+            return { valid: true };
+        }
+
+        // Validate select field
+        function validateSelectField(value, fieldName) {
+            if (!value || value.trim().length === 0 || value === '') {
+                return { valid: false, message: 'Vui lòng chọn ' + fieldName };
+            }
+            return { valid: true };
+        }
+
+        // Validate image files
+        function validateImageFiles(files, isEdit) {
+            if (!isEdit && (!files || files.length === 0)) {
+                return { valid: false, message: 'Vui lòng chọn ít nhất 1 hình ảnh' };
+            }
+
+            if (files && files.length > 0) {
+                // Check max number of files
+                if (files.length > 10) {
+                    return { valid: false, message: 'Chỉ được chọn tối đa 10 hình ảnh' };
+                }
+
+                // Check each file
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+
+                    // Check file type
+                    if (!file.type.startsWith('image/')) {
+                        return { valid: false, message: 'File phải là hình ảnh (JPG, PNG, WEBP)' };
+                    }
+
+                    // Check file size (max 5MB)
+                    const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+                    if (file.size > maxSize) {
+                        return { valid: false, message: 'Mỗi hình ảnh không được vượt quá 5MB' };
+                    }
+                }
+            }
+
+            return { valid: true };
+        }
+
+        // Validate entire vehicle form
+        function validateVehicleForm() {
+            let isValid = true;
+
+            // License Plate - REQUIRED
+            const licensePlate = document.getElementById('licensePlate');
+            const licensePlateValidation = validateLicensePlateFormat(licensePlate.value);
+            if (!licensePlateValidation.valid) {
+                showError(licensePlate, licensePlateValidation.message);
+                isValid = false;
+            } else {
+                clearError(licensePlate);
+            }
+
+            // Color - OPTIONAL
+            const color = document.getElementById('color');
+            const colorValidation = validateColor(color.value);
+            if (!colorValidation.valid) {
+                showError(color, colorValidation.message);
+                isValid = false;
+            } else {
+                clearError(color);
+            }
+
+            // Model ID - REQUIRED
+            const modelId = document.getElementById('modelId');
+            const modelValidation = validateSelectField(modelId.value, 'mẫu xe');
+            if (!modelValidation.valid) {
+                showError(modelId, modelValidation.message);
+                isValid = false;
+            } else {
+                clearError(modelId);
+            }
+
+            // Location ID - REQUIRED
+            const locationId = document.getElementById('locationId');
+            const locationValidation = validateSelectField(locationId.value, 'địa điểm');
+            if (!locationValidation.valid) {
+                showError(locationId, locationValidation.message);
+                isValid = false;
+            } else {
+                clearError(locationId);
+            }
+
+            // Daily Rate - REQUIRED
+            const dailyRate = document.getElementById('dailyRate');
+            const dailyRateValidation = validateDailyRate(dailyRate.value);
+            if (!dailyRateValidation.valid) {
+                showError(dailyRate, dailyRateValidation.message);
+                isValid = false;
+            } else {
+                clearError(dailyRate);
+            }
+
+            // Deposit Amount - REQUIRED
+            const depositAmount = document.getElementById('depositAmount');
+            const depositValidation = validateDepositAmount(depositAmount.value, dailyRate.value);
+            if (!depositValidation.valid) {
+                showError(depositAmount, depositValidation.message);
+                isValid = false;
+            } else {
+                clearError(depositAmount);
+            }
+
+            // Status - REQUIRED
+            const status = document.getElementById('status');
+            const statusValidation = validateSelectField(status.value, 'trạng thái');
+            if (!statusValidation.valid) {
+                showError(status, statusValidation.message);
+                isValid = false;
+            } else {
+                clearError(status);
+            }
+
+            // Image Files validation
+            const imageFiles = document.getElementById('imageFiles');
+            if (imageFiles) {
+                const form = document.getElementById('vehicleForm');
+                const isEditForm = form.getAttribute('data-is-edit') === 'true';
+                const imageValidation = validateImageFiles(imageFiles.files, isEditForm);
+                if (!imageValidation.valid) {
+                    showError(imageFiles, imageValidation.message);
+                    isValid = false;
+                } else {
+                    clearError(imageFiles);
+                }
+            }
+
+            return isValid;
+        }
+
+        // Setup real-time validation for vehicle form
+        function setupVehicleFormRealTimeValidation() {
+            const vehicleForm = document.getElementById('vehicleForm');
+            if (!vehicleForm) return;
+
+            // License Plate validation with duplicate check
+            const licensePlate = document.getElementById('licensePlate');
+            if (licensePlate) {
+                // Check if already initialized to prevent duplicate event listeners
+                if (licensePlate.dataset.validationInitialized === 'true') {
+                    console.log('License plate validation already initialized');
+                    return;
+                }
+                licensePlate.dataset.validationInitialized = 'true';
+
+                let licensePlateCheckTimeout;
+
+                // Store original license plate value for edit mode
+                const originalLicensePlate = licensePlate.value.trim().toUpperCase();
+                const isEdit = vehicleForm.getAttribute('data-is-edit') === 'true';
+
+                // Convert to uppercase automatically
+                const handleInput = function() {
+                    this.value = this.value.toUpperCase();
+
+                    clearTimeout(licensePlateCheckTimeout);
+                    clearError(this);
+
+                    const validation = validateLicensePlateFormat(this.value);
+                    if (this.value.trim().length > 0 && !validation.valid) {
+                        return;
+                    }
+
+                    if (validation.valid) {
+                        // Only check duplicate if license plate has changed from original (in edit mode)
+                        // or always check in create mode
+                        const currentValue = this.value.trim();
+                        if (!isEdit || currentValue !== originalLicensePlate) {
+                            licensePlateCheckTimeout = setTimeout(() => {
+                                checkLicensePlateExists(currentValue, licensePlate);
+                            }, 500);
+                        }
+                    }
+                };
+
+                const handleBlur = function() {
+                    clearTimeout(licensePlateCheckTimeout);
+                    const validation = validateLicensePlateFormat(this.value);
+                    if (!validation.valid) {
+                        showError(this, validation.message);
+                    } else {
+                        // Only check duplicate if license plate has changed from original (in edit mode)
+                        // or always check in create mode
+                        const currentValue = this.value.trim();
+                        if (!isEdit || currentValue !== originalLicensePlate) {
+                            checkLicensePlateExists(currentValue, this);
+                        }
+                    }
+                };
+
+                licensePlate.addEventListener('input', handleInput);
+                licensePlate.addEventListener('blur', handleBlur);
+            }
+
+            // Color validation
+            const color = document.getElementById('color');
+            if (color) {
+                color.addEventListener('blur', function() {
+                    const validation = validateColor(this.value);
+                    if (!validation.valid) {
+                        showError(this, validation.message);
+                    } else {
+                        clearError(this);
+                    }
+                });
+
+                color.addEventListener('input', function() {
+                    clearError(this);
+                });
+            }
+
+            // Model ID validation
+            const modelId = document.getElementById('modelId');
+            if (modelId) {
+                modelId.addEventListener('change', function() {
+                    const validation = validateSelectField(this.value, 'mẫu xe');
+                    if (!validation.valid) {
+                        showError(this, validation.message);
+                    } else {
+                        clearError(this);
+                    }
+                });
+            }
+
+            // Location ID validation
+            const locationId = document.getElementById('locationId');
+            if (locationId) {
+                locationId.addEventListener('change', function() {
+                    const validation = validateSelectField(this.value, 'địa điểm');
+                    if (!validation.valid) {
+                        showError(this, validation.message);
+                    } else {
+                        clearError(this);
+                    }
+                });
+            }
+
+            // Daily Rate validation
+            const dailyRate = document.getElementById('dailyRate');
+            if (dailyRate) {
+                dailyRate.addEventListener('blur', function() {
+                    const validation = validateDailyRate(this.value);
+                    if (!validation.valid) {
+                        showError(this, validation.message);
+                    } else {
+                        clearError(this);
+                        // Re-validate deposit when daily rate changes
+                        const depositAmount = document.getElementById('depositAmount');
+                        if (depositAmount && depositAmount.value) {
+                            const depositValidation = validateDepositAmount(depositAmount.value, this.value);
+                            if (!depositValidation.valid) {
+                                showError(depositAmount, depositValidation.message);
+                            } else {
+                                clearError(depositAmount);
+                            }
+                        }
+                    }
+                });
+
+                dailyRate.addEventListener('input', function() {
+                    clearError(this);
+                });
+            }
+
+            // Deposit Amount validation
+            const depositAmount = document.getElementById('depositAmount');
+            if (depositAmount) {
+                depositAmount.addEventListener('blur', function() {
+                    const validation = validateDepositAmount(this.value, dailyRate.value);
+                    if (!validation.valid) {
+                        showError(this, validation.message);
+                    } else {
+                        clearError(this);
+                    }
+                });
+
+                depositAmount.addEventListener('input', function() {
+                    clearError(this);
+                });
+            }
+
+            // Status validation
+            const status = document.getElementById('status');
+            if (status) {
+                status.addEventListener('change', function() {
+                    const validation = validateSelectField(this.value, 'trạng thái');
+                    if (!validation.valid) {
+                        showError(this, validation.message);
+                    } else {
+                        clearError(this);
+                    }
+                });
+            }
+
+            // Image Files validation
+            const imageFiles = document.getElementById('imageFiles');
+            if (imageFiles) {
+                imageFiles.addEventListener('change', function() {
+                    const form = document.getElementById('vehicleForm');
+                    const isEditForm = form.getAttribute('data-is-edit') === 'true';
+                    const validation = validateImageFiles(this.files, isEditForm);
+                    if (!validation.valid) {
+                        showError(this, validation.message);
+                    } else {
+                        clearError(this);
+                    }
+                });
+            }
+        }
+
+        // ============================================
+        // INITIALIZE ON PAGE LOAD
+        // ============================================
+
+        // Flag to prevent multiple initializations
+        let isVehicleFormInitialized = false;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Prevent multiple initializations
+            if (isVehicleFormInitialized) {
+                console.warn('Vehicle form already initialized, skipping...');
+                return;
+            }
+            isVehicleFormInitialized = true;
+
+            console.log('Initializing vehicle form...');
+
+            // Auto-fill deposit amount to 50,000,000 VND when creating new vehicle
+            const form = document.getElementById('vehicleForm');
+            const isEdit = form.getAttribute('data-is-edit') === 'true';
+            const depositAmountInput = document.getElementById('depositAmount');
+            if (!isEdit && depositAmountInput && !depositAmountInput.value) {
+                depositAmountInput.value = '50000000';
+            }
+
+            // Setup real-time validation
+            setupVehicleFormRealTimeValidation();
+
+            // ============================================
+            // DISPLAY CURRENT IMAGES (Edit Mode)
+            // ============================================
+            const currentImagesGrid = document.querySelector('.current-images-grid');
+            if (currentImagesGrid) {
+                const imagesData = currentImagesGrid.getAttribute('data-images');
+                if (imagesData) {
+                    try {
+                        const images = JSON.parse(imagesData);
+                        if (Array.isArray(images) && images.length > 0) {
+                            // Clear fallback image
+                            currentImagesGrid.innerHTML = '';
+
+                            // Display all images
+                            images.forEach((imageUrl, index) => {
+                                const imageItem = document.createElement('div');
+                                imageItem.className = 'current-image-item';
+
+                                const img = document.createElement('img');
+                                img.src = imageUrl.startsWith('/') ? imageUrl : '/images/' + imageUrl;
+                                img.alt = 'Vehicle Image ' + (index + 1);
+                                img.className = 'current-image-preview';
+                                img.onerror = function() {
+                                    this.src = '/images/vehicle-placeholder.jpg';
+                                };
+
+                                const overlay = document.createElement('div');
+                                overlay.className = 'image-overlay';
+
+                                const label = document.createElement('span');
+                                label.className = 'image-label';
+                                label.textContent = 'Ảnh ' + (index + 1);
+
+                                overlay.appendChild(label);
+                                imageItem.appendChild(img);
+                                imageItem.appendChild(overlay);
+                                currentImagesGrid.appendChild(imageItem);
+                            });
+                        }
+                    } catch (e) {
+                        console.error('Error parsing images JSON:', e);
+                        // Keep fallback image if parsing fails
+                    }
+                }
+            }
+
+            // ============================================
+            // IMAGE UPLOAD PREVIEW (New Images)
+            // ============================================
+            const fileInput = document.getElementById('imageFiles');
+            const previewContainer = document.getElementById('imagePreview');
+            const previewGrid = document.getElementById('imagePreviewGrid');
+
+            if (fileInput && previewContainer && previewGrid) {
+                fileInput.addEventListener('change', function(e) {
+                    const files = e.target.files;
+                    previewGrid.innerHTML = '';
+
+                    if (files.length === 0) {
+                        previewContainer.style.display = 'none';
+                        return;
+                    }
+
+                    previewContainer.style.display = 'block';
+
+                    Array.from(files).forEach((file, index) => {
+                        if (file.type.startsWith('image/')) {
+                            const reader = new FileReader();
+
+                            reader.onload = function(e) {
+                                const imageItem = document.createElement('div');
+                                imageItem.className = 'new-image-item';
+
+                                const img = document.createElement('img');
+                                img.src = e.target.result;
+                                img.alt = 'Preview ' + (index + 1);
+                                img.className = 'new-image-preview';
+
+                                const overlay = document.createElement('div');
+                                overlay.className = 'image-overlay';
+
+                                const label = document.createElement('span');
+                                label.className = 'image-label';
+                                label.textContent = 'Ảnh mới ' + (index + 1);
+
+                                // File size
+                                const size = document.createElement('span');
+                                size.className = 'image-size';
+                                size.textContent = (file.size / 1024 / 1024).toFixed(2) + ' MB';
+
+                                overlay.appendChild(label);
+                                overlay.appendChild(size);
+                                imageItem.appendChild(img);
+                                imageItem.appendChild(overlay);
+                                previewGrid.appendChild(imageItem);
+                            };
+
+                            reader.readAsDataURL(file);
+                        }
+                    });
+                });
+            }
+
+            // Form validation on submit
+            const form = document.getElementById('vehicleForm');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    if (!validateVehicleForm()) {
+                        e.preventDefault();
+
+                        // Scroll to first error
+                        const firstError = document.querySelector('.error');
+                        if (firstError) {
+                            firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            firstError.focus();
+                        }
+
+                        return false;
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

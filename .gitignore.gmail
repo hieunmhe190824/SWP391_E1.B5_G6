@@ -1,0 +1,9 @@
+# Thêm vào .gitignore
+
+# Gmail API credentials và tokens
+src/main/resources/credentials.json
+tokens/
+
+# Backup của credentials (nếu có)
+*.json.backup
+credentials*.json

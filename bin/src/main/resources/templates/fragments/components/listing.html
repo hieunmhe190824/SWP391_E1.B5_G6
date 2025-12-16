@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+<!-- ===== LISTING COMPONENTS =====
+     Components cho danh sách và bảng
+     Sử dụng CSS Variables từ variables.css
+     Theme: Black & Blue
+-->
+
+<!-- Filter bar for list pages (vehicles, bookings, contracts, ...) -->
+<form th:fragment="filter-bar(actionUrl, searchName, searchValue, placeholder)"
+      th:action="${actionUrl}"
+      method="get"
+      class="filter-bar">
+    <div class="filter-bar-left">
+        <input type="text"
+               class="form-control filter-search"
+               th:name="${searchName}"
+               th:value="${searchValue}"
+               th:placeholder="${placeholder}" />
+    </div>
+    <div class="filter-bar-right">
+        <button type="submit" class="btn btn-primary">Lọc</button>
+    </div>
+</form>
+
+<!-- Generic table header with dynamic columns -->
+<thead th:fragment="table-header(headers)">
+<tr>
+    <th th:each="h : ${headers}"
+        th:text="${h}">
+        Header
+    </th>
+</tr>
+</thead>
+</body>
+</html>
+
+

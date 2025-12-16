@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang chủ - Thuê xe</title>
+
+    <!-- ===== LINK CSS FILES ===== -->
+    <!-- Thứ tự quan trọng: Variables → Main → Components → Page-specific -->
+
+    <!-- 1. Variables: CSS Variables (màu sắc, spacing...) - SỬA 1 CHỖ, TẤT CẢ THAY ĐỔI -->
+    <link rel="stylesheet" th:href="@{/css/variables.css}">
+
+    <!-- 2. Main: CSS chung cho toàn hệ thống -->
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+
+    <!-- 3. Components: CSS cho các components (buttons, cards, navbar...) -->
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+
+    <!-- 4. Home: CSS riêng cho trang Home -->
+    <link rel="stylesheet" th:href="@{/css/home.css}">
+</head>
+<body>
+    <!-- ===== HEADER - Sử dụng component header từ fragments ===== -->
+    <!-- Component này chứa: logo, menu navigation, login/register -->
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <!-- ===== THÔNG BÁO ĐĂNG XUẤT THÀNH CÔNG (TOAST NOTIFICATION) ===== -->
+    <div th:if="${param.logout}" class="toast-notification" id="logoutToast">
+        <div class="toast-content">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink: 0;">
+                <circle cx="10" cy="10" r="9" stroke="currentColor" stroke-width="2" fill="none"/>
+                <path d="M6 10l3 3 5-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>Bạn đã đăng xuất thành công!</span>
+        </div>
+    </div>
+    <style th:if="${param.logout}">
+        .toast-notification {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(16, 185, 129, 0.1);
+            z-index: 10000;
+            animation: slideInRight 0.3s ease-out;
+        }
+
+        .toast-content {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+    </style>
+    <script th:if="${param.logout}">
+        // Auto hide toast after 3 seconds
+        setTimeout(function() {
+            var toast = document.getElementById('logoutToast');
+            if (toast) {
+                toast.style.animation = 'slideOutRight 0.3s ease-out';
+                setTimeout(function() {
+                    toast.remove();
+                }, 300);
+            }
+        }, 3000);
+    </script>
+
+    <!-- ===== PHẦN 1: HERO - Banner chào mừng ===== -->
+    <section class="hero">
+        <div class="page-container">
+            <h1>Tìm Xe Thuê Dễ Dàng</h1>
+            <p>Hàng trăm xe chất lượng - Giá cả hợp lý - Đặt xe nhanh chóng</p>
+
+            <!-- Form tìm kiếm xe nâng cao - UC04: Browse Vehicles -->
+            <div class="search-box">
+                <form th:action="@{/vehicles}" method="get" class="search-form-home">
+                    <h3 class="search-form-title">Tìm kiếm xe</h3>
+                    
+                    <!-- Form Grid - Horizontal Layout -->
+                    <div class="search-form-grid">
+                        <!-- Keyword Search -->
+                        <div class="form-group">
+                            <label>Tìm theo tên hoặc hãng xe</label>
+                            <input type="text" 
+                                   name="keyword" 
+                                   placeholder="VD: Toyota, Honda, SUV..."
+                                   class="form-control">
+                        </div>
+                        
+                        <!-- Price Filter -->
+                        <div class="form-group">
+                            <label>Mức giá tối đa</label>
+                            <select name="maxPrice" class="form-control">
+                                <option value="">Tất cả mức giá</option>
+                                <option value="500000">&lt; 500K/ngày</option>
+                                <option value="700000">&lt; 700K/ngày</option>
+                                <option value="1000000">&lt; 1M/ngày</option>
+                                <option value="1500000">&lt; 1.5M/ngày</option>
+                                <option value="2000000">&lt; 2M/ngày</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Seats Filter -->
+                        <div class="form-group">
+                            <label>Số chỗ ngồi</label>
+                            <select name="minSeats" class="form-control">
+                                <option value="">Tất cả</option>
+                                <option value="4">4+ chỗ</option>
+                                <option value="5">5+ chỗ</option>
+                                <option value="7">7+ chỗ</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Submit Button -->
+                        <div class="form-group form-group-button">
+                            <label>&nbsp;</label>
+                            <button type="submit" class="btn btn-primary btn-search">
+                                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M8 16C12.4183 16 16 12.4183 16 8C16 3.58172 12.4183 0 8 0C3.58172 0 0 3.58172 0 8C0 12.4183 3.58172 16 8 16Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M18 18L13.65 13.65" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                <span>Tìm Xe Ngay</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Advanced Search Link -->
+                    <div class="advanced-search-link">
+                        <a th:href="@{/vehicles}">
+                            Tìm kiếm nâng cao →
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== PHẦN 2: DANH SÁCH XE - Vehicle Listing ===== -->
+    <!-- Sử dụng component section-dark tái sử dụng với theme Black-Blue -->
+    <section th:if="${vehicles != null and !vehicles.isEmpty()}" class="section-dark" style="min-height: 100vh;">
+        <div class="page-container">
+            <div class="section-dark-header">
+                <h2 class="section-dark-title">Danh Sách Xe</h2>
+                <p class="section-dark-description">Khám phá bộ sưu tập xe đa dạng với giá cả hợp lý</p>
+            </div>
+
+            <!-- Lưới hiển thị các xe sử dụng component tái sử dụng -->
+            <div class="vehicle-grid-modern">
+                <!-- th:each lặp qua từng xe trong danh sách vehicles (tối đa 9 xe) -->
+                <div th:each="vehicle, iterStat : ${vehicles}" th:if="${iterStat.index < 9}">
+                    <div th:replace="~{fragments/components/cards :: vehicle-card-modern(${vehicle})}"></div>
+                </div>
+            </div>
+
+            <!-- Nút xem tất cả xe - Link đến trang danh sách tất cả xe -->
+            <div class="section-dark-footer">
+                <a class="btn btn-primary btn-large btn-icon" th:href="@{/vehicles}">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M10 3.33334C5.39763 3.33334 1.66667 6.66667 1.66667 10C1.66667 13.3333 5.39763 16.6667 10 16.6667C14.6024 16.6667 18.3333 13.3333 18.3333 10C18.3333 6.66667 14.6024 3.33334 10 3.33334Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M10 12.5C11.3807 12.5 12.5 11.3807 12.5 10C12.5 8.61929 11.3807 7.5 10 7.5C8.61929 7.5 7.5 8.61929 7.5 10C7.5 11.3807 8.61929 12.5 10 12.5Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Xem Tất Cả Xe
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== FOOTER - Sử dụng component footer từ fragments ===== -->
+    <!-- Component này chứa: copyright, thông tin liên hệ -->
+    <div th:replace="~{fragments/footer :: footer}"></div>
+
+    <!-- ===== JAVASCRIPT FILES ===== -->
+    <script th:src="@{/js/main.js}"></script>
+    <script th:src="@{/js/validation.js}"></script>
+</body>
+</html>

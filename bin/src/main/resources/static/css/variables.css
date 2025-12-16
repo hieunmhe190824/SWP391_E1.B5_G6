@@ -1,0 +1,91 @@
+/* ===================================================================
+   VARIABLES.CSS - CSS Variables cho toàn hệ thống
+   Sửa màu sắc ở đây sẽ tự động áp dụng cho TOÀN BỘ hệ thống
+   =================================================================== */
+
+:root {
+    /* ===== MÀU CHÍNH - PRIMARY COLORS (Black & Blue Theme) ===== */
+    --color-primary: #3b82f6;           /* Màu xanh dương chính (Blue) */
+    --color-primary-dark: #2563eb;      /* Màu xanh đậm hơn */
+    --color-primary-light: #60a5fa;     /* Màu xanh nhạt hơn */
+
+    --color-secondary: #1f2937;         /* Màu đen xám chính (Dark Gray) */
+    --color-secondary-dark: #111827;    /* Màu đen đậm */
+    --color-secondary-light: #374151;   /* Màu xám nhạt */
+
+    /* ===== MÀU PHỤ - SECONDARY COLORS ===== */
+    --color-background: #f9fafb;        /* Màu nền trang */
+    --color-background-dark: #111827;   /* Màu nền tối */
+    --color-surface: #ffffff;           /* Màu nền card/surface */
+    
+    /* ===== SECTION BACKGROUNDS - Nền cho các section ===== */
+    --section-dark-bg: linear-gradient(135deg, var(--color-secondary-dark) 0%, var(--color-secondary) 50%, var(--color-secondary-dark) 100%);
+    --section-dark-overlay: radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+                             radial-gradient(circle at 80% 70%, rgba(37, 99, 235, 0.1) 0%, transparent 50%);
+
+    --color-text: #1f2937;              /* Màu chữ chính */
+    --color-text-light: #6b7280;        /* Màu chữ nhạt */
+    --color-text-white: #ffffff;        /* Màu chữ trắng */
+
+    /* ===== MÀU TRẠNG THÁI - STATUS COLORS ===== */
+    --color-success: #22c55e;           /* Thành công - Xanh lá */
+    --color-warning: #f59e0b;           /* Cảnh báo - Vàng */
+    --color-error: #ef4444;             /* Lỗi - Đỏ */
+    --color-danger: #ef4444;            /* Nguy hiểm/Xóa - Đỏ (alias của error) */
+    --color-info: #3b82f6;              /* Thông tin - Xanh dương (Blue) */
+
+    /* ===== MÀU BORDER & SHADOW ===== */
+    --color-border: #e5e7eb;            /* Màu viền */
+    --color-border-dark: #374151;       /* Màu viền tối */
+
+    /* ===== SPACING - Khoảng cách ===== */
+    --spacing-xs: 0.25rem;   /* 4px */
+    --spacing-sm: 0.5rem;    /* 8px */
+    --spacing-md: 0.75rem;   /* 12px */
+    --spacing-lg: 1rem;      /* 16px */
+    --spacing-xl: 1.25rem;   /* 20px */
+    --spacing-2xl: 1.5rem;   /* 24px */
+    --spacing-3xl: 2rem;     /* 32px */
+    --spacing-4xl: 2.5rem;   /* 40px */
+    --spacing-5xl: 3rem;     /* 48px */
+    --spacing-6xl: 4rem;     /* 64px */
+
+    /* ===== FONT SIZES - Kích thước chữ ===== */
+    --font-xs: 0.75rem;      /* 12px */
+    --font-sm: 0.875rem;     /* 14px */
+    --font-base: 0.9375rem;  /* 15px */
+    --font-lg: 1rem;         /* 16px */
+    --font-xl: 1.125rem;     /* 18px */
+    --font-2xl: 1.25rem;     /* 20px */
+    --font-3xl: 1.5rem;      /* 24px */
+    --font-4xl: 1.875rem;    /* 30px */
+
+    /* ===== FONT FAMILY - Font chữ ===== */
+    --font-family-base: 'Arial', sans-serif;
+
+    /* ===== BORDER RADIUS - Bo góc ===== */
+    --radius-sm: 0.25rem;    /* 4px */
+    --radius-md: 0.5rem;     /* 8px */
+    --radius-lg: 0.75rem;    /* 12px */
+    --radius-xl: 1rem;       /* 16px */
+    --radius-full: 9999px;   /* Tròn hoàn toàn */
+
+    /* ===== SHADOWS - Đổ bóng ===== */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+
+    /* ===== TRANSITIONS - Hiệu ứng chuyển động ===== */
+    --transition-fast: 150ms ease-in-out;
+    --transition-base: 300ms ease-in-out;
+    --transition-slow: 500ms ease-in-out;
+
+    /* ===== CONTAINER WIDTHS ===== */
+    --container-sm: 640px;
+    --container-md: 768px;
+    --container-lg: 1024px;
+    --container-xl: 1280px;
+    --container-max: 1200px;
+}
+

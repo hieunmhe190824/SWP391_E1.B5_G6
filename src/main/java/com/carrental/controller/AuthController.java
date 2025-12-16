@@ -1,6 +1,7 @@
 package com.carrental.controller;
 
 import com.carrental.model.User;
+import com.carrental.service.EmailService;
 import com.carrental.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +22,9 @@ public class AuthController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private EmailService emailService;
 
     @GetMapping("/login")
     public String loginPage() {
@@ -146,5 +150,52 @@ public class AuthController {
         userService.createUser(user);
 
         return "redirect:/auth/login?registered";
+    }
+    
+    /**
+     * Show forgot password form
+     */
+    @GetMapping("/forgot-password")
+    public String forgotPasswordPage() {
+        return "auth/forgot-password";
+    }
+    
+    /**
+     * Process forgot password request
+     * @param email User email
+     * @param model Model for view
+     * @return Redirect to login page with success message or back to form with error
+     */
+    @PostMapping("/forgot-password")
+    public String forgotPassword(@RequestParam String email, Model model) {
+        try {
+            // Validate email format
+            if (email == null || email.trim().isEmpty()) {
+                model.addAttribute("error", "Vui lòng nhập email");
+                return "auth/forgot-password";
+            }
+            
+            if (!email.matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")) {
+                model.addAttribute("error", "Email không hợp lệ");
+                return "auth/forgot-password";
+            }
+            
+            // Reset password and get new password
+            String newPassword = userService.resetPasswordByEmail(email);
+            
+            // Send email with new password using EmailService (SMTP)
+            emailService.sendPasswordResetEmail(email, newPassword);
+            
+            // Redirect to login with success message
+            return "redirect:/auth/login?passwordReset=true";
+            
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("error", e.getMessage());
+            return "auth/forgot-password";
+        } catch (Exception e) {
+            model.addAttribute("error", "Đã xảy ra lỗi. Vui lòng thử lại sau.");
+            System.err.println("Error in forgot password: " + e.getMessage());
+            return "auth/forgot-password";
+        }
     }
 }

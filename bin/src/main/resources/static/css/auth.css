@@ -1,0 +1,429 @@
+/* ===================================================================
+   AUTH.CSS - Stylesheet cho trang đăng nhập/đăng ký
+   Sử dụng CSS Variables từ variables.css (Black & Blue Theme)
+   Đồng bộ với home.css và main.css
+   =================================================================== */
+
+/* ===== RESET FORM-BODY ===== */
+.form-body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    background: linear-gradient(135deg, var(--color-secondary-dark) 0%, var(--color-primary-dark) 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.form-body::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at top left, rgba(59, 130, 246, 0.2), transparent 50%),
+                radial-gradient(circle at bottom right, rgba(31, 41, 55, 0.3), transparent 50%);
+    pointer-events: none;
+}
+
+.form-body.without-side {
+    margin: 0;
+    padding: 0;
+}
+
+/* ===== AUTH LAYOUT CONTAINER ===== */
+.auth-layout {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    position: relative;
+    z-index: 1;
+    padding: var(--spacing-2xl);
+}
+
+/* ===== FORM CONTAINER - Centered ===== */
+.auth-layout .form-holder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 500px;
+}
+
+/* Form 2 columns cho register page - tăng max-width */
+.auth-layout .form-holder:has(.form-row) {
+    max-width: 800px;
+}
+
+.auth-layout .form-content {
+    width: 100%;
+}
+
+.auth-layout .form-items {
+    background: var(--color-surface);
+    padding: var(--spacing-2xl) var(--spacing-2xl) var(--spacing-xl);
+    border-radius: var(--radius-xl);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: all var(--transition-base);
+    animation: fadeInUp 0.5s ease-out;
+    width: 100%;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.auth-layout .form-items:hover {
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);
+}
+
+/* ===== FORM ICON ===== */
+.form-icon {
+    text-align: center;
+    margin-bottom: var(--spacing-xl);
+}
+
+.form-icon .icon-holder {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 90px;
+    height: 90px;
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+    border-radius: var(--radius-full);
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+    transition: all var(--transition-base);
+    position: relative;
+}
+
+.form-icon .icon-holder::before {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: var(--radius-full);
+    background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+    opacity: 0.2;
+    z-index: -1;
+    filter: blur(8px);
+}
+
+.form-icon .icon-holder:hover {
+    transform: scale(1.05);
+    box-shadow: 0 12px 30px rgba(59, 130, 246, 0.4);
+}
+
+.form-icon .icon-holder svg {
+    width: 50px;
+    height: 50px;
+    stroke: white;
+    transition: transform var(--transition-base);
+}
+
+.form-icon .icon-holder:hover svg {
+    transform: translateX(3px);
+}
+
+/* ===== FORM TITLE ===== */
+.form-title-center {
+    text-align: center;
+    font-size: var(--font-2xl);
+    font-weight: 700;
+    color: var(--color-text);
+    margin-bottom: var(--spacing-xl);
+    line-height: 1.4;
+    letter-spacing: -0.02em;
+}
+
+/* ===== FORM ROW & COLUMNS (2 columns layout) ===== */
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+}
+
+.form-col {
+    display: flex;
+    flex-direction: column;
+}
+
+/* ===== FORM GROUPS ===== */
+.form-group {
+    margin-bottom: var(--spacing-lg);
+    position: relative;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: var(--spacing-sm);
+    font-weight: 600;
+    color: var(--color-text);
+    font-size: var(--font-base);
+    transition: color var(--transition-base);
+}
+
+/* Required field asterisk - Dấu * đỏ cho field bắt buộc */
+.form-group label .required-asterisk {
+    color: var(--color-error);
+    margin-left: 4px;
+    font-weight: 700;
+}
+
+.form-group:focus-within label {
+    color: var(--color-primary);
+}
+
+.form-control {
+    width: 100%;
+    padding: var(--spacing-md) var(--spacing-lg);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-md);
+    font-size: var(--font-base);
+    transition: all var(--transition-base);
+    background-color: var(--color-surface);
+    color: var(--color-text);
+    font-family: inherit;
+}
+
+.form-control:hover {
+    border-color: var(--color-primary-light);
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+    background-color: #ffffff;
+}
+
+.form-control.error {
+    border-color: var(--color-error);
+}
+
+.form-control.error:focus {
+    border-color: var(--color-error);
+    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+}
+
+.form-control::placeholder {
+    color: var(--color-text-light);
+    opacity: 0.7;
+}
+
+/* ===== FORM BUTTON ===== */
+.form-button {
+    margin-top: var(--spacing-xl);
+    margin-bottom: var(--spacing-lg);
+}
+
+.form-button .btn {
+    width: 100%;
+    padding: var(--spacing-md) var(--spacing-lg);
+    font-size: var(--font-lg);
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: none;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.form-button .btn:hover {
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+    transform: translateY(-2px);
+}
+
+.form-button .btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+/* ===== ALERT MESSAGES ===== */
+.alert {
+    padding: var(--spacing-md) var(--spacing-lg);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-lg);
+    border: 1px solid;
+    font-size: var(--font-sm);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    animation: slideIn 0.3s ease-out;
+    transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Fade out animation cho alert */
+.alert.fade-out {
+    opacity: 0;
+    transform: translateY(-10px);
+    margin-bottom: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    overflow: hidden;
+}
+
+/* Success message màu green */
+.alert-success {
+    background-color: #d1fae5;
+    color: #065f46;
+    border-color: var(--color-success);
+}
+
+.alert-error {
+    background-color: #fee2e2;
+    color: #991b1b;
+    border-color: var(--color-error);
+}
+
+/* ===== INLINE ERROR MESSAGE - Hiển thị dưới input ===== */
+.error-message {
+    color: var(--color-error);
+    font-size: var(--font-xs);
+    font-style: italic;
+    margin-top: var(--spacing-xs);
+    display: block;
+    animation: slideIn 0.2s ease-out;
+}
+
+.error-message::before {
+    content: '⚠ ';
+    margin-right: 2px;
+}
+
+.alert-info {
+    background-color: #dbeafe;
+    color: #1e40af;
+    border-color: var(--color-info);
+}
+
+.alert-warning {
+    background-color: #fef3c7;
+    color: #92400e;
+    border-color: var(--color-warning);
+}
+
+/* ===== LINK STYLES ===== */
+.text-center {
+    text-align: center;
+    margin-top: var(--spacing-xl);
+    padding-top: var(--spacing-lg);
+    border-top: 1px solid var(--color-border);
+}
+
+.text-center a {
+    color: var(--color-primary);
+    text-decoration: none;
+    font-weight: 600;
+    transition: all var(--transition-base);
+    position: relative;
+    padding: 0 2px;
+}
+
+.text-center a::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background-color: var(--color-primary);
+    transition: width var(--transition-base);
+}
+
+.text-center a:hover {
+    color: var(--color-primary-dark);
+}
+
+.text-center a:hover::after {
+    width: 100%;
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 992px) {
+    .auth-layout {
+        padding: var(--spacing-xl);
+    }
+
+    .auth-layout .form-holder {
+        max-width: 450px;
+    }
+}
+
+@media (max-width: 768px) {
+    .auth-layout {
+        padding: var(--spacing-lg);
+    }
+
+    .auth-layout .form-holder {
+        max-width: 100%;
+    }
+
+    .auth-layout .form-holder.register-form {
+        max-width: 100%;
+    }
+
+    /* Chuyển form 2 cột thành 1 cột trên mobile */
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    .form-title-center {
+        font-size: var(--font-xl);
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .auth-layout .form-items {
+        padding: var(--spacing-lg);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .form-icon {
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .form-icon .icon-holder {
+        width: 70px;
+        height: 70px;
+    }
+
+    .form-icon .icon-holder img {
+        width: 40px;
+        height: 40px;
+    }
+
+    .form-group {
+        margin-bottom: var(--spacing-md);
+    }
+
+    .form-button {
+        margin-top: var(--spacing-lg);
+    }
+}
+
+@media (max-width: 480px) {
+    .auth-layout .form-items {
+        padding: var(--spacing-md);
+        border-radius: var(--radius-lg);
+    }
+
+    .form-title-center {
+        font-size: var(--font-lg);
+    }
+}
+

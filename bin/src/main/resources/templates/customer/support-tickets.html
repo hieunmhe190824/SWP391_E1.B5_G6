@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yêu Cầu Hỗ Trợ Của Tôi - Car Rental System</title>
+    <link rel="stylesheet" th:href="@{/css/variables.css}">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+    <style>
+        .support-tickets-page {
+            padding: 2rem 0;
+            background: var(--section-dark-bg);
+            min-height: calc(100vh - 200px);
+            position: relative;
+        }
+
+        .support-tickets-page::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent 0%, var(--color-primary) 50%, transparent 100%);
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+        }
+
+        .support-tickets-page::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--section-dark-overlay);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .support-tickets-page > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .page-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        .tickets-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            color: var(--color-text-white);
+        }
+
+        .page-subtitle {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .filter-section {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .ticket-card {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: all 0.2s;
+        }
+
+        .ticket-card:hover {
+            border-color: var(--color-primary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .ticket-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1rem;
+        }
+
+        .ticket-number {
+            font-size: 0.9rem;
+            color: var(--color-primary);
+            font-weight: 600;
+        }
+
+        .ticket-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 0.5rem 0;
+        }
+
+        .ticket-category {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            background: #e0e7ff;
+            color: #4338ca;
+        }
+
+        .ticket-meta {
+            display: flex;
+            gap: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--color-text-secondary);
+            margin-top: 1rem;
+        }
+
+        .status-badge {
+            padding: 0.35rem 0.85rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .status-open {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status-in_progress {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-resolved {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-closed {
+            background: #e5e7eb;
+            color: #374151;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <main class="support-tickets-page">
+        <div class="page-container">
+        <!-- Page Header -->
+        <div class="tickets-header">
+            <div>
+                <h1 class="page-title">Yêu Cầu Hỗ Trợ Của Tôi</h1>
+                <p class="page-subtitle">Quản lý các yêu cầu hỗ trợ của bạn</p>
+            </div>
+            <a th:href="@{/customer/support/create}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Tạo yêu cầu mới
+            </a>
+        </div>
+
+        <!-- Messages -->
+        <div th:if="${success}" class="alert alert-success" style="margin-bottom: 1.5rem;">
+            <span th:text="${success}">Success message</span>
+        </div>
+        <div th:if="${error}" class="alert alert-error" style="margin-bottom: 1.5rem;">
+            <span th:text="${error}">Error message</span>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="filter-section">
+            <select id="statusFilter" class="form-control" style="max-width: 200px;" onchange="filterByStatus()">
+                <option value="">Tất cả trạng thái</option>
+                <option th:each="status : ${statuses}" th:value="${status}"
+                    th:text="${status == T(com.carrental.model.SupportTicket$TicketStatus).OPEN ? 'Mở' :
+                                  status == T(com.carrental.model.SupportTicket$TicketStatus).IN_PROGRESS ? 'Đang xử lý' :
+                                  status == T(com.carrental.model.SupportTicket$TicketStatus).RESOLVED ? 'Đã giải quyết' : 'Đã đóng'}"
+                    th:selected="${status.toString() == selectedStatus}">
+                    Status
+                </option>
+            </select>
+        </div>
+
+        <!-- Tickets List -->
+        <div th:if="${tickets != null and !tickets.isEmpty()}">
+            <div th:each="ticket : ${tickets}" class="ticket-card">
+                <div class="ticket-header">
+                    <div style="flex: 1;">
+                        <div class="ticket-number" th:text="${ticket.ticketNumber}">TK-2025-0001</div>
+                        <h3 class="ticket-title" th:text="${ticket.subject}">Ticket Subject</h3>
+                        <span class="ticket-category"
+                            th:text="${ticket.category == T(com.carrental.model.SupportTicket$Category).BOOKING ? 'Đặt xe' :
+                                                                ticket.category == T(com.carrental.model.SupportTicket$Category).PAYMENT ? 'Thanh toán' :
+                                                                ticket.category == T(com.carrental.model.SupportTicket$Category).VEHICLE ? 'Xe' : 'Khác'}">
+                            Category
+                        </span>
+                    </div>
+                    <span class="status-badge" th:classappend="${'status-' + ticket.status.toString().toLowerCase()}"
+                        th:text="${ticket.status == T(com.carrental.model.SupportTicket$TicketStatus).OPEN ? 'Mở' :
+                                    ticket.status == T(com.carrental.model.SupportTicket$TicketStatus).IN_PROGRESS ? 'Đang xử lý' :
+                                    ticket.status == T(com.carrental.model.SupportTicket$TicketStatus).RESOLVED ? 'Đã giải quyết' : 'Đã đóng'}">
+                        Status
+                    </span>
+                </div>
+
+                <p style="color: var(--color-text-secondary); margin: 0.5rem 0;"
+                    th:text="${#strings.abbreviate(ticket.description, 150)}">
+                    Ticket description...
+                </p>
+
+                <div class="ticket-meta">
+                    <span><i class="far fa-clock"></i> Tạo lúc: <span
+                            th:text="${#temporals.format(ticket.createdAt, 'dd/MM/yyyy HH:mm')}">Date</span></span>
+                    <span th:if="${ticket.assignedTo != null}">
+                        <i class="fas fa-user"></i> Phụ trách: <span
+                            th:text="${ticket.assignedTo.fullName}">Staff</span>
+                    </span>
+                </div>
+
+                <div style="margin-top: 1rem;">
+                    <a th:href="@{/customer/support/tickets/{id}(id=${ticket.id})}" class="btn btn-sm btn-primary">
+                        Xem chi tiết
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div th:if="${tickets == null or tickets.isEmpty()}" class="card" style="padding: 3rem; text-align: center;">
+            <i class="fas fa-inbox"
+                style="font-size: 4rem; color: var(--color-text-secondary); margin-bottom: 1rem;"></i>
+            <h3 style="margin-bottom: 0.5rem;">Chưa có yêu cầu hỗ trợ</h3>
+            <p style="color: var(--color-text-secondary); margin-bottom: 1.5rem;">
+                Bạn chưa tạo yêu cầu hỗ trợ nào. Tạo yêu cầu mới nếu bạn cần giúp đỡ.
+            </p>
+            <a th:href="@{/customer/support/create}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Tạo yêu cầu mới
+            </a>
+        </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <div th:replace="~{fragments/footer :: footer}"></div>
+
+    <script th:src="@{/js/main.js}"></script>
+    <script>
+        function filterByStatus() {
+            const status = document.getElementById('statusFilter').value;
+            if (status) {
+                window.location.href = '/customer/support/tickets?status=' + status;
+            } else {
+                window.location.href = '/customer/support/tickets';
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi Tiết Đơn Đặt Xe - Car Rental System</title>
+    <!-- CSS Variables - Theme Black & Blue -->
+    <link rel="stylesheet" th:href="@{/css/variables.css}">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+    <style>
+        .booking-detail-page {
+            padding: 2rem 0;
+            background: var(--section-dark-bg);
+            min-height: calc(100vh - 200px);
+            position: relative;
+        }
+
+        /* Top border gradient */
+        .booking-detail-page::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent 0%, var(--color-primary) 50%, transparent 100%);
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+        }
+
+        /* Overlay gradient */
+        .booking-detail-page::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--section-dark-overlay);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .booking-detail-page > * {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .page-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding: var(--spacing-xl) var(--spacing-2xl);
+            background: rgba(31, 41, 55, 0.5);
+            border-radius: var(--radius-xl);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .header-left {
+            flex: 1;
+        }
+        
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--color-text-white);
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+        }
+        
+        .page-subtitle {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.875rem;
+        }
+        
+        .booking-status {
+            padding: 0.5rem 1rem;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-pending {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+        }
+        
+        .status-approved {
+            background: rgba(34, 197, 94, 0.1);
+            color: #22c55e;
+        }
+        
+        .status-rejected {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+        
+        .status-cancelled {
+            background: rgba(107, 114, 128, 0.1);
+            color: #6b7280;
+        }
+        
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        @media (max-width: 968px) {
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .detail-card {
+            background: rgba(31, 41, 55, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            backdrop-filter: blur(10px);
+        }
+        
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--color-text-white);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--color-primary);
+            text-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+        }
+        
+        .vehicle-info {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        @media (max-width: 768px) {
+            .vehicle-info {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .vehicle-image {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        
+        .info-row {
+            display: grid;
+            grid-template-columns: 150px 1fr;
+            gap: 1rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        
+        .info-label {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.875rem;
+        }
+        
+        .info-value {
+            color: var(--color-text-white);
+            font-weight: 500;
+        }
+        
+        .documents-grid {
+            display: grid;
+            gap: 1rem;
+        }
+        
+        .document-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: rgba(17, 24, 39, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .document-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--color-primary);
+            color: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        
+        .document-info {
+            flex: 1;
+        }
+        
+        .document-type {
+            font-weight: 600;
+            color: var(--color-text-white);
+            margin-bottom: 0.25rem;
+        }
+
+        .document-number {
+            font-size: 0.875rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .cost-summary {
+            background: rgba(17, 24, 39, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 1.5rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .cost-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            color: var(--color-text-white);
+        }
+
+        .cost-total {
+            border-top: 2px solid rgba(255, 255, 255, 0.1);
+            margin-top: 0.5rem;
+            padding-top: 1rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--color-primary);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .action-buttons .btn {
+            min-width: 150px;
+            padding: 1rem 1.5rem;
+            font-weight: 600;
+            text-align: center;
+            justify-content: center;
+        }
+
+        .action-buttons .btn-secondary {
+            background: transparent;
+            color: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .action-buttons .btn-secondary:hover {
+            border-color: var(--color-primary);
+            color: var(--color-primary);
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .action-buttons .btn-danger {
+            background: transparent;
+            color: #ef4444;
+            border: 1px solid #ef4444;
+        }
+
+        .action-buttons .btn-danger:hover {
+            background: #ef4444;
+            color: white;
+        }
+
+        /* Alert Messages - Dark Theme */
+        .alert {
+            backdrop-filter: blur(10px);
+            border-radius: var(--radius-lg);
+            padding: 1rem 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .alert-success {
+            background: rgba(34, 197, 94, 0.15) !important;
+            border: 1px solid rgba(34, 197, 94, 0.3) !important;
+            color: #86efac !important;
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.15) !important;
+            border: 1px solid rgba(239, 68, 68, 0.3) !important;
+            color: #fca5a5 !important;
+        }
+
+        .alert-info {
+            background: rgba(59, 130, 246, 0.15) !important;
+            border: 1px solid rgba(59, 130, 246, 0.3) !important;
+            color: #93c5fd !important;
+        }
+
+        .alert-warning {
+            background: rgba(245, 158, 11, 0.15) !important;
+            border: 1px solid rgba(245, 158, 11, 0.3) !important;
+            color: #fcd34d !important;
+        }
+
+        /* Cancel Booking Modal */
+        .cancel-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cancel-modal.active {
+            display: flex;
+        }
+
+        .cancel-modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+        }
+
+        .cancel-modal-content {
+            position: relative;
+            background: rgba(31, 41, 55, 0.98);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            max-width: 480px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px) scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .cancel-modal-header {
+            padding: 2rem 2rem 1rem;
+            text-align: center;
+        }
+
+        .cancel-modal-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            animation: iconPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes iconPulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        .cancel-modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--color-text-white);
+            margin: 0;
+        }
+
+        .cancel-modal-body {
+            padding: 0 2rem 2rem;
+            text-align: center;
+        }
+
+        .cancel-modal-message {
+            font-size: 1.125rem;
+            color: var(--color-text-white);
+            margin: 0 0 0.5rem 0;
+        }
+
+        .cancel-modal-submessage {
+            font-size: 0.875rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin: 0;
+        }
+
+        .cancel-modal-footer {
+            padding: 1.5rem 2rem;
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-modal-cancel,
+        .btn-modal-confirm {
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            min-width: 140px;
+        }
+
+        .btn-modal-cancel {
+            background: rgba(107, 114, 128, 0.2);
+            color: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-modal-cancel:hover {
+            background: rgba(107, 114, 128, 0.3);
+            color: white;
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-modal-confirm {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-modal-confirm:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+        }
+
+        @media (max-width: 640px) {
+            .cancel-modal-content {
+                width: 95%;
+            }
+
+            .cancel-modal-footer {
+                flex-direction: column;
+            }
+
+            .btn-modal-cancel,
+            .btn-modal-confirm {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <!-- Main Content -->
+    <main class="booking-detail-page">
+        <div class="page-container">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div class="header-left">
+                    <h1 class="page-title" th:text="'Đơn đặt xe #' + ${booking.id}">Booking #1</h1>
+                    <p class="page-subtitle" th:text="'Ngày tạo: ' + ${#temporals.format(booking.createdAt, 'dd/MM/yyyy HH:mm')}">
+                        Created Date
+                    </p>
+                </div>
+                <span class="booking-status"
+                      th:classappend="${'status-' + booking.status.name().toLowerCase()}"
+                      th:text="${booking.status.value}">
+                    Status
+                </span>
+            </div>
+
+            <!-- Messages -->
+            <div th:if="${successMessage}" class="alert alert-success" style="margin-bottom: 1.5rem;">
+                <span th:text="${successMessage}">Success message</span>
+            </div>
+
+            <div th:if="${errorMessage}" class="alert alert-error" style="margin-bottom: 1.5rem;">
+                <span th:text="${errorMessage}">Error message</span>
+            </div>
+
+            <!-- Detail Grid -->
+            <div class="detail-grid">
+                <!-- Left Column: Booking Details -->
+                <div>
+                    <!-- Vehicle Information -->
+                    <div class="detail-card">
+                        <h2 class="card-title">Thông tin xe</h2>
+
+                        <div class="vehicle-info">
+                            <img th:src="${booking.vehicle.firstImageUrl}"
+                                 th:alt="${booking.vehicle.model.brand.brandName + ' ' + booking.vehicle.model.modelName}"
+                                 class="vehicle-image">
+
+                            <div>
+                                <div class="info-row">
+                                    <span class="info-label">Tên xe:</span>
+                                    <span class="info-value"
+                                          th:text="${booking.vehicle.model.brand.brandName + ' ' + booking.vehicle.model.modelName}">
+                                        Vehicle Name
+                                    </span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Biển số:</span>
+                                    <span class="info-value" th:text="${booking.vehicle.licensePlate}">License Plate</span>
+                                </div>
+                                <div class="info-row">
+                                    <span class="info-label">Năm sản xuất:</span>
+                                    <span class="info-value" th:text="${booking.vehicle.model.year}">Year</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Booking Information -->
+                    <div class="detail-card" style="margin-top: 1.5rem;">
+                        <h2 class="card-title">Thông tin đặt xe</h2>
+
+                        <div class="info-row">
+                            <span class="info-label">Ngày nhận xe:</span>
+                            <span class="info-value" th:text="${#temporals.format(booking.startDate, 'dd/MM/yyyy HH:mm')}">
+                                Start Date
+                            </span>
+                        </div>
+
+                        <div class="info-row">
+                            <span class="info-label">Ngày trả xe:</span>
+                            <span class="info-value" th:text="${#temporals.format(booking.endDate, 'dd/MM/yyyy HH:mm')}">
+                                End Date
+                            </span>
+                        </div>
+
+                        <div class="info-row">
+                            <span class="info-label">Số ngày thuê:</span>
+                            <span class="info-value" th:text="${booking.totalDays} + ' ngày'">Total Days</span>
+                        </div>
+
+                        <div class="info-row">
+                            <span class="info-label">Điểm nhận xe:</span>
+                            <span class="info-value">
+                                <div th:text="${booking.pickupLocation.locationName}">Pickup Location</div>
+                                <div style="font-size: 0.875rem; color: var(--color-text-secondary); margin-top: 0.25rem;"
+                                     th:text="${booking.pickupLocation.address}">
+                                    Address
+                                </div>
+                            </span>
+                        </div>
+
+                        <div class="info-row">
+                            <span class="info-label">Điểm trả xe:</span>
+                            <span class="info-value">
+                                <div th:text="${booking.returnLocation.locationName}">Return Location</div>
+                                <div style="font-size: 0.875rem; color: var(--color-text-secondary); margin-top: 0.25rem;"
+                                     th:text="${booking.returnLocation.address}">
+                                    Address
+                                </div>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Documents -->
+                    <div class="detail-card" style="margin-top: 1.5rem;">
+                        <h2 class="card-title">Giấy tờ đính kèm</h2>
+
+                        <div class="documents-grid" th:if="${documents != null and !documents.isEmpty()}">
+                            <div class="document-item" th:each="doc : ${documents}">
+                                <div class="document-icon">📄</div>
+                                <div class="document-info">
+                                    <div class="document-type"
+                                         th:text="${doc.documentType.name() == 'ID_Card' ? 'CMND/CCCD' : 'Bằng lái xe'}">
+                                        Document Type
+                                    </div>
+                                    <div class="document-number" th:text="'Số: ' + ${doc.documentNumber}">
+                                        Document Number
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div th:if="${documents == null or documents.isEmpty()}"
+                             class="alert alert-info">
+                            Chưa có giấy tờ đính kèm
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Cost Summary -->
+                <div>
+                    <div class="detail-card">
+                        <h2 class="card-title">Chi phí</h2>
+
+                        <div class="cost-summary">
+                            <div class="cost-row">
+                                <span>Giá thuê / ngày</span>
+                                <span th:text="${#numbers.formatDecimal(booking.vehicle.dailyRate, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                                    Daily Rate
+                                </span>
+                            </div>
+
+                            <div class="cost-row">
+                                <span>Số ngày thuê</span>
+                                <span th:text="${booking.totalDays} + ' ngày'">Total Days</span>
+                            </div>
+
+                            <div class="cost-row">
+                                <span>Tổng tiền thuê</span>
+                                <span th:text="${#numbers.formatDecimal(booking.vehicle.dailyRate * booking.totalDays, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                                    Rental Fee
+                                </span>
+                            </div>
+
+                            <div class="cost-row">
+                                <span>Tiền cọc</span>
+                                <span th:text="${#numbers.formatDecimal(booking.vehicle.depositAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                                    Deposit
+                                </span>
+                            </div>
+
+                            <div class="cost-row cost-total">
+                                <span>Tổng cộng</span>
+                                <span th:text="${#numbers.formatDecimal(booking.vehicle.dailyRate * booking.totalDays + booking.vehicle.depositAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                                    Total Amount
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-buttons">
+                <a th:href="@{/bookings/my-bookings}" class="btn btn-secondary">
+                    ← Quay lại
+                </a>
+
+                <!-- Show cancel button only for Pending bookings -->
+                <form th:if="${booking.status.name() == 'PENDING'}"
+                      th:action="@{/bookings/{id}/cancel(id=${booking.id})}"
+                      method="post"
+                      class="cancel-booking-form"
+                      style="display: inline;">
+                    <button type="button" class="btn btn-danger" onclick="showCancelModal(this)">Hủy đơn</button>
+                    <button type="submit" class="cancel-submit-hidden" style="display: none;">Submit</button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <!-- Cancel Booking Modal -->
+    <div id="cancelBookingModal" class="cancel-modal">
+        <div class="cancel-modal-overlay"></div>
+        <div class="cancel-modal-content">
+            <div class="cancel-modal-header">
+                <div class="cancel-modal-icon">⚠️</div>
+                <h3 class="cancel-modal-title">Xác nhận hủy đơn</h3>
+            </div>
+            <div class="cancel-modal-body">
+                <p class="cancel-modal-message">Bạn có chắc muốn hủy đơn đặt xe này?</p>
+                <p class="cancel-modal-submessage">Hành động này không thể hoàn tác.</p>
+            </div>
+            <div class="cancel-modal-footer">
+                <button type="button" class="btn-modal-cancel" onclick="closeCancelModal()">Không, giữ lại</button>
+                <button type="button" class="btn-modal-confirm" onclick="confirmCancelBooking()">Có, hủy đơn</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div th:replace="~{fragments/footer :: footer}"></div>
+
+    <!-- JavaScript Files -->
+    <script th:src="@{/js/main.js}"></script>
+    <script th:src="@{/js/validation.js}"></script>
+    
+    <script>
+        // Simple Cancel Booking Modal for the cancel form on detail page
+        let currentCancelForm = null;
+
+        function showCancelModal(button) {
+            currentCancelForm = button.closest('form');
+            const modal = document.getElementById('cancelBookingModal');
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeCancelModal() {
+            const modal = document.getElementById('cancelBookingModal');
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+            currentCancelForm = null;
+        }
+
+        function confirmCancelBooking() {
+            if (currentCancelForm) {
+                const submitBtn = currentCancelForm.querySelector('.cancel-submit-hidden');
+                if (submitBtn) {
+                    closeCancelModal();
+                    submitBtn.click(); // Trigger native submit
+                } else {
+                    console.error('Hidden submit button not found!');
+                }
+            } else {
+                console.error('Form not found!');
+            }
+        }
+
+        // Close modal on overlay click and ESC key + auto hide alerts
+        document.addEventListener('DOMContentLoaded', function () {
+            const overlay = document.querySelector('.cancel-modal-overlay');
+            if (overlay) {
+                overlay.addEventListener('click', closeCancelModal);
+            }
+
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') {
+                    const modal = document.getElementById('cancelBookingModal');
+                    if (modal && modal.classList.contains('active')) {
+                        closeCancelModal();
+                    }
+                }
+            });
+
+            const successAlert = document.querySelector('.alert-success');
+            const errorAlert = document.querySelector('.alert-error');
+
+            function hideAlert(alert) {
+                if (alert) {
+                    setTimeout(function () {
+                        alert.style.transition = 'opacity 0.5s ease-out, transform 0.5s ease-out';
+                        alert.style.opacity = '0';
+                        alert.style.transform = 'translateY(-10px)';
+                        setTimeout(function () {
+                            alert.style.display = 'none';
+                        }, 500);
+                    }, 3000);
+                }
+            }
+
+            hideAlert(successAlert);
+            hideAlert(errorAlert);
+        });
+    </script>
+</body>
+</html>
+

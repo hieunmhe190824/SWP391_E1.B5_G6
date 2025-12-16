@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thanh Toán Cọc - Car Rental System</title>
+    <link rel="stylesheet" th:href="@{/css/variables.css}">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+    <style>
+        /* Force consistent font stack with staff pages */
+        body,
+        .pay-page,
+        .card,
+        .title,
+        .subtitle,
+        .detail-grid,
+        .btn-primary,
+        .btn-outline {
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+
+        .pay-page {
+            padding: 2rem 0;
+            background: var(--section-dark-bg);
+            min-height: calc(100vh - 200px);
+            position: relative;
+        }
+        .pay-page::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent 0%, var(--color-primary) 50%, transparent 100%);
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+        }
+        .pay-page::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: var(--section-dark-overlay);
+            pointer-events: none;
+            z-index: 0;
+        }
+        .pay-page > * { position: relative; z-index: 1; }
+
+        .container { max-width: 1000px; margin: 0 auto; padding: 0 1rem; }
+        .card {
+            background: rgba(31, 41, 55, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            padding: 1.5rem;
+            backdrop-filter: blur(10px);
+        }
+        .card + .card { margin-top: 1.25rem; }
+
+        .title {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--color-text-white);
+            margin-bottom: 0.5rem;
+        }
+        .subtitle {
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 1rem;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem 1.5rem;
+        }
+        .label { color: rgba(255,255,255,0.6); font-size: 0.9rem; }
+        .value { color: var(--color-text-white); font-weight: 700; }
+        .price { color: var(--color-primary); font-size: 1.2rem; }
+
+        .btn-primary {
+            display: inline-block;
+            padding: 0.75rem 1.6rem;
+            border-radius: 10px;
+            font-weight: 800;
+            background: var(--color-primary);
+            color: white;
+            border: 1px solid var(--color-primary);
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        .btn-primary:hover { background: var(--color-primary-dark); border-color: var(--color-primary-dark); transform: translateY(-2px); }
+
+        @media (max-width: 900px) {
+            .detail-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+
+<main class="pay-page">
+    <div class="container">
+        <div class="card">
+            <div class="title">Thanh toán đặt cọc</div>
+            <div class="subtitle">Hợp đồng <span th:text="${contract.contractNumber}">CTR-XXXX</span></div>
+            <div class="detail-grid">
+                <div>
+                    <div class="label">Xe</div>
+                    <div class="value" th:text="${contract.vehicle.model.brand.brandName + ' ' + contract.vehicle.model.modelName}">-</div>
+                </div>
+                <div>
+                    <div class="label">Biển số</div>
+                    <div class="value" th:text="${contract.vehicle.licensePlate}">-</div>
+                </div>
+                <div>
+                    <div class="label">Thời gian thuê</div>
+                    <div class="value">
+                        <span th:text="${#temporals.format(contract.startDate, 'dd/MM/yyyy HH:mm')}">-</span> →
+                        <span th:text="${#temporals.format(contract.endDate, 'dd/MM/yyyy HH:mm')}">-</span>
+                        (<span th:text="${contract.totalDays}">0</span> ngày)
+                    </div>
+                </div>
+                <div>
+                    <div class="label">Tiền thuê</div>
+                    <div class="value" th:text="${#numbers.formatDecimal(contract.totalRentalFee, 0, 'COMMA', 0, 'POINT')} + ' VND'">-</div>
+                </div>
+                <div>
+                    <div class="label">Tiền đặt cọc cần thanh toán</div>
+                    <div class="value price" th:text="${#numbers.formatDecimal(contract.depositAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">-</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="title" style="margin-bottom: 0.5rem;">Thanh toán qua VNPay</div>
+            <div class="label" style="margin-bottom: 1rem;">Nhấn nút bên dưới để chuyển đến cổng thanh toán VNPay.</div>
+            <form th:action="@{/contracts/{id}/pay-deposit(id=${contract.id})}" method="post">
+                <button type="submit" class="btn-primary">Thanh toán cọc</button>
+                <a th:href="@{/contracts/{id}(id=${contract.id})}" class="btn-outline" style="margin-left: 0.5rem; border-color: rgba(255,255,255,0.2); color: rgba(255,255,255,0.9); text-decoration: none;">Hủy</a>
+            </form>
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>
+

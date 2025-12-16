@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thanh Toán Bill - Car Rental System</title>
+    <link rel="stylesheet" th:href="@{/css/variables.css}">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+    <style>
+        .pay-bill-page {
+            padding: 2rem 0;
+            background: var(--section-dark-bg);
+            min-height: calc(100vh - 200px);
+        }
+
+        .page-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .panel {
+            background: rgba(31, 41, 55, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .panel-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--color-text-white);
+            margin-bottom: 1rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+        }
+
+        .label {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+        }
+
+        .value {
+            color: var(--color-text-white);
+            font-weight: 600;
+        }
+
+        .amount {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--color-primary);
+        }
+
+        .actions {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        .btn-primary {
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        .btn-ghost {
+            padding: 0.75rem 1.5rem;
+            background: rgba(255, 255, 255, 0.06);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            text-decoration: none;
+        }
+
+        .fee-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.4rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .fee-row:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div
+        th:replace="~{fragments/layout :: layout(title='Thanh Toán Bill - Car Rental System', content=~{::main}, extraCss=~{})}">
+        <main class="pay-bill-page">
+            <div class="page-container">
+                <div class="panel">
+                    <div class="panel-title">Thông tin hóa đơn</div>
+                    <div class="grid">
+                        <div>
+                            <div class="label">Mã hợp đồng</div>
+                            <div class="value" th:text="${contract.contractNumber}">CTR-0001</div>
+                        </div>
+                        <div>
+                            <div class="label">Mã hóa đơn</div>
+                            <div class="value" th:text="${billPayment.billNumber}">BILL-XXXX</div>
+                        </div>
+                        <div>
+                            <div class="label">Trạng thái</div>
+                            <div class="value" th:text="${billPayment.status}">PENDING</div>
+                        </div>
+                        <div>
+                            <div class="label">Số tiền cần thanh toán</div>
+                            <div class="amount"
+                                th:text="${#numbers.formatDecimal(billPayment.amountDue, 0, 'COMMA', 0, 'POINT')} + ' VND'">
+                                0 VND</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-title">Chi tiết phí</div>
+                    <div class="fee-row">
+                        <span class="label">Tiền thuê ban đầu</span>
+                        <span class="value"
+                            th:text="${#numbers.formatDecimal(billPayment.originalRentalFee, 0, 'COMMA', 0, 'POINT')} + ' VND'">0
+                            VND</span>
+                    </div>
+                    <div class="fee-row">
+                        <span class="label">Điều chỉnh tiền thuê</span>
+                        <span class="value"
+                            th:text="${#numbers.formatDecimal(billPayment.rentalAdjustment, 0, 'COMMA', 0, 'POINT')} + ' VND'">0
+                            VND</span>
+                    </div>
+                    <div class="fee-row">
+                        <span class="label">Tiền thuê thực tế</span>
+                        <span class="value"
+                            th:text="${#numbers.formatDecimal(billPayment.actualRentalFee, 0, 'COMMA', 0, 'POINT')} + ' VND'">0
+                            VND</span>
+                    </div>
+                    <div class="fee-row">
+                        <span class="label">Phí trễ hạn</span>
+                        <span class="value"
+                            th:text="${#numbers.formatDecimal(billPayment.lateFee, 0, 'COMMA', 0, 'POINT')} + ' VND'">0
+                            VND</span>
+                    </div>
+                    <div class="fee-row">
+                        <span class="label">Phí hư hỏng</span>
+                        <span class="value"
+                            th:text="${#numbers.formatDecimal(billPayment.damageFee, 0, 'COMMA', 0, 'POINT')} + ' VND'">0
+                            VND</span>
+                    </div>
+                    <div class="fee-row">
+                        <span class="label">Phí trả khác địa điểm</span>
+                        <span class="value"
+                            th:text="${#numbers.formatDecimal(billPayment.oneWayFee, 0, 'COMMA', 0, 'POINT')} + ' VND'">0
+                            VND</span>
+                    </div>
+                    <div class="fee-row">
+                        <span class="label">Tổng phí phát sinh</span>
+                        <span class="value"
+                            th:text="${#numbers.formatDecimal(billPayment.totalAdditionalFees, 0, 'COMMA', 0, 'POINT')} + ' VND'">0
+                            VND</span>
+                    </div>
+                    <div class="fee-row">
+                        <span class="label">Tiền cọc đang giữ</span>
+                        <span class="value"
+                            th:text="${#numbers.formatDecimal(billPayment.depositAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">0
+                            VND</span>
+                    </div>
+                    <div class="fee-row" style="font-weight:700;">
+                        <span class="label">Tổng cần thanh toán</span>
+                        <span class="value"
+                            th:text="${#numbers.formatDecimal(billPayment.amount, 0, 'COMMA', 0, 'POINT')} + ' VND'">0
+                            VND</span>
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <form th:action="@{/contracts/{id}/pay-bill(id=${contract.id})}" method="post">
+                        <button type="submit" class="btn-primary">Thanh toán qua VNPay</button>
+                    </form>
+                    <a th:href="@{/contracts/{id}(id=${contract.id})}" class="btn-ghost">Xem hợp đồng</a>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <!-- ===== NAVIGATION COMPONENTS =====
+         Navigation bars cho các vai trò khác nhau
+         Theme: Black & Blue từ variables.css
+         - Background: Black (#111827)
+         - Hover: Blue (#3b82f6)
+    -->
+
+    <!-- Customer Navigation -->
+    <nav th:fragment="customer-nav" class="navbar">
+        <a th:href="@{/}" class="navbar-brand">Car Rental</a>
+        <ul class="navbar-nav">
+            <li><a th:href="@{/}">Home</a></li>
+            <li><a th:href="@{/vehicles}">Browse Vehicles</a></li>
+            <li><a th:href="@{/bookings/my-bookings}">My Bookings</a></li>
+            <li><a th:href="@{/support/tickets}">Support</a></li>
+        </ul>
+    </nav>
+
+    <!-- Staff Navigation -->
+    <nav th:fragment="staff-nav" class="navbar">
+        <a th:href="@{/staff/dashboard}" class="navbar-brand">Staff Portal</a>
+        <ul class="navbar-nav">
+            <li><a th:href="@{/staff/dashboard}">Dashboard</a></li>
+            <li><a th:href="@{/staff/bookings}">Bookings</a></li>
+            <li><a th:href="@{/handovers/create}">Handover</a></li>
+            <li><a th:href="@{/staff/support}">Support</a></li>
+        </ul>
+    </nav>
+
+    <!-- Admin Navigation -->
+    <nav th:fragment="admin-nav" class="navbar">
+        <a th:href="@{/admin/dashboard}" class="navbar-brand">Admin Portal</a>
+        <ul class="navbar-nav">
+            <li><a th:href="@{/admin/dashboard}">Dashboard</a></li>
+            <li><a th:href="@{/admin/users}">Users</a></li>
+            <li><a th:href="@{/admin/vehicles}">Vehicles</a></li>
+            <li><a th:href="@{/admin/bookings}">Bookings</a></li>
+        </ul>
+    </nav>
+</body>
+</html>

@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Báo cáo & Phân tích - Staff</title>
+
+    <!-- ===== CSS FILES ===== -->
+    <link rel="stylesheet" th:href="@{/css/variables.css}">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <style>
+        .filter-section {
+            background: rgba(17, 24, 39, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            align-items: end;
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .kpi-card {
+            background: rgba(17, 24, 39, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            padding: 1.25rem 1.5rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .kpi-label {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .kpi-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .kpi-subtext {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+        }
+
+        .report-section {
+            background: rgba(17, 24, 39, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 1rem;
+        }
+
+        .chart-container {
+            background: rgba(0, 0, 0, 0.08);
+            border-radius: 12px;
+            padding: 1.5rem;
+            min-height: 300px;
+        }
+
+        .chart-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .table th {
+            background: #f8fafc;
+            color: #475569 !important;
+            font-weight: 600;
+            padding: 0.75rem;
+            text-align: left;
+        }
+
+        .table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid #e2e8f0;
+            color: #0f172a !important;
+        }
+
+        .table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .pill {
+            display: inline-block;
+            padding: 0.35rem 0.7rem;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .pill.high {
+            background: rgba(34, 197, 94, 0.12);
+            color: #22c55e;
+        }
+
+        .pill.medium {
+            background: rgba(245, 158, 11, 0.12);
+            color: #f59e0b;
+        }
+
+        .pill.low {
+            background: rgba(107, 114, 128, 0.15);
+            color: #9ca3af;
+        }
+
+        /* Ensure dropdown text is readable on dark backgrounds */
+        .filter-section .form-control {
+            color: #e5e7eb;
+            background-color: rgba(17, 24, 39, 0.8);
+        }
+
+        .filter-section .form-control option {
+            color: #e5e7eb;
+            background-color: #111827;
+        }
+
+        /* Date input calendar icon - white color */
+        .filter-section input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .chart-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- ===== DASHBOARD LAYOUT ===== -->
+    <div class="dashboard-layout">
+        <!-- Sidebar -->
+        <aside th:replace="~{fragments/components/sidebar-staff :: sidebar-staff}"></aside>
+
+        <!-- Sidebar Overlay (Mobile) -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <!-- Main Content -->
+        <div class="dashboard-main">
+            <!-- Header -->
+            <header th:replace="~{fragments/components/dashboard-header :: dashboard-header}"></header>
+
+            <!-- Page Content -->
+            <main class="dashboard-content">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <div class="page-header-content">
+                        <h1 class="page-title">Báo cáo & Phân tích</h1>
+                        <p class="page-description">Thống kê doanh thu, xe sử dụng và khách hàng</p>
+                    </div>
+                </div>
+
+                <!-- Date Filter -->
+                <div class="filter-section">
+                    <form method="get" th:action="@{/staff/reports}">
+                        <div class="filter-grid">
+                            <div class="form-group">
+                                <label>Khoảng thời gian</label>
+                                <select name="period" class="form-control" id="periodSelect"
+                                    onchange="handlePeriodChange(this.value)">
+                                    <option value="today" th:selected="${selectedPeriod == 'today'}">Hôm nay</option>
+                                    <option value="week" th:selected="${selectedPeriod == 'week'}">7 ngày qua</option>
+                                    <option value="month" th:selected="${selectedPeriod == 'month'}">30 ngày qua
+                                    </option>
+                                    <option value="year" th:selected="${selectedPeriod == 'year'}">1 năm qua</option>
+                                    <option value="custom" th:selected="${selectedPeriod == 'custom'}">Tùy chỉnh
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="startDateGroup" style="display: none;">
+                                <label>Từ ngày</label>
+                                <input type="date" name="startDate" class="form-control" th:value="${startDate}">
+                            </div>
+                            <div class="form-group" id="endDateGroup" style="display: none;">
+                                <label>Đến ngày</label>
+                                <input type="date" name="endDate" class="form-control" th:value="${endDate}">
+                            </div>
+                            <div class="form-group">
+                                <label>&nbsp;</label>
+                                <button type="submit" class="btn btn-primary" style="width: 100%;">Xem báo cáo</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Dashboard Stats KPIs -->
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-label">Tổng doanh thu</div>
+                        <div class="kpi-value"
+                            th:text="${#numbers.formatDecimal(dashboardStats.totalRevenue, 0, 'COMMA', 0, 'POINT')} + ' ₫'">
+                            0 ₫</div>
+                        <div class="kpi-subtext">Tất cả thời gian</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">Doanh thu tháng này</div>
+                        <div class="kpi-value"
+                            th:text="${#numbers.formatDecimal(dashboardStats.monthlyRevenue, 0, 'COMMA', 0, 'POINT')} + ' ₫'">
+                            0 ₫</div>
+                        <div class="kpi-subtext">30 ngày qua</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">Hợp đồng đang hoạt động</div>
+                        <div class="kpi-value" th:text="${dashboardStats.activeContracts}">0</div>
+                        <div class="kpi-subtext" th:text="${dashboardStats.totalContracts} + ' tổng hợp đồng'">0 tổng
+                        </div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">Khách hàng hoạt động</div>
+                        <div class="kpi-value" th:text="${dashboardStats.activeCustomers}">0</div>
+                        <div class="kpi-subtext" th:text="${dashboardStats.totalCustomers} + ' tổng khách hàng'">0 tổng
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Revenue Report -->
+                <div class="report-section">
+                    <h2 class="section-title">Báo cáo doanh thu</h2>
+
+                    <!-- Revenue KPIs -->
+                    <div class="kpi-grid" style="margin-bottom: 1.5rem;">
+                        <div class="kpi-card">
+                            <div class="kpi-label">Tổng doanh thu</div>
+                            <div class="kpi-value"
+                                th:text="${#numbers.formatDecimal(revenueReport.totalRevenue, 0, 'COMMA', 0, 'POINT')} + ' ₫'">
+                                0 ₫</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">Tiền cọc</div>
+                            <div class="kpi-value"
+                                th:text="${#numbers.formatDecimal(revenueReport.depositRevenue, 0, 'COMMA', 0, 'POINT')} + ' ₫'">
+                                0 ₫</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">Tiền thuê xe</div>
+                            <div class="kpi-value"
+                                th:text="${#numbers.formatDecimal(revenueReport.rentalRevenue, 0, 'COMMA', 0, 'POINT')} + ' ₫'">
+                                0 ₫</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">Hoàn trả</div>
+                            <div class="kpi-value"
+                                th:text="${#numbers.formatDecimal(revenueReport.refundAmount, 0, 'COMMA', 0, 'POINT')} + ' ₫'">
+                                0 ₫</div>
+                        </div>
+                    </div>
+
+                    <!-- Revenue Charts -->
+                    <div class="chart-grid">
+                        <div class="chart-container">
+                            <canvas id="revenueByMethodChart"></canvas>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="revenueByTypeChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Daily Revenue Trend -->
+                    <div class="chart-container" style="margin-top: 1.5rem;">
+                        <canvas id="dailyRevenueChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Vehicle Usage Report -->
+                <div class="report-section">
+                    <h2 class="section-title">Báo cáo sử dụng xe</h2>
+
+                    <div th:if="${vehicleUsage != null and !#lists.isEmpty(vehicleUsage)}">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Xe</th>
+                                    <th>Biển số</th>
+                                    <th>Số lần thuê</th>
+                                    <th>Tổng ngày thuê</th>
+                                    <th>Tỷ lệ sử dụng</th>
+                                    <th>Doanh thu</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="vehicle, iter : ${vehicleUsage}" th:if="${iter.index < 10}">
+                                    <td th:text="${vehicle.fullName}">Toyota Camry</td>
+                                    <td th:text="${vehicle.licensePlate}">29A-12345</td>
+                                    <td th:text="${vehicle.rentalCount}">0</td>
+                                    <td th:text="${vehicle.totalDaysRented}">0</td>
+                                    <td>
+                                        <span
+                                            th:text="${#numbers.formatDecimal(vehicle.utilizationRate, 1, 'COMMA', 2, 'POINT')} + '%'">0%</span>
+                                    </td>
+                                    <td
+                                        th:text="${#numbers.formatDecimal(vehicle.totalRevenue, 0, 'COMMA', 0, 'POINT')} + ' ₫'">
+                                        0 ₫</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div th:if="${vehicleUsage == null or #lists.isEmpty(vehicleUsage)}"
+                        style="text-align: center; padding: 2rem; color: rgba(255,255,255,0.6);">
+                        Không có dữ liệu sử dụng xe trong khoảng thời gian này.
+                    </div>
+                </div>
+
+                <!-- Customer Statistics -->
+                <div class="report-section">
+                    <h2 class="section-title">Thống kê khách hàng</h2>
+
+                    <div th:if="${customerStats != null and !#lists.isEmpty(customerStats)}">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Khách hàng</th>
+                                    <th>Email</th>
+                                    <th>Tổng đơn</th>
+                                    <th>Hoàn thành</th>
+                                    <th>Tổng chi tiêu</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="customer, iter : ${customerStats}" th:if="${iter.index < 10}">
+                                    <td th:text="${customer.fullName}">Nguyễn Văn A</td>
+                                    <td th:text="${customer.email}">email@example.com</td>
+                                    <td th:text="${customer.totalBookings}">0</td>
+                                    <td th:text="${customer.completedBookings}">0</td>
+                                    <td
+                                        th:text="${#numbers.formatDecimal(customer.totalSpent, 0, 'COMMA', 0, 'POINT')} + ' ₫'">
+                                        0 ₫</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div th:if="${customerStats == null or #lists.isEmpty(customerStats)}"
+                        style="text-align: center; padding: 2rem; color: rgba(255,255,255,0.6);">
+                        Không có dữ liệu khách hàng trong khoảng thời gian này.
+                    </div>
+                </div>
+
+                <!-- System Overview Charts -->
+                <div class="report-section">
+                    <h2 class="section-title">Tổng quan hệ thống</h2>
+
+                    <div class="chart-grid">
+                        <div class="chart-container">
+                            <canvas id="bookingStatusChart"></canvas>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="vehicleStatusChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Revenue by Month -->
+                    <div class="chart-container" style="margin-top: 1.5rem;">
+                        <canvas id="monthlyRevenueChart"></canvas>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Footer -->
+            <footer th:replace="~{fragments/footer :: footer}"></footer>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <div th:replace="~{fragments/components/dashboard-header :: dashboard-scripts}"></div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script th:inline="javascript">
+        // Helpers: format date to yyyy-MM-dd for the API
+        function formatDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        // Handle period change - auto-submit for predefined periods (today/week/month/year)
+        function handlePeriodChange(period) {
+            const startDateGroup = document.getElementById('startDateGroup');
+            const endDateGroup = document.getElementById('endDateGroup');
+            const startInput = document.querySelector('input[name="startDate"]');
+            const endInput = document.querySelector('input[name="endDate"]');
+            const form = document.querySelector('form[method="get"]');
+
+            const today = new Date();
+            let start = null;
+            let end = null;
+
+            switch (period) {
+                case 'today':
+                    start = today;
+                    end = today;
+                    break;
+                case 'week':
+                    start = new Date(today);
+                    start.setDate(today.getDate() - 6); // inclusive 7 days
+                    end = today;
+                    break;
+                case 'month':
+                    start = new Date(today);
+                    start.setDate(today.getDate() - 29); // inclusive 30 days
+                    end = today;
+                    break;
+                case 'year':
+                    start = new Date(today);
+                    start.setFullYear(today.getFullYear() - 1);
+                    start.setDate(start.getDate() + 1); // include today, 1 year rolling
+                    end = today;
+                    break;
+                default:
+                    break;
+            }
+
+            if (period === 'custom') {
+                startDateGroup.style.display = 'block';
+                endDateGroup.style.display = 'block';
+            } else {
+                // Hide custom date inputs and set computed dates before submit
+                startDateGroup.style.display = 'none';
+                endDateGroup.style.display = 'none';
+                if (startInput && endInput && start && end) {
+                    startInput.value = formatDate(start);
+                    endInput.value = formatDate(end);
+                }
+                if (form) {
+                    form.submit();
+                }
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            const periodSelect = document.querySelector('select[name="period"]');
+            if (periodSelect) {
+                // Initialize display without submitting
+                const startDateGroup = document.getElementById('startDateGroup');
+                const endDateGroup = document.getElementById('endDateGroup');
+                if (periodSelect.value === 'custom') {
+                    startDateGroup.style.display = 'block';
+                    endDateGroup.style.display = 'block';
+                } else {
+                    startDateGroup.style.display = 'none';
+                    endDateGroup.style.display = 'none';
+                }
+            }
+
+            // Chart.js default configuration
+            Chart.defaults.color = '#e5e7eb';
+            Chart.defaults.borderColor = 'rgba(255, 255, 255, 0.1)';
+
+            // Revenue by Payment Method Chart
+            const revenueByMethod = {
+                cash: /*[[${revenueReport.cashRevenue}]]*/ 0,
+                card: /*[[${revenueReport.cardRevenue}]]*/ 0,
+                transfer: /*[[${revenueReport.transferRevenue}]]*/ 0,
+                online: /*[[${revenueReport.onlineRevenue}]]*/ 0
+            };
+
+            new Chart(document.getElementById('revenueByMethodChart'), {
+                type: 'pie',
+                data: {
+                    labels: ['Tiền mặt', 'Thẻ', 'Chuyển khoản', 'Online'],
+                    datasets: [{
+                        data: [revenueByMethod.cash, revenueByMethod.card, revenueByMethod.transfer, revenueByMethod.online],
+                        backgroundColor: [
+                            'rgba(34, 197, 94, 0.8)',
+                            'rgba(59, 130, 246, 0.8)',
+                            'rgba(245, 158, 11, 0.8)',
+                            'rgba(168, 85, 247, 0.8)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        title: { display: true, text: 'Doanh thu theo phương thức thanh toán' }
+                    }
+                }
+            });
+
+            // Revenue by Type Chart
+            const revenueByType = {
+                deposit: /*[[${revenueReport.depositRevenue}]]*/ 0,
+                rental: /*[[${revenueReport.rentalRevenue}]]*/ 0,
+                refund: /*[[${revenueReport.refundAmount}]]*/ 0
+            };
+
+            new Chart(document.getElementById('revenueByTypeChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Tiền cọc', 'Tiền thuê', 'Hoàn trả'],
+                    datasets: [{
+                        data: [revenueByType.deposit, revenueByType.rental, revenueByType.refund],
+                        backgroundColor: [
+                            'rgba(59, 130, 246, 0.8)',
+                            'rgba(34, 197, 94, 0.8)',
+                            'rgba(239, 68, 68, 0.8)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        title: { display: true, text: 'Doanh thu theo loại thanh toán' }
+                    }
+                }
+            });
+
+            // Daily Revenue Trend Chart
+            const dailyRevenueData = /*[[${revenueReport.dailyRevenue}]]*/ {};
+            const dates = Object.keys(dailyRevenueData);
+            const revenues = Object.values(dailyRevenueData);
+
+            new Chart(document.getElementById('dailyRevenueChart'), {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [{
+                        label: 'Doanh thu',
+                        data: revenues,
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { display: false },
+                        title: { display: true, text: 'Xu hướng doanh thu theo ngày' }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function (value) {
+                                    return value.toLocaleString('vi-VN') + ' ₫';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Booking Status Chart
+            const bookingsByStatus = /*[[${dashboardStats.bookingsByStatus}]]*/ {};
+            new Chart(document.getElementById('bookingStatusChart'), {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(bookingsByStatus),
+                    datasets: [{
+                        label: 'Số lượng',
+                        data: Object.values(bookingsByStatus),
+                        backgroundColor: [
+                            'rgba(245, 158, 11, 0.8)',
+                            'rgba(34, 197, 94, 0.8)',
+                            'rgba(239, 68, 68, 0.8)',
+                            'rgba(107, 114, 128, 0.8)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { display: false },
+                        title: { display: true, text: 'Đơn đặt xe theo trạng thái' }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+
+            // Vehicle Status Chart
+            const vehiclesByStatus = /*[[${dashboardStats.vehiclesByStatus}]]*/ {};
+            new Chart(document.getElementById('vehicleStatusChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(vehiclesByStatus),
+                    datasets: [{
+                        data: Object.values(vehiclesByStatus),
+                        backgroundColor: [
+                            'rgba(34, 197, 94, 0.8)',
+                            'rgba(239, 68, 68, 0.8)',
+                            'rgba(245, 158, 11, 0.8)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        title: { display: true, text: 'Trạng thái xe' }
+                    }
+                }
+            });
+
+            // Monthly Revenue Chart
+            const revenueByMonth = /*[[${dashboardStats.revenueByMonth}]]*/ {};
+            new Chart(document.getElementById('monthlyRevenueChart'), {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(revenueByMonth),
+                    datasets: [{
+                        label: 'Doanh thu',
+                        data: Object.values(revenueByMonth),
+                        backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: { display: false },
+                        title: { display: true, text: 'Doanh thu 6 tháng gần nhất' }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function (value) {
+                                    return value.toLocaleString('vi-VN') + ' ₫';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

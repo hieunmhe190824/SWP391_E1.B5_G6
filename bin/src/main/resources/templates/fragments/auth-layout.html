@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      th:fragment="auth-layout(pageTitle, formFragment)">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle}">Car Rental System - Authentication</title>
+
+    <!-- ===== LINK CSS FILES ===== -->
+    <!-- Thứ tự quan trọng: Variables → Main → Components → Page-specific -->
+    
+    <!-- 1. Variables: CSS Variables (màu sắc, spacing...) - SỬA 1 CHỖ, TẤT CẢ THAY ĐỔI -->
+    <link rel="stylesheet" th:href="@{/css/variables.css}">
+
+    <!-- 2. Main: CSS chung cho toàn hệ thống -->
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+
+    <!-- 3. Components: CSS cho các components (buttons, cards, navbar...) -->
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+
+    <!-- 4. Auth: CSS riêng cho trang Auth (Login/Register) -->
+    <link rel="stylesheet" th:href="@{/css/auth.css}">
+</head>
+
+<body>
+<div class="form-body without-side">
+    <div class="auth-layout">
+        <div class="form-holder">
+            <div class="form-content">
+                <div class="form-items">
+                    <div th:replace="${formFragment}"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/jquery.min.js}"></script>
+<script th:src="@{/js/popper.min.js}"></script>
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+<script th:src="@{/js/main.js}"></script>
+<script th:src="@{/js/validation.js}"></script>
+<script th:src="@{/js/login-validation.js}"></script>
+</body>
+</html>
+
+

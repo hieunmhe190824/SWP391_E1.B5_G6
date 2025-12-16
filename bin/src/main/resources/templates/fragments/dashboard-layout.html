@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+    <meta charset="UTF-8">
+</head>
+
+<body>
+    <!-- ===== DASHBOARD LAYOUT FRAGMENT =====
+         Layout tổng thể cho dashboard (Admin & Staff)
+         Bao gồm: Sidebar + Header + Content + Footer
+         
+         Sử dụng:
+         <div th:replace="~{fragments/dashboard-layout :: layout-staff(pageTitle='Dashboard', content=~{::main})}">
+             <main>Nội dung trang</main>
+         </div>
+    -->
+
+    <!-- STAFF LAYOUT -->
+    <div th:fragment="layout-staff(pageTitle, content)" class="dashboard-container">
+        <!-- Sidebar Overlay for mobile -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <!-- Sidebar -->
+        <div th:replace="~{fragments/components/sidebar-staff :: sidebar-staff}"></div>
+
+        <!-- Main Content Area -->
+        <div class="dashboard-main">
+            <!-- Dashboard Header -->
+            <div th:replace="~{fragments/components/dashboard-header :: dashboard-header}"></div>
+
+            <!-- Dashboard Content -->
+            <main class="dashboard-content" th:replace="${content}">
+                <!-- Content sẽ được inject vào đây -->
+            </main>
+
+            <!-- Footer - Sử dụng footer component chung -->
+            <div th:replace="~{fragments/footer :: footer}"></div>
+        </div>
+
+        <!-- Scripts -->
+        <div th:replace="~{fragments/components/dashboard-header :: dashboard-scripts}"></div>
+    </div>
+
+    <!-- ADMIN LAYOUT -->
+    <div th:fragment="layout-admin(pageTitle, content)" class="dashboard-container">
+        <!-- Sidebar Overlay for mobile -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <!-- Sidebar -->
+        <div th:replace="~{fragments/components/sidebar-admin :: sidebar-admin}"></div>
+
+        <!-- Main Content Area -->
+        <div class="dashboard-main">
+            <!-- Dashboard Header -->
+            <div th:replace="~{fragments/components/dashboard-header :: dashboard-header}"></div>
+
+            <!-- Dashboard Content -->
+            <main class="dashboard-content" th:replace="${content}">
+                <!-- Content sẽ được inject vào đây -->
+            </main>
+
+            <!-- Footer - Sử dụng footer component chung -->
+            <div th:replace="~{fragments/footer :: footer}"></div>
+        </div>
+
+        <!-- Scripts -->
+        <div th:replace="~{fragments/components/dashboard-header :: dashboard-scripts}"></div>
+    </div>
+
+    <!-- GENERIC LAYOUT (Auto-detects role) -->
+    <div th:fragment="layout(content)" class="dashboard-container">
+        <!-- Sidebar Overlay for mobile -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <!-- Sidebar - Conditional based on role -->
+        <aside th:if="${#strings.contains(#authentication.principal.authorities.toString(), 'ROLE_STAFF')}"
+               th:replace="~{fragments/components/sidebar-staff :: sidebar-staff}"></aside>
+        <aside th:if="${#strings.contains(#authentication.principal.authorities.toString(), 'ROLE_ADMIN')}"
+               th:replace="~{fragments/components/sidebar-admin :: sidebar-admin}"></aside>
+
+        <!-- Main Content Area -->
+        <div class="dashboard-main">
+            <!-- Dashboard Header -->
+            <div th:replace="~{fragments/components/dashboard-header :: dashboard-header}"></div>
+
+            <!-- Dashboard Content -->
+            <main class="dashboard-content" th:replace="${content}">
+                <!-- Content sẽ được inject vào đây -->
+            </main>
+
+            <!-- Footer - Sử dụng footer component chung -->
+            <div th:replace="~{fragments/footer :: footer}"></div>
+        </div>
+
+        <!-- Scripts -->
+        <div th:replace="~{fragments/components/dashboard-header :: dashboard-scripts}"></div>
+    </div>
+</body>
+
+</html>

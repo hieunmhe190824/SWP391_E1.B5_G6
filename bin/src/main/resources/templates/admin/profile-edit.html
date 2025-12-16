@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chỉnh sửa hồ sơ - Car Rental System</title>
+
+    <!-- ===== CSS FILES ===== -->
+    <link rel="stylesheet" th:href="@{/css/variables.css}">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/profile.css}">
+</head>
+<body>
+    <!-- ===== DASHBOARD LAYOUT ===== -->
+    <div class="dashboard-layout">
+        <!-- Sidebar -->
+        <aside th:replace="~{fragments/components/sidebar-admin :: sidebar-admin}"></aside>
+
+        <!-- Sidebar Overlay (Mobile) -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <!-- Main Content -->
+        <div class="dashboard-main">
+            <!-- Header -->
+            <header th:replace="~{fragments/components/dashboard-header :: dashboard-header}"></header>
+
+            <!-- Page Content -->
+            <main class="dashboard-content">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <div class="page-header-content">
+                        <h1 class="page-title">Chỉnh sửa hồ sơ</h1>
+                        <p class="page-description">Cập nhật thông tin cá nhân của bạn</p>
+                    </div>
+                    <div class="page-header-actions">
+                        <a th:href="@{/admin/profile}" class="btn btn-secondary">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="19" y1="12" x2="5" y2="12"></line>
+                                <polyline points="12 19 5 12 12 5"></polyline>
+                            </svg>
+                            Quay lại
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Flash Messages -->
+                <div th:if="${error}" class="alert alert-danger" role="alert">
+                    <svg class="alert-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <span th:text="${error}"></span>
+                </div>
+
+                <!-- Form Container -->
+                <div class="form-container">
+                    <form id="profileEditForm" th:action="@{/admin/profile/update}" method="post" class="profile-form">
+                        <!-- Personal Information Section -->
+                        <div class="form-section">
+                            <h2 class="form-section-title">Thông tin cá nhân</h2>
+
+                            <div class="form-row">
+                                <!-- Full Name -->
+                                <div class="form-group">
+                                    <label for="fullName">
+                                        Họ và tên
+                                        <span class="required-asterisk">*</span>
+                                    </label>
+                                    <input type="text"
+                                           id="fullName"
+                                           name="fullName"
+                                           th:value="${user.fullName}"
+                                           placeholder="Nhập họ và tên đầy đủ"
+                                           class="form-control"
+                                           required>
+                                    <small class="form-help">Họ và tên đầy đủ của bạn</small>
+                                </div>
+
+                                <!-- Phone -->
+                                <div class="form-group">
+                                    <label for="phone">
+                                        Số điện thoại
+                                        <span class="required-asterisk">*</span>
+                                    </label>
+                                    <input type="tel"
+                                           id="phone"
+                                           name="phone"
+                                           th:value="${user.phone}"
+                                           placeholder="Nhập số điện thoại (10-11 chữ số)"
+                                           class="form-control"
+                                           required>
+                                    <small class="form-help">Số điện thoại liên hệ</small>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <!-- Email -->
+                                <div class="form-group">
+                                    <label for="email">
+                                        Email
+                                        <span class="required-asterisk">*</span>
+                                    </label>
+                                    <input type="email"
+                                           id="email"
+                                           name="email"
+                                           th:value="${user.email}"
+                                           placeholder="Nhập địa chỉ email hợp lệ"
+                                           class="form-control"
+                                           required>
+                                    <small class="form-help">Địa chỉ email của bạn</small>
+                                </div>
+
+                                <!-- Role (Read-only) -->
+                                <div class="form-group">
+                                    <label for="role">Vai trò</label>
+                                    <input type="text"
+                                           id="role"
+                                           th:value="${user.role}"
+                                           class="form-control"
+                                           disabled>
+                                    <small class="form-help">Vai trò trong hệ thống (không thể thay đổi)</small>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <!-- Address -->
+                                <div class="form-group" style="grid-column: 1 / -1;">
+                                    <label for="address">Địa chỉ</label>
+                                    <textarea id="address"
+                                              name="address"
+                                              th:text="${user.address}"
+                                              placeholder="Nhập địa chỉ của bạn"
+                                              class="form-control"
+                                              rows="3"></textarea>
+                                    <small class="form-help">Địa chỉ liên hệ (tùy chọn)</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                                    <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                                    <polyline points="7 3 7 8 15 8"></polyline>
+                                </svg>
+                                Cập nhật
+                            </button>
+                            <a th:href="@{/admin/profile}" class="btn btn-secondary btn-lg">Hủy</a>
+                        </div>
+                    </form>
+                </div>
+            </main>
+
+            <!-- Footer -->
+            <footer th:replace="~{fragments/footer :: footer}"></footer>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <div th:replace="~{fragments/components/dashboard-header :: dashboard-scripts}"></div>
+    <script th:src="@{/js/validation.js}"></script>
+    <script>
+        // Setup validation for profile edit form
+        document.addEventListener('DOMContentLoaded', function() {
+            setupProfileEditValidation();
+
+            const profileEditForm = document.getElementById('profileEditForm');
+            if (profileEditForm) {
+                profileEditForm.addEventListener('submit', function(e) {
+                    if (!validateProfileEditForm()) {
+                        e.preventDefault();
+                        
+                        // Scroll to first error
+                        const firstError = document.querySelector('.error');
+                        if (firstError) {
+                            firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            firstError.focus();
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

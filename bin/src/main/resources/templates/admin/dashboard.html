@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Car Rental System</title>
+
+    <!-- ===== CSS FILES ===== -->
+    <link rel="stylesheet" th:href="@{/css/variables.css}">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <style>
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 0 0 1.5rem;
+        }
+
+        .kpi-card {
+            background: rgba(17, 24, 39, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            padding: 1.25rem 1.5rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .kpi-label {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+            margin-bottom: 0.4rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .kpi-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .dashboard-section {
+            background: rgba(17, 24, 39, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-lg);
+            margin-bottom: 1.5rem;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .chart-grid {
+            display: grid;
+            grid-template-columns: 2fr 1.2fr;
+            gap: 1rem;
+        }
+
+        .chart-wrapper {
+            background: rgba(0, 0, 0, 0.08);
+            border-radius: 12px;
+            padding: 1rem;
+            min-height: 280px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card-title {
+            font-weight: 700;
+            color: white;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th, .table td {
+            padding: 0.75rem 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            color: rgba(255, 255, 255, 0.9) !important;
+            text-align: left;
+            font-size: 0.95rem !important;
+            line-height: 1.5;
+        }
+
+        .table th {
+            color: rgba(255, 255, 255, 0.6) !important;
+            font-weight: 600;
+            font-size: 0.9rem !important;
+        }
+
+        .table td > div {
+            color: rgba(255, 255, 255, 0.9) !important;
+        }
+
+        /* Ensure recent bookings table text stays readable on light rows */
+        .recent-bookings-table {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .recent-bookings-table th {
+            color: #475569 !important; /* slate-600 */
+            background: #f8fafc;
+        }
+
+        .recent-bookings-table td {
+            color: #0f172a !important; /* slate-900 */
+            background: white;
+        }
+
+        .recent-bookings-table td > div {
+            color: #0f172a !important;
+        }
+
+        .recent-bookings-table .subtext {
+            color: #64748b !important; /* slate-500 */
+            font-size: 0.85rem;
+        }
+
+        /* Quick summary table text colors for light background */
+        .summary-table th {
+            color: #475569 !important; /* slate-600 */
+            background: #f8fafc;
+        }
+
+        .summary-table td {
+            color: #0f172a !important; /* slate-900 */
+        }
+
+        .pill {
+            display: inline-block;
+            padding: 0.35rem 0.7rem;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .pill.pending { background: rgba(245, 158, 11, 0.12); color: #f59e0b; }
+        .pill.approved { background: rgba(34, 197, 94, 0.12); color: #22c55e; }
+        .pill.rejected { background: rgba(239, 68, 68, 0.12); color: #ef4444; }
+        .pill.cancelled { background: rgba(107, 114, 128, 0.15); color: #9ca3af; }
+
+        .empty-cell {
+            text-align: center;
+            padding: 1rem 0;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+        }
+
+        .action-card {
+            background: rgba(59, 130, 246, 0.08);
+            border: 1px solid rgba(59, 130, 246, 0.25);
+            color: white;
+            padding: 1.25rem;
+            border-radius: 12px;
+            text-decoration: none;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .action-card:hover {
+            background: rgba(59, 130, 246, 0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.15);
+        }
+
+        .action-text {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .action-title {
+            font-weight: 700;
+        }
+
+        .action-desc {
+            color: rgba(255, 255, 255, 0.75);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 1024px) {
+            .chart-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ===== DASHBOARD LAYOUT ===== -->
+    <div class="dashboard-layout">
+        <!-- Sidebar -->
+        <aside th:replace="~{fragments/components/sidebar-admin :: sidebar-admin}"></aside>
+
+        <!-- Sidebar Overlay (Mobile) -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <!-- Main Content -->
+        <div class="dashboard-main">
+            <!-- Header -->
+            <header th:replace="~{fragments/components/dashboard-header :: dashboard-header}"></header>
+
+            <!-- Page Content -->
+            <main class="dashboard-content">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <div class="page-header-content">
+                        <h1 class="page-title">Admin Dashboard</h1>
+                        <p class="page-description">Tổng quan hệ thống quản lý thuê xe</p>
+                    </div>
+                </div>
+
+                <div th:with="
+                        pendingVal=${pendingCount}?:0,
+                        approvedVal=${approvedCount}?:0,
+                        rejectedVal=${rejectedCount}?:0,
+                        cancelledVal=${cancelledCount}?:0,
+                        totalStatus=${pendingVal + approvedVal + rejectedVal + cancelledVal}">
+
+                    <!-- KPI Cards -->
+                    <div class="kpi-grid">
+                        <div class="kpi-card">
+                            <div class="kpi-label">Tổng người dùng</div>
+                            <div class="kpi-value" th:text="${totalUsers}">0</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">Tổng số xe</div>
+                            <div class="kpi-value" th:text="${totalVehicles}">0</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">Tổng lượt đặt</div>
+                            <div class="kpi-value" th:text="${totalBookings}">0</div>
+                        </div>
+                        <div class="kpi-card">
+                            <div class="kpi-label">Đơn chờ duyệt</div>
+                            <div class="kpi-value" th:text="${pendingCount}">0</div>
+                        </div>
+                    </div>
+
+                    <!-- Charts + Summary -->
+                    <section class="dashboard-section">
+                        <div class="section-header">
+                            <h2 class="card-title">Tình trạng đặt xe</h2>
+                            <span class="action-desc">Theo mẫu dữ liệu hiện có</span>
+                        </div>
+                        <div class="chart-grid">
+                            <div class="dashboard-card chart-wrapper">
+                                <div th:if="${totalStatus == 0}" class="empty-cell" style="width:100%;">
+                                    Chưa có dữ liệu để vẽ biểu đồ.
+                                </div>
+                                <canvas th:if="${totalStatus > 0}" id="bookingStatusChart"
+                                        style="max-width: 520px; max-height: 360px;"
+                                        th:attr="data-pending=${pendingVal},
+                                                 data-approved=${approvedVal},
+                                                 data-rejected=${rejectedVal},
+                                                 data-cancelled=${cancelledVal}">
+                                </canvas>
+                            </div>
+                            <div class="dashboard-card">
+                                <h3 class="card-title" style="margin-bottom:0.75rem;">Tóm tắt nhanh</h3>
+                                <table class="table summary-table">
+                                    <tr>
+                                        <th>Trạng thái</th>
+                                        <th>Số lượng</th>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="pill pending">Pending</span></td>
+                                        <td th:text="${pendingVal}">0</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="pill approved">Approved</span></td>
+                                        <td th:text="${approvedVal}">0</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="pill rejected">Rejected</span></td>
+                                        <td th:text="${rejectedVal}">0</td>
+                                    </tr>
+                                    <tr>
+                                        <td><span class="pill cancelled">Cancelled</span></td>
+                                        <td th:text="${cancelledVal}">0</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- Recent Bookings -->
+                    <section class="dashboard-section">
+                        <div class="section-header">
+                            <h2 class="card-title">Đặt xe gần đây</h2>
+                            <a th:href="@{/staff/bookings}" class="btn btn-secondary">Xem tất cả</a>
+                        </div>
+                        <div th:if="${bookings != null and !#lists.isEmpty(bookings)}">
+                            <table class="table recent-bookings-table">
+                                <thead>
+                                    <tr>
+                                        <th>Khách hàng</th>
+                                        <th>Xe</th>
+                                        <th>Ngày thuê</th>
+                                        <th>Trạng thái</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="booking, iter : ${bookings}"
+                                        th:if="${iter.index < 6}">
+                                        <td>
+                                            <div th:text="${booking.customer.fullName}">Khách</div>
+                                            <div class="subtext"
+                                                 th:text="${booking.customer.email}">email</div>
+                                        </td>
+                                        <td>
+                                            <div th:text="${booking.vehicle.model.brand.brandName + ' ' + booking.vehicle.model.modelName}">Xe</div>
+                                            <div class="subtext"
+                                                 th:text="${booking.vehicle.licensePlate}">Biển số</div>
+                                        </td>
+                                        <td>
+                                            <div th:text="${#temporals.format(booking.startDate, 'dd/MM/yyyy')} + ' - ' + ${#temporals.format(booking.endDate, 'dd/MM/yyyy')}">
+                                                01/01 - 02/01
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="pill"
+                                                  th:classappend="${booking.status.name().toLowerCase()}"
+                                                  th:text="${booking.status.value}">Pending</span>
+                                        </td>
+                                        <td>
+                                            <a th:href="@{/staff/bookings/{id}(id=${booking.id})}" class="btn btn-primary btn-sm">Chi tiết</a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div th:if="${bookings == null or #lists.isEmpty(bookings)}" class="empty-cell">
+                            Chưa có dữ liệu đặt xe để hiển thị.
+                        </div>
+                    </section>
+
+                    <!-- Quick Actions -->
+                    <section class="dashboard-section">
+                        <div class="section-header">
+                            <h2 class="card-title">Lối tắt quản trị</h2>
+                        </div>
+                        <div class="quick-actions">
+                            <a class="action-card" th:href="@{/admin/users}">
+                                <div class="action-text">
+                                    <span class="action-title">Quản lý người dùng</span>
+                                    <span class="action-desc">Phân quyền, khóa/mở tài khoản</span>
+                                </div>
+                                <span>→</span>
+                            </a>
+                            <a class="action-card" th:href="@{/admin/vehicles}">
+                                <div class="action-text">
+                                    <span class="action-title">Quản lý xe</span>
+                                    <span class="action-desc">Thêm/sửa thông tin, hình ảnh</span>
+                                </div>
+                                <span>→</span>
+                            </a>
+                            <a class="action-card" th:href="@{/staff/bookings}">
+                                <div class="action-text">
+                                    <span class="action-title">Xem đặt xe</span>
+                                    <span class="action-desc">Phê duyệt, hủy yêu cầu</span>
+                                </div>
+                                <span>→</span>
+                            </a>
+                            <a class="action-card" th:href="@{/staff/support}">
+                                <div class="action-text">
+                                    <span class="action-title">Hỗ trợ & ticket</span>
+                                    <span class="action-desc">Phân loại và phản hồi ticket</span>
+                                </div>
+                                <span>→</span>
+                            </a>
+                        </div>
+                    </section>
+                </div>
+            </main>
+
+            <!-- Footer -->
+            <footer th:replace="~{fragments/footer :: footer}"></footer>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <div th:replace="~{fragments/components/dashboard-header :: dashboard-scripts}"></div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Dashboard loaded - initializing chart...');
+
+            const chartEl = document.getElementById('bookingStatusChart');
+            if (!chartEl) {
+                console.warn('Chart element not found - no data to display');
+                return;
+            }
+
+            const pending = Number(chartEl.dataset.pending || 0);
+            const approved = Number(chartEl.dataset.approved || 0);
+            const rejected = Number(chartEl.dataset.rejected || 0);
+            const cancelled = Number(chartEl.dataset.cancelled || 0);
+            const total = pending + approved + rejected + cancelled;
+
+            console.log('Chart data:', { pending, approved, rejected, cancelled, total });
+
+            if (total === 0) {
+                console.warn('No booking data available for chart');
+                return;
+            }
+
+            try {
+                new Chart(chartEl, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Pending', 'Approved', 'Rejected', 'Cancelled'],
+                        datasets: [{
+                            data: [pending, approved, rejected, cancelled],
+                            backgroundColor: [
+                                'rgba(245, 158, 11, 0.8)',
+                                'rgba(34, 197, 94, 0.8)',
+                                'rgba(239, 68, 68, 0.8)',
+                                'rgba(107, 114, 128, 0.8)'
+                            ],
+                            borderWidth: 0
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                display: true,
+                                position: 'bottom',
+                                labels: {
+                                    color: '#e5e7eb',
+                                    padding: 15,
+                                    font: {
+                                        size: 12
+                                    }
+                                }
+                            },
+                            tooltip: {
+                                enabled: true,
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                padding: 12,
+                                displayColors: true
+                            }
+                        }
+                    }
+                });
+                console.log('Chart rendered successfully');
+            } catch (error) {
+                console.error('Error rendering chart:', error);
+            }
+        });
+    </script>
+</body>
+</html>

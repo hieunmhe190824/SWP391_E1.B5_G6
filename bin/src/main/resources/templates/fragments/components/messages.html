@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <!-- ===== MESSAGE COMPONENTS =====
+         Tất cả alerts sử dụng CSS Variables từ variables.css
+         - Success = Green (#22c55e)
+         - Error = Red (#ef4444)
+         - Info = Blue (#3b82f6)
+         - Warning = Amber (#f59e0b)
+    -->
+
+    <!-- Success Message -->
+    <div th:fragment="success(message)" class="alert alert-success">
+        <span th:text="${message}">Success message</span>
+    </div>
+
+    <!-- Error Message -->
+    <div th:fragment="error(message)" class="alert alert-error">
+        <span th:text="${message}">Error message</span>
+    </div>
+
+    <!-- Info Message -->
+    <div th:fragment="info(message)" class="alert alert-info">
+        <span th:text="${message}">Info message</span>
+    </div>
+
+    <!-- Warning Message -->
+    <div th:fragment="warning(message)" class="alert alert-warning">
+        <span th:text="${message}">Warning message</span>
+    </div>
+
+    <!-- Inline Error Message - Hiển thị dưới input field -->
+    <div th:fragment="inline-error(message)" class="error-message">
+        <span th:text="${message}">Error message</span>
+    </div>
+</body>
+</html>
