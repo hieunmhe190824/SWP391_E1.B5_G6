@@ -47,6 +47,28 @@ public class SupportController {
         return null;
     }
 
+    // ==================== UNIVERSAL ENDPOINT ====================
+    
+    /**
+     * Universal support tickets endpoint - redirects based on role
+     * GET /support/tickets
+     */
+    @GetMapping("/support/tickets")
+    public String supportTickets() {
+        User currentUser = getCurrentUser();
+        if (currentUser == null) {
+            return "redirect:/auth/login";
+        }
+        
+        // Check if user is staff or admin
+        String role = currentUser.getRole().name();
+        if (role.equals("STAFF") || role.equals("ADMIN")) {
+            return "redirect:/staff/support/tickets";
+        } else {
+            return "redirect:/customer/support/tickets";
+        }
+    }
+    
     // ==================== CUSTOMER ENDPOINTS ====================
     
     /**

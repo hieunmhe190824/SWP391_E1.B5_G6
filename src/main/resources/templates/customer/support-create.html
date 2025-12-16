@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tạo Yêu Cầu Hỗ Trợ - Car Rental System</title>
+    <link rel="stylesheet" th:href="@{/css/variables.css}">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+    <style>
+        .support-page-dark {
+            padding: 2rem 0;
+            background: var(--section-dark-bg);
+            min-height: calc(100vh - 200px);
+            position: relative;
+        }
+
+        .support-page-dark::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent 0%, var(--color-primary) 50%, transparent 100%);
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+        }
+
+        .support-page-dark::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--section-dark-overlay);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .support-page-dark > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .support-page-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        .page-title {
+            color: var(--color-text-white);
+        }
+
+        .page-subtitle {
+            color: rgba(255, 255, 255, 0.9);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div th:replace="~{fragments/header :: header}"></div>
+
+    <main class="support-page-dark">
+        <div class="support-page-container">
+        <!-- Page Header -->
+        <div class="page-header" style="margin-bottom: 2rem;">
+            <h1 class="page-title">Tạo Yêu Cầu Hỗ Trợ</h1>
+            <p class="page-subtitle">Mô tả vấn đề của bạn và chúng tôi sẽ hỗ trợ bạn sớm nhất</p>
+        </div>
+
+        <!-- Messages -->
+        <div th:if="${error}" class="alert alert-error" style="margin-bottom: 1.5rem;">
+            <span th:text="${error}">Error message</span>
+        </div>
+
+        <!-- Support Form -->
+        <div class="card" style="padding: 2rem;">
+            <form th:action="@{/customer/support/create}" method="post" th:object="${ticket}">
+                <!-- Category -->
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label for="category" class="required" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">
+                        Danh mục
+                    </label>
+                    <select id="category" 
+                            th:field="*{category}" 
+                            class="form-control" 
+                            required
+                            style="width: 100%; padding: 0.75rem; border: 1px solid var(--color-border); border-radius: 8px; background: var(--color-surface);">
+                        <option value="">-- Chọn danh mục --</option>
+                        <option th:each="cat : ${categories}" 
+                                th:value="${cat}" 
+                                th:text="${cat == T(com.carrental.model.SupportTicket$Category).BOOKING ? 'Đặt xe' : 
+                                          cat == T(com.carrental.model.SupportTicket$Category).PAYMENT ? 'Thanh toán' :
+                                          cat == T(com.carrental.model.SupportTicket$Category).VEHICLE ? 'Xe' : 'Khác'}">
+                            Category
+                        </option>
+                    </select>
+                </div>
+
+                <!-- Subject -->
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label for="subject" class="required" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">
+                        Tiêu đề
+                    </label>
+                    <input type="text" 
+                           id="subject" 
+                           th:field="*{subject}" 
+                           class="form-control" 
+                           placeholder="Nhập tiêu đề ngắn gọn"
+                           required
+                           maxlength="200"
+                           style="width: 100%; padding: 0.75rem; border: 1px solid var(--color-border); border-radius: 8px; background: var(--color-surface);">
+                </div>
+
+                <!-- Description -->
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label for="description" class="required" style="display: block; margin-bottom: 0.5rem; font-weight: 600;">
+                        Mô tả chi tiết
+                    </label>
+                    <textarea id="description" 
+                              th:field="*{description}" 
+                              class="form-control" 
+                              rows="6"
+                              placeholder="Mô tả chi tiết vấn đề của bạn..."
+                              required
+                              style="width: 100%; padding: 0.75rem; border: 1px solid var(--color-border); border-radius: 8px; background: var(--color-surface); resize: vertical;"></textarea>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions" style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem;">
+                    <a th:href="@{/customer/support/tickets}" 
+                       class="btn btn-secondary"
+                       style="padding: 0.75rem 1.5rem; text-decoration: none; border-radius: 8px; background: #6b7280; color: white;">
+                        Hủy
+                    </a>
+                    <button type="submit" 
+                            class="btn btn-primary"
+                            style="padding: 0.75rem 1.5rem; border: none; border-radius: 8px; background: var(--color-primary); color: white; cursor: pointer;">
+                        Gửi yêu cầu
+                    </button>
+                </div>
+            </form>
+        </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <div th:replace="~{fragments/footer :: footer}"></div>
+
+    <script th:src="@{/js/main.js}"></script>
+</body>
+</html>

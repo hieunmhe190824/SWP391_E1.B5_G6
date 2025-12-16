@@ -342,10 +342,10 @@ CREATE TABLE support_tickets (
     ticket_id INT PRIMARY KEY AUTO_INCREMENT,
     ticket_number VARCHAR(50) NOT NULL UNIQUE,
     customer_id INT,                                     -- NULL nếu guest
-    category ENUM('Booking', 'Payment', 'Vehicle', 'General') NOT NULL,
+    category ENUM('BOOKING', 'PAYMENT', 'VEHICLE', 'GENERAL') NOT NULL,
     subject VARCHAR(200) NOT NULL,
     description TEXT NOT NULL,
-    status ENUM('Open', 'In_Progress', 'Resolved', 'Closed') DEFAULT 'Open',
+    status ENUM('OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED') DEFAULT 'OPEN',
     assigned_to INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (customer_id) REFERENCES users(user_id) ON DELETE SET NULL,
@@ -880,22 +880,22 @@ INSERT INTO refunds (hold_id, contract_id, customer_id, original_deposit, deduct
 -- 16. SUPPORT TICKETS
 INSERT INTO support_tickets (ticket_number, customer_id, category, subject, description, status, assigned_to, created_at) VALUES
 -- Open tickets
-('TK-2025-0001', 5, 'Booking', 'Thay đổi thời gian thuê xe', 'Em muốn thay đổi thời gian nhận xe từ 9h sáng sang 14h chiều được không ạ?', 'Open', NULL, '2025-03-06 08:30:00'),
-('TK-2025-0002', 6, 'Vehicle', 'Hỏi về tình trạng xe', 'Xe Toyota Camry còn mới không ạ? Em muốn thuê xe mới nhất có thể.', 'Open', NULL, '2025-03-06 09:15:00'),
-('TK-2025-0003', NULL, 'General', 'Hỏi về giấy tờ cần thiết', 'Cho em hỏi thuê xe cần giấy tờ gì ạ? Em chưa có GPLX lâu năm.', 'Open', NULL, '2025-03-06 10:00:00'),
+('TK-2025-0001', 5, 'BOOKING', 'Thay đổi thời gian thuê xe', 'Em muốn thay đổi thời gian nhận xe từ 9h sáng sang 14h chiều được không ạ?', 'OPEN', NULL, '2025-03-06 08:30:00'),
+('TK-2025-0002', 6, 'VEHICLE', 'Hỏi về tình trạng xe', 'Xe Toyota Camry còn mới không ạ? Em muốn thuê xe mới nhất có thể.', 'OPEN', NULL, '2025-03-06 09:15:00'),
+('TK-2025-0003', NULL, 'GENERAL', 'Hỏi về giấy tờ cần thiết', 'Cho em hỏi thuê xe cần giấy tờ gì ạ? Em chưa có GPLX lâu năm.', 'OPEN', NULL, '2025-03-06 10:00:00'),
 
 -- In Progress tickets
-('TK-2025-0004', 7, 'Payment', 'Vấn đề thanh toán tiền cọc', 'Em chuyển khoản tiền cọc rồi nhưng chưa thấy cập nhật trạng thái thanh toán.', 'In_Progress', 2, '2025-03-05 14:20:00'),
-('TK-2025-0005', 8, 'Booking', 'Yêu cầu hủy booking', 'Em có việc đột xuất không thể thuê xe được, muốn hủy booking và hoàn tiền.', 'In_Progress', 3, '2025-03-05 16:45:00'),
+('TK-2025-0004', 7, 'PAYMENT', 'Vấn đề thanh toán tiền cọc', 'Em chuyển khoản tiền cọc rồi nhưng chưa thấy cập nhật trạng thái thanh toán.', 'IN_PROGRESS', 2, '2025-03-05 14:20:00'),
+('TK-2025-0005', 8, 'BOOKING', 'Yêu cầu hủy booking', 'Em có việc đột xuất không thể thuê xe được, muốn hủy booking và hoàn tiền.', 'IN_PROGRESS', 3, '2025-03-05 16:45:00'),
 
 -- Resolved tickets
-('TK-2025-0006', 9, 'Vehicle', 'Xe bị hỏng giữa đường', 'Em đang thuê xe mà xe bị chết máy giữa đường, cần hỗ trợ gấp!', 'Resolved', 2, '2025-03-04 11:30:00'),
-('TK-2025-0007', 10, 'Payment', 'Hỏi về phí trả xe khác địa điểm', 'Nếu em nhận xe ở Q1 mà trả ở Tân Bình thì tính phí thế nào ạ?', 'Resolved', 3, '2025-03-03 09:00:00'),
-('TK-2025-0008', 11, 'General', 'Hỏi về chính sách hoàn tiền cọc', 'Cho em hỏi tiền cọc hoàn sau bao lâu và có trường hợp nào bị giữ cọc không ạ?', 'Resolved', 2, '2025-03-02 15:20:00'),
+('TK-2025-0006', 9, 'VEHICLE', 'Xe bị hỏng giữa đường', 'Em đang thuê xe mà xe bị chết máy giữa đường, cần hỗ trợ gấp!', 'RESOLVED', 2, '2025-03-04 11:30:00'),
+('TK-2025-0007', 10, 'PAYMENT', 'Hỏi về phí trả xe khác địa điểm', 'Nếu em nhận xe ở Q1 mà trả ở Tân Bình thì tính phí thế nào ạ?', 'RESOLVED', 3, '2025-03-03 09:00:00'),
+('TK-2025-0008', 11, 'GENERAL', 'Hỏi về chính sách hoàn tiền cọc', 'Cho em hỏi tiền cọc hoàn sau bao lâu và có trường hợp nào bị giữ cọc không ạ?', 'RESOLVED', 2, '2025-03-02 15:20:00'),
 
 -- Closed tickets (with ratings)
-('TK-2025-0009', 5, 'Booking', 'Hỏi về thời gian thuê tối thiểu', 'Em chỉ muốn thuê 1 ngày được không ạ?', 'Closed', 2, '2025-02-28 10:00:00'),
-('TK-2025-0010', 6, 'Vehicle', 'Xe có bluetooth không?', 'Em muốn thuê xe có kết nối bluetooth để nghe nhạc.', 'Closed', 3, '2025-02-27 14:30:00');
+('TK-2025-0009', 5, 'BOOKING', 'Hỏi về thời gian thuê tối thiểu', 'Em chỉ muốn thuê 1 ngày được không ạ?', 'CLOSED', 2, '2025-02-28 10:00:00'),
+('TK-2025-0010', 6, 'VEHICLE', 'Xe có bluetooth không?', 'Em muốn thuê xe có kết nối bluetooth để nghe nhạc.', 'CLOSED', 3, '2025-02-27 14:30:00');
 
 -- 17. SUPPORT MESSAGES
 INSERT INTO support_messages (ticket_id, sender_id, message_text, rating, created_at) VALUES

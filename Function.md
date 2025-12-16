@@ -117,18 +117,18 @@
 
 ---
 
- FEATURE 8: CUSTOMER SUPPORT 
+ FEATURE 8: CUSTOMER SUPPORT - done
 
- UC19: Submit Support Request
+ UC19: Submit Support Request - done
 - Roles: Customer, Guest
 - Mô tả: Tạo yêu cầu hỗ trợ mới, chọn danh mục, mô tả vấn đề
 
- UC20: Manage Support Tickets
+ UC20: Manage Support Tickets - done
 - Roles: Staff, Admin
 - Mô tả: Xem, phân loại, trả lời, cập nhật trạng thái yêu cầu hỗ trợ
 - Gộp: Review + Reply + Update status
 
- UC21: Rate Support
+ UC21: Rate Support - done
 - Roles: Customer
 - Mô tả: Đánh giá chất lượng hỗ trợ sau khi giải quyết
 - Gộp: Provide feedback + Store feedback
