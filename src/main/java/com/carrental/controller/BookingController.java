@@ -176,29 +176,17 @@ public class BookingController {
         bookings = bookingService.getBookingsByCustomer(currentUser.getId());
 
         if (status != null && !status.isEmpty()) {
-            // Special filter: show completed bookings
-            if (status.equalsIgnoreCase("Completed")) {
+            // Filter by booking status (including Completed)
+            try {
+                Booking.BookingStatus bookingStatus = Booking.BookingStatus.valueOf(status.toUpperCase());
+                log.info("[MY-BOOKINGS] Filtering by booking status: {}", bookingStatus);
                 bookings = bookings.stream()
-                        .filter(b -> {
-                            // If booking status already marked completed, keep it
-                            if (b.getStatus() == Booking.BookingStatus.COMPLETED) {
-                                return true;
-                            }
-                            // Otherwise, consider completed when contract is completed and bill exists (any status)
-                            return contractService.getContractByBookingId(b.getId())
-                                    .filter(c -> c.getStatus() == Contract.ContractStatus.COMPLETED)
-                                    .isPresent();
-                        })
+                        .filter(b -> b.getStatus() == bookingStatus)
                         .toList();
-            } else {
-                try {
-                    Booking.BookingStatus bookingStatus = Booking.BookingStatus.valueOf(status.toUpperCase());
-                    bookings = bookings.stream()
-                            .filter(b -> b.getStatus() == bookingStatus)
-                            .toList();
-                } catch (IllegalArgumentException ignored) {
-                    // Keep original list if status param is invalid
-                }
+                log.info("[MY-BOOKINGS] After status filter: {} bookings", bookings.size());
+            } catch (IllegalArgumentException e) {
+                log.warn("[MY-BOOKINGS] Invalid status parameter: {}", status);
+                // Keep original list if status param is invalid
             }
         }
 
