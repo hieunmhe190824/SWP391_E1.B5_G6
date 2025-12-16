@@ -60,6 +60,9 @@
     --font-3xl: 1.5rem;      /* 24px */
     --font-4xl: 1.875rem;    /* 30px */
 
+    /* ===== FONT FAMILY - Font chữ ===== */
+    --font-family-base: 'Arial', sans-serif;
+
     /* ===== BORDER RADIUS - Bo góc ===== */
     --radius-sm: 0.25rem;    /* 4px */
     --radius-md: 0.5rem;     /* 8px */

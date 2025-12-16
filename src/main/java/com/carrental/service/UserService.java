@@ -82,6 +82,27 @@ public class UserService {
     }
     
     /**
+     * Change user password
+     * @param userId User ID
+     * @param currentPassword Current password for verification
+     * @param newPassword New password to set
+     * @throws IllegalArgumentException if current password is incorrect
+     */
+    public void changePassword(Long userId, String currentPassword, String newPassword) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        
+        // Verify current password
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            throw new IllegalArgumentException("Mật khẩu hiện tại không đúng");
+        }
+        
+        // Encode and set new password
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+    }
+    
+    /**
      * Find all staff members (for ticket assignment)
      */
     public List<User> findAllStaff() {

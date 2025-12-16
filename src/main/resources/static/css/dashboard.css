@@ -519,8 +519,8 @@ body:has(.dashboard-container) {
 .dashboard-content {
     flex: 1;
     padding: var(--spacing-2xl);
-    max-width: 1400px;
-    margin: 0 auto;
+    max-width: none;
+    margin: 0;
     width: 100%;
     background: var(--section-dark-bg);
     position: relative;

@@ -11,22 +11,27 @@
 }
 
 body {
-    font-family: 'Arial', sans-serif;
+    font-family: var(--font-family-base);
     line-height: 1.6;
-    color: var(--color-text);                    /* Sử dụng biến màu */
-    background-color: var(--color-background);   /* Sử dụng biến màu */
+    color: var(--color-text);
+    /* Sử dụng biến màu */
+    background-color: var(--color-background);
+    /* Sử dụng biến màu */
 }
 
 /* Container */
 .container {
-    max-width: var(--container-max);    /* 1200px */
+    max-width: var(--container-max);
+    /* 1200px */
     margin: 0 auto;
-    padding: 0 var(--spacing-lg);       /* 24px */
+    padding: 0 var(--spacing-lg);
+    /* 24px */
 }
 
 /* Header */
 header {
-    background-color: var(--color-secondary-dark);  /* Black theme */
+    background-color: var(--color-secondary-dark);
+    /* Black theme */
     color: var(--color-text-white);
     padding: 0;
     border: none;
@@ -49,7 +54,8 @@ nav a {
 }
 
 nav a:hover {
-    background-color: var(--color-primary);      /* Blue hover */
+    background-color: var(--color-primary);
+    /* Blue hover */
     border-radius: var(--radius-sm);
 }
 
@@ -62,7 +68,8 @@ main {
 
 /* Footer */
 footer {
-    background-color: var(--color-secondary-dark);  /* Black theme */
+    background-color: var(--color-secondary-dark);
+    /* Black theme */
     color: var(--color-text-white);
     text-align: center;
     padding: var(--spacing-md) 0;
@@ -100,7 +107,8 @@ footer {
 
 .form-control:focus {
     outline: none;
-    border-color: var(--color-primary);    /* Blue border khi focus */
+    border-color: var(--color-primary);
+    /* Blue border khi focus */
 }
 
 /* Buttons - Theme Black & Blue */
@@ -118,19 +126,22 @@ footer {
 
 /* Primary Button - Blue */
 .btn-primary {
-    background-color: var(--color-primary);        /* Blue */
+    background-color: var(--color-primary);
+    /* Blue */
     color: var(--color-text-white);
 }
 
 .btn-primary:hover {
-    background-color: var(--color-primary-dark);   /* Dark Blue */
+    background-color: var(--color-primary-dark);
+    /* Dark Blue */
     transform: translateY(-2px);
     box-shadow: var(--shadow-md);
 }
 
 /* Secondary Button - Dark */
 .btn-secondary {
-    background-color: var(--color-secondary);      /* Dark Gray */
+    background-color: var(--color-secondary);
+    /* Dark Gray */
     color: var(--color-text-white);
 }
 
@@ -157,7 +168,8 @@ table {
     overflow: hidden;
 }
 
-th, td {
+th,
+td {
     padding: 1rem;
     text-align: left;
     border-bottom: 1px solid #ddd;

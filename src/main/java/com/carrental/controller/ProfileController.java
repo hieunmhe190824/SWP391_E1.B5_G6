@@ -149,6 +149,62 @@ public class ProfileController {
     }
 
     /**
+     * Show change password form
+     */
+    @GetMapping("/change-password")
+    public String changePasswordForm(Model model) {
+        User currentUser = getCurrentUser();
+        if (currentUser == null) {
+            return "redirect:/auth/login";
+        }
+
+        model.addAttribute("user", currentUser);
+        return "customer/change-password";
+    }
+
+    /**
+     * Change password
+     */
+    @PostMapping("/change-password")
+    public String changePassword(
+            @RequestParam String currentPassword,
+            @RequestParam String newPassword,
+            @RequestParam String confirmPassword,
+            RedirectAttributes redirectAttributes) {
+        
+        User currentUser = getCurrentUser();
+        if (currentUser == null) {
+            return "redirect:/auth/login";
+        }
+
+        try {
+            // Validate new password and confirm password match
+            if (!newPassword.equals(confirmPassword)) {
+                redirectAttributes.addFlashAttribute("error", "Mật khẩu mới và xác nhận mật khẩu không khớp");
+                return "redirect:/profile/change-password";
+            }
+            
+            // Validate password length
+            if (newPassword.length() < 6) {
+                redirectAttributes.addFlashAttribute("error", "Mật khẩu mới phải có ít nhất 6 ký tự");
+                return "redirect:/profile/change-password";
+            }
+            
+            // Change password
+            userService.changePassword(currentUser.getId(), currentPassword, newPassword);
+            redirectAttributes.addFlashAttribute("success", "Đổi mật khẩu thành công");
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/profile/change-password";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra: " + e.getMessage());
+            return "redirect:/profile/change-password";
+        }
+
+        return "redirect:/profile";
+    }
+
+    /**
      * Show add document form
      */
     @GetMapping("/documents/add")

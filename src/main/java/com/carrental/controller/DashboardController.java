@@ -180,6 +180,59 @@ public class DashboardController {
 
         return "redirect:/admin/profile";
     }
+
+    /**
+     * Admin - Change Password
+     * POST /admin/profile/change-password
+     */
+    @PostMapping("/admin/profile/change-password")
+    public String adminChangePassword(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestParam String currentPassword,
+            @RequestParam String newPassword,
+            @RequestParam String confirmPassword,
+            RedirectAttributes redirectAttributes) {
+        
+        User user = userService.findByUsername(userDetails.getUsername());
+        
+        try {
+            // Validate new password and confirm password match
+            if (!newPassword.equals(confirmPassword)) {
+                redirectAttributes.addFlashAttribute("error", "Mật khẩu mới và xác nhận mật khẩu không khớp");
+                return "redirect:/admin/profile/change-password";
+            }
+            
+            // Validate password length
+            if (newPassword.length() < 6) {
+                redirectAttributes.addFlashAttribute("error", "Mật khẩu mới phải có ít nhất 6 ký tự");
+                return "redirect:/admin/profile/change-password";
+            }
+            
+            // Change password
+            userService.changePassword(user.getId(), currentPassword, newPassword);
+            redirectAttributes.addFlashAttribute("success", "Đổi mật khẩu thành công");
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/admin/profile/change-password";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra: " + e.getMessage());
+            return "redirect:/admin/profile/change-password";
+        }
+        
+        return "redirect:/admin/profile";
+    }
+
+    /**
+     * Admin - Show Change Password Form
+     * GET /admin/profile/change-password
+     */
+    @GetMapping("/admin/profile/change-password")
+    public String adminChangePasswordForm(@AuthenticationPrincipal UserDetails userDetails, Model model) {
+        User user = userService.findByUsername(userDetails.getUsername());
+        model.addAttribute("user", user);
+        model.addAttribute("currentUser", user);
+        return "admin/change-password";
+    }
     
     // ========================================
     // STAFF ROUTES
@@ -306,5 +359,58 @@ public class DashboardController {
         }
 
         return "redirect:/staff/profile";
+    }
+
+    /**
+     * Staff - Change Password
+     * POST /staff/profile/change-password
+     */
+    @PostMapping("/staff/profile/change-password")
+    public String staffChangePassword(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @RequestParam String currentPassword,
+            @RequestParam String newPassword,
+            @RequestParam String confirmPassword,
+            RedirectAttributes redirectAttributes) {
+        
+        User user = userService.findByUsername(userDetails.getUsername());
+        
+        try {
+            // Validate new password and confirm password match
+            if (!newPassword.equals(confirmPassword)) {
+                redirectAttributes.addFlashAttribute("error", "Mật khẩu mới và xác nhận mật khẩu không khớp");
+                return "redirect:/staff/profile/change-password";
+            }
+            
+            // Validate password length
+            if (newPassword.length() < 6) {
+                redirectAttributes.addFlashAttribute("error", "Mật khẩu mới phải có ít nhất 6 ký tự");
+                return "redirect:/staff/profile/change-password";
+            }
+            
+            // Change password
+            userService.changePassword(user.getId(), currentPassword, newPassword);
+            redirectAttributes.addFlashAttribute("success", "Đổi mật khẩu thành công");
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/staff/profile/change-password";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Có lỗi xảy ra: " + e.getMessage());
+            return "redirect:/staff/profile/change-password";
+        }
+        
+        return "redirect:/staff/profile";
+    }
+
+    /**
+     * Staff - Show Change Password Form
+     * GET /staff/profile/change-password
+     */
+    @GetMapping("/staff/profile/change-password")
+    public String staffChangePasswordForm(@AuthenticationPrincipal UserDetails userDetails, Model model) {
+        User user = userService.findByUsername(userDetails.getUsername());
+        model.addAttribute("user", user);
+        model.addAttribute("currentUser", user);
+        return "staff/change-password";
     }
 }

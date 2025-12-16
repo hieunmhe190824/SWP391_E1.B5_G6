@@ -47,16 +47,32 @@
                                 <h3>Thông tin cá nhân</h3>
                                 <p class="section-subtitle">Quản lý thông tin tài khoản của bạn</p>
                             </div>
-                            <a th:href="@{/admin/profile/edit}" class="btn btn-secondary btn-icon">
-                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none"
-                                    xmlns="http://www.w3.org/2000/svg">
-                                    <path
-                                        d="M11.333 2.00001C11.5084 1.82475 11.7163 1.68607 11.9441 1.59229C12.1719 1.49851 12.4151 1.45166 12.6663 1.45166C12.9176 1.45166 13.1608 1.49851 13.3886 1.59229C13.6164 1.68607 13.8243 1.82475 13.9997 2.00001C14.175 2.17527 14.3137 2.38318 14.4074 2.61098C14.5012 2.83878 14.5481 3.08198 14.5481 3.33334C14.5481 3.5847 14.5012 3.8279 14.4074 4.0557C14.3137 4.2835 14.175 4.49141 13.9997 4.66668L5.33301 13.3333L1.33301 14.6667L2.66634 10.6667L11.333 2.00001Z"
-                                        stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
-                                        stroke-linejoin="round" />
-                                </svg>
-                                Chỉnh sửa
-                            </a>
+                            <div style="display: flex; gap: 8px;">
+                                <a th:href="@{/admin/profile/edit}" class="btn btn-secondary btn-icon">
+                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path
+                                            d="M11.333 2.00001C11.5084 1.82475 11.7163 1.68607 11.9441 1.59229C12.1719 1.49851 12.4151 1.45166 12.6663 1.45166C12.9176 1.45166 13.1608 1.49851 13.3886 1.59229C13.6164 1.68607 13.8243 1.82475 13.9997 2.00001C14.175 2.17527 14.3137 2.38318 14.4074 2.61098C14.5012 2.83878 14.5481 3.08198 14.5481 3.33334C14.5481 3.5847 14.5012 3.8279 14.4074 4.0557C14.3137 4.2835 14.175 4.49141 13.9997 4.66668L5.33301 13.3333L1.33301 14.6667L2.66634 10.6667L11.333 2.00001Z"
+                                            stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                                            stroke-linejoin="round" />
+                                    </svg>
+                                    Chỉnh sửa
+                                </a>
+                                <a th:href="@{/admin/profile/change-password}" class="btn btn-primary btn-icon">
+                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path
+                                            d="M12.6667 7.33334H3.33333C2.59695 7.33334 2 7.93029 2 8.66668V13.3333C2 14.0697 2.59695 14.6667 3.33333 14.6667H12.6667C13.403 14.6667 14 14.0697 14 13.3333V8.66668C14 7.93029 13.403 7.33334 12.6667 7.33334Z"
+                                            stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                                            stroke-linejoin="round" />
+                                        <path
+                                            d="M4.66667 7.33334V4.66668C4.66667 3.78262 5.01786 2.93477 5.64298 2.30965C6.2681 1.68453 7.11595 1.33334 8 1.33334C8.88406 1.33334 9.7319 1.68453 10.357 2.30965C10.9821 2.93477 11.3333 3.78262 11.3333 4.66668V7.33334"
+                                            stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+                                            stroke-linejoin="round" />
+                                    </svg>
+                                    Đổi mật khẩu
+                                </a>
+                            </div>
                         </div>
 
                         <div class="profile-main-content">
