@@ -36,17 +36,79 @@ public class DepositManagementController {
             @RequestParam(value = "status", required = false) String statusStr,
             Model model) {
         
+        System.out.println("=== DEPOSIT FILTER DEBUG ===");
+        System.out.println("Status parameter: '" + statusStr + "'");
+        
         List<DepositHold> deposits;
         
         if (statusStr != null && !statusStr.isEmpty()) {
-            DepositHold.DepositStatus status = DepositHold.DepositStatus.valueOf(statusStr);
-            deposits = depositService.getDepositsByStatus(status);
+            try {
+                // Convert to uppercase to handle case-insensitive input
+                DepositHold.DepositStatus status = DepositHold.DepositStatus.valueOf(statusStr.toUpperCase());
+                System.out.println("Parsed status enum: " + status);
+                deposits = depositService.getDepositsByStatus(status);
+                System.out.println("Found " + deposits.size() + " deposits with status: " + status);
+            } catch (IllegalArgumentException e) {
+                System.err.println("Invalid status value: " + statusStr);
+                deposits = depositService.getAllDeposits();
+                statusStr = null; // Reset to show all
+            }
         } else {
+            System.out.println("No status filter, showing all deposits");
             deposits = depositService.getAllDeposits();
         }
+        
+        // Auto-update deposits from HOLDING to READY when holdEndDate has passed
+        // This ensures deposits are only eligible for refund 2 weeks after actual return date
+        LocalDateTime now = LocalDateTime.now();
+        for (DepositHold deposit : deposits) {
+            if (deposit.getStatus() == DepositHold.DepositStatus.HOLDING 
+                && deposit.getHoldEndDate() != null 
+                && now.isAfter(deposit.getHoldEndDate())) {
+                
+                System.out.println("Auto-updating deposit " + deposit.getId() + " from HOLDING to READY");
+                System.out.println("  Hold end date: " + deposit.getHoldEndDate());
+                System.out.println("  Current time: " + now);
+                
+                depositService.updateDepositStatus(deposit.getId(), DepositHold.DepositStatus.READY);
+                deposit.setStatus(DepositHold.DepositStatus.READY); // Update in-memory object too
+            }
+        }
+        
+        // Check which deposits already have refunds processed
+        // AND auto-update status to REFUNDED if refund exists
+        java.util.Map<Long, Boolean> refundProcessedMap = new java.util.HashMap<>();
+        for (DepositHold deposit : deposits) {
+            boolean hasRefund = refundService.getRefundByDepositHold(deposit.getId()).isPresent();
+            refundProcessedMap.put(deposit.getId(), hasRefund);
+            
+            if (hasRefund) {
+                System.out.println("Deposit " + deposit.getId() + " already has refund processed");
+                
+                // Auto-update status to REFUNDED if not already
+                if (deposit.getStatus() != DepositHold.DepositStatus.REFUNDED) {
+                    System.out.println("  Auto-updating deposit " + deposit.getId() + " to REFUNDED status");
+                    depositService.updateDepositStatus(deposit.getId(), DepositHold.DepositStatus.REFUNDED);
+                    deposit.setStatus(DepositHold.DepositStatus.REFUNDED); // Update in-memory object too
+                }
+            }
+        }
+        
+        // Filter out deposits that already have refunds when status is READY
+        // This ensures the READY filter only shows deposits that can actually be refunded
+        if (statusStr != null && statusStr.equalsIgnoreCase("READY")) {
+            deposits = deposits.stream()
+                .filter(deposit -> !refundProcessedMap.getOrDefault(deposit.getId(), false))
+                .collect(java.util.stream.Collectors.toList());
+            System.out.println("After filtering out refunded deposits: " + deposits.size() + " deposits remaining");
+        }
+        
+        System.out.println("Total deposits to display: " + deposits.size());
+        System.out.println("=== END FILTER DEBUG ===");
 
         model.addAttribute("deposits", deposits);
         model.addAttribute("selectedStatus", statusStr);
+        model.addAttribute("refundProcessed", refundProcessedMap);
         return "staff/deposit-holds";
     }
 
@@ -177,16 +239,31 @@ public class DepositManagementController {
             @RequestParam("refundMethod") String refundMethodStr,
             RedirectAttributes redirectAttributes) {
         try {
-            // Parse refund method
-            RefundMethod refundMethod = RefundMethod.valueOf(refundMethodStr);
+            // Log the received parameter
+            System.out.println("=== REFUND PROCESSING DEBUG ===");
+            System.out.println("Hold ID: " + holdId);
+            System.out.println("Refund Method String (raw): '" + refundMethodStr + "'");
+            System.out.println("Refund Method String (uppercase): '" + refundMethodStr.toUpperCase() + "'");
+            
+            // Parse refund method (convert to uppercase to handle case-insensitive input)
+            RefundMethod refundMethod = RefundMethod.valueOf(refundMethodStr.toUpperCase());
+            System.out.println("Parsed RefundMethod enum: " + refundMethod);
 
             // Process refund
             Refund refund = refundService.processRefund(holdId, refundMethod);
+            System.out.println("Refund processed successfully. Refund ID: " + refund.getId());
+            System.out.println("=== END DEBUG ===");
 
             redirectAttributes.addFlashAttribute("successMessage", 
                 String.format("Hoàn tiền thành công! Số tiền: %,.0f VNĐ", refund.getRefundAmount()));
             return "redirect:/staff/deposits/" + holdId;
         } catch (Exception e) {
+            System.err.println("=== REFUND ERROR ===");
+            System.err.println("Error type: " + e.getClass().getName());
+            System.err.println("Error message: " + e.getMessage());
+            e.printStackTrace();
+            System.err.println("=== END ERROR ===");
+            
             redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi hoàn tiền: " + e.getMessage());
             return "redirect:/staff/deposits/" + holdId + "/refund";
         }

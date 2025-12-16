@@ -12,29 +12,37 @@
     <style>
         body {
             background: var(--section-dark-bg);
+            font-family: var(--font-family-base);
         }
 
         .dashboard-content {
             background: var(--section-dark-bg);
             width: 100%;
+            font-family: var(--font-family-base);
         }
 
         .page {
-            max-width: 850px;
-            margin: 0 auto 2rem;
+            width: 100%;
+            max-width: none;
+            margin: 0 0 2rem;
             padding: 2rem 1.5rem;
         }
 
         .title {
             color: var(--color-text-white);
-            font-size: 1.9rem;
-            font-weight: 800;
-            margin-bottom: 0.5rem;
+            font-size: 1.7rem;
+            font-weight: 700;
+            letter-spacing: 0.01em;
+            margin-bottom: 0.4rem;
+            font-family: var(--font-family-base);
         }
 
         .subtitle {
-            color: rgba(255, 255, 255, 0.75);
-            margin-bottom: 1.5rem;
+            color: rgba(255, 255, 255, 0.78);
+            font-size: 1rem;
+            letter-spacing: 0.01em;
+            margin-bottom: 1.25rem;
+            font-family: var(--font-family-base);
         }
 
         .panel {
@@ -44,13 +52,16 @@
             padding: 1.5rem;
             margin-bottom: 1.25rem;
             box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+            font-family: var(--font-family-base);
         }
 
         .panel-title {
             color: var(--color-text-white);
-            font-weight: 800;
+            font-weight: 700;
             font-size: 1.1rem;
+            letter-spacing: 0.01em;
             margin-bottom: 1rem;
+            font-family: var(--font-family-base);
         }
 
         .info-grid {
@@ -71,11 +82,13 @@
             letter-spacing: 0.5px;
             color: rgba(255, 255, 255, 0.65);
             font-weight: 700;
+            font-family: var(--font-family-base);
         }
 
         .value {
             color: var(--color-text-white);
             font-weight: 700;
+            font-family: var(--font-family-base);
         }
 
         .refund-invoice {
@@ -83,6 +96,7 @@
             border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 12px;
             padding: 1.25rem;
+            font-family: var(--font-family-base);
         }
 
         .invoice-row {
@@ -90,6 +104,7 @@
             justify-content: space-between;
             padding: 0.65rem 0;
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-family: var(--font-family-base);
         }
 
         .invoice-row:last-child {
@@ -99,11 +114,13 @@
         .invoice-label {
             color: rgba(255, 255, 255, 0.8);
             font-weight: 600;
+            font-family: var(--font-family-base);
         }
 
         .invoice-value {
             color: var(--color-text-white);
             font-weight: 700;
+            font-family: var(--font-family-base);
         }
 
         .invoice-total {
@@ -113,6 +130,7 @@
             font-size: 1.3rem;
             font-weight: 800;
             color: #22c55e;
+            font-family: var(--font-family-base);
         }
 
         .violations-summary {
@@ -121,6 +139,15 @@
             border-radius: 10px;
             padding: 1rem;
             margin-top: 1rem;
+            font-family: var(--font-family-base);
+        }
+
+        .violation-title {
+            font-weight: 700;
+            letter-spacing: 0.01em;
+            color: var(--color-text-white);
+            margin-bottom: 0.5rem;
+            font-family: var(--font-family-base);
         }
 
         .violation-item {
@@ -128,11 +155,13 @@
             justify-content: space-between;
             padding: 0.4rem 0;
             color: rgba(255, 255, 255, 0.85);
+            font-family: var(--font-family-base);
         }
 
         .violation-fine {
             color: #ef4444;
             font-weight: 700;
+            font-family: var(--font-family-base);
         }
 
         .payment-methods {
@@ -161,6 +190,7 @@
             border-radius: 12px;
             cursor: pointer;
             transition: all 0.2s;
+            font-family: var(--font-family-base);
         }
 
         .method-option input:checked+.method-label {
@@ -175,6 +205,8 @@
         .method-name {
             color: var(--color-text-white);
             font-weight: 700;
+            letter-spacing: 0.01em;
+            font-family: var(--font-family-base);
         }
 
         .warning-box {
@@ -183,49 +215,26 @@
             border-radius: 10px;
             padding: 1rem;
             margin-top: 1rem;
+            font-family: var(--font-family-base);
         }
 
         .warning-title {
             color: #fbbf24;
-            font-weight: 800;
+            font-weight: 700;
+            letter-spacing: 0.01em;
             margin-bottom: 0.5rem;
+            font-family: var(--font-family-base);
         }
 
         .warning-text {
             color: rgba(255, 255, 255, 0.85);
+            font-family: var(--font-family-base);
         }
 
         .actions {
             display: flex;
             gap: 0.75rem;
             flex-wrap: wrap;
-        }
-
-        .btn {
-            border: none;
-            border-radius: 12px;
-            padding: 0.9rem 1.5rem;
-            font-weight: 800;
-            cursor: pointer;
-            transition: transform 0.15s;
-            text-decoration: none;
-            display: inline-block;
-        }
-
-        .btn-success {
-            background: linear-gradient(135deg, #22c55e, #16a34a);
-            color: #fff;
-            box-shadow: 0 10px 28px rgba(34, 197, 94, 0.32);
-        }
-
-        .btn-ghost {
-            background: rgba(255, 255, 255, 0.04);
-            color: rgba(255, 255, 255, 0.9);
-            border: 1px solid rgba(255, 255, 255, 0.18);
-        }
-
-        .btn:hover {
-            transform: translateY(-1px);
         }
 
         .alert {
@@ -238,6 +247,54 @@
             background: rgba(239, 68, 68, 0.12);
             border: 1px solid rgba(239, 68, 68, 0.35);
             color: #f87171;
+        }
+
+        /* Modal */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .modal-backdrop.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal {
+            background: rgba(15, 22, 32, 0.98);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 1.5rem;
+            width: min(480px, 92vw);
+            box-shadow: 0 18px 38px rgba(0, 0, 0, 0.35);
+            color: var(--color-text-white);
+        }
+
+        .modal-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            letter-spacing: 0.01em;
+        }
+
+        .modal-text {
+            color: rgba(255, 255, 255, 0.78);
+            margin-bottom: 1.25rem;
+            line-height: 1.5;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
         }
     </style>
 </head>
@@ -302,7 +359,7 @@
                 </div>
 
                 <div th:if="${violations != null and !violations.isEmpty()}" class="violations-summary">
-                    <div style="font-weight: 800; color: var(--color-text-white); margin-bottom: 0.5rem;">
+                    <div class="violation-title">
                         Chi tiết vi phạm giao thông:
                     </div>
                     <div class="violation-item" th:each="violation : ${violations}">
@@ -314,7 +371,7 @@
                 </div>
             </div>
 
-            <form th:action="@{/staff/deposits/{id}/refund(id=${depositHold.id})}" method="post">
+            <form id="refundForm" th:action="@{/staff/deposits/{id}/refund(id=${depositHold.id})}" method="post">
                 <div class="panel">
                     <div class="panel-title">Phương thức hoàn tiền</div>
                     <div class="payment-methods">
@@ -346,16 +403,75 @@
 
                 <div class="panel">
                     <div class="actions">
-                        <button type="submit" class="btn btn-success"
-                            onclick="return confirm('Xác nhận hoàn tiền cho khách hàng?')">
+                        <button type="button" id="confirmRefundBtn" class="btn btn-primary">
                             Xác nhận hoàn tiền
                         </button>
-                        <a th:href="@{/staff/deposits/{id}(id=${depositHold.id})}" class="btn btn-ghost">Quay lại</a>
+                        <a th:href="@{/staff/deposits/{id}(id=${depositHold.id})}" class="btn btn-secondary">Quay lại</a>
                     </div>
                 </div>
             </form>
+
+            <div id="refundModal" class="modal-backdrop" aria-hidden="true">
+                <div class="modal">
+                    <div class="modal-title">Xác nhận hoàn tiền</div>
+                    <div class="modal-text">
+                        Bạn có chắc muốn hoàn tiền cọc cho khách hàng qua chuyển khoản?
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" id="cancelModalBtn" class="btn btn-secondary">Hủy</button>
+                        <button type="button" id="submitModalBtn" class="btn btn-primary">Xác nhận</button>
+                    </div>
+                </div>
+            </div>
         </main>
     </div>
+
+    <script>
+        (function () {
+            const form = document.getElementById('refundForm');
+            const confirmBtn = document.getElementById('confirmRefundBtn');
+            const modal = document.getElementById('refundModal');
+            const cancelModalBtn = document.getElementById('cancelModalBtn');
+            const submitModalBtn = document.getElementById('submitModalBtn');
+
+            if (!form || !confirmBtn || !modal || !cancelModalBtn || !submitModalBtn) return;
+
+            function isTransferSelected() {
+                const selected = form.querySelector('input[name="refundMethod"]:checked');
+                return selected && selected.value === 'TRANSFER';
+            }
+
+            function openModal() {
+                modal.classList.add('show');
+                modal.setAttribute('aria-hidden', 'false');
+            }
+
+            function closeModal() {
+                modal.classList.remove('show');
+                modal.setAttribute('aria-hidden', 'true');
+            }
+
+            confirmBtn.addEventListener('click', function () {
+                if (isTransferSelected()) {
+                    openModal();
+                } else {
+                    form.submit();
+                }
+            });
+
+            cancelModalBtn.addEventListener('click', closeModal);
+            modal.addEventListener('click', function (e) {
+                if (e.target === modal) {
+                    closeModal();
+                }
+            });
+
+            submitModalBtn.addEventListener('click', function () {
+                closeModal();
+                form.submit();
+            });
+        })();
+    </script>
 </body>
 
 </html>

@@ -104,13 +104,13 @@
 
 ---
 
- FEATURE 7: DEPOSIT REFUND
+ FEATURE 7: DEPOSIT REFUND - done
 
- UC17: Check Traffic Violations
+ UC17: Check Traffic Violations - done
 - Roles: Staff, System
 - Mô tả: Sau 14 ngày, staff nhập vi phạm giao thông (nếu có) vào hệ thống
 
- UC18: Process Deposit Refund
+ UC18: Process Deposit Refund - done
 - Roles: Staff, System
 - Mô tả: Tính toán và thực hiện hoàn tiền cọc, gửi thông báo cho customer
 - Gộp: Calculate refund + Generate invoice + Process refund + Notify customer

@@ -330,7 +330,7 @@ public class NotificationService {
             "Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi!",
             contractNumber,
             formatCurrency(refundAmount),
-            method.equals("Transfer") ? "Chuyển khoản" : "Tiền mặt"
+            method.equals("TRANSFER") ? "Chuyển khoản" : "Tiền mặt"
         );
         return createNotification(userId, title, message);
     }

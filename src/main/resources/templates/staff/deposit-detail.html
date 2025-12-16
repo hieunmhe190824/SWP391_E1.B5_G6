@@ -9,6 +9,7 @@
     <link rel="stylesheet" th:href="@{/css/main.css}">
     <link rel="stylesheet" th:href="@{/css/components.css}">
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/admin-vehicles.css}">
     <style>
         body {
             background: var(--section-dark-bg);
@@ -20,30 +21,9 @@
         }
 
         .page {
-            max-width: 1100px;
-            margin: 0 auto 2rem;
+            width: 100%;
+            margin: 0 0 2rem 0;
             padding: 2rem 1.5rem;
-        }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-
-        .title {
-            color: var(--color-text-white);
-            font-size: 1.9rem;
-            font-weight: 800;
-        }
-
-        .back-link {
-            color: var(--color-primary);
-            text-decoration: none;
-            font-weight: 700;
         }
 
         .stack {
@@ -68,8 +48,9 @@
 
         .panel-title {
             color: var(--color-text-white);
-            font-weight: 800;
+            font-weight: 700;
             font-size: 1.1rem;
+            letter-spacing: 0.01em;
         }
 
         .status-badge {
@@ -118,6 +99,12 @@
             color: var(--color-text-white);
             font-weight: 700;
             font-size: 1rem;
+        }
+
+        /* Make calendar icon in violation date input white */
+        .date-field input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            cursor: pointer;
         }
 
         .violations-list {
@@ -238,9 +225,6 @@
 
         .refund-row:last-child {
             border-bottom: none;
-            font-size: 1.15rem;
-            font-weight: 800;
-            color: var(--color-primary);
             margin-top: 0.5rem;
             padding-top: 0.75rem;
             border-top: 2px solid rgba(59, 130, 246, 0.3);
@@ -253,6 +237,15 @@
         .refund-value {
             color: var(--color-text-white);
             font-weight: 700;
+        }
+
+        .refund-row:last-child .refund-label {
+            font-size: 1rem;
+        }
+
+        .refund-row:last-child .refund-value {
+            font-size: 1.15rem;
+            color: var(--color-primary);
         }
 
         .actions {
@@ -317,9 +310,13 @@
 <body>
     <div th:replace="~{fragments/dashboard-layout :: layout-staff(pageTitle='Chi Tiết Tiền Cọc', content=~{::main})}">
         <main class="dashboard-content page">
-            <div class="header">
-                <div class="title">Chi Tiết Tiền Cọc</div>
-                <a th:href="@{/staff/deposits/holds}" class="back-link">← Quay lại danh sách</a>
+            <div class="page-header">
+                <div class="page-header-content">
+                    <h1 class="page-title">Chi tiết tiền cọc</h1>
+                </div>
+                <div class="page-header-actions">
+                    <a th:href="@{/staff/deposits/holds}" class="btn btn-secondary">← Quay lại danh sách</a>
+                </div>
             </div>
 
             <div th:if="${successMessage}" class="alert alert-success">
@@ -415,10 +412,20 @@
                             <div class="form-grid">
                                 <div class="field">
                                     <label for="violationType">Loại vi phạm <span class="required">*</span></label>
-                                    <input class="input" id="violationType" name="violationType" type="text" required
-                                        placeholder="Ví dụ: Vượt đèn đỏ">
+                                    <select class="input" id="violationType" name="violationType" required>
+                                        <option value="" disabled selected>Chọn loại vi phạm</option>
+                                        <option value="Vượt đèn đỏ">Vượt đèn đỏ</option>
+                                        <option value="Quá tốc độ">Quá tốc độ</option>
+                                        <option value="Đi sai làn đường">Đi sai làn đường</option>
+                                        <option value="Dừng, đỗ sai quy định">Dừng, đỗ sai quy định</option>
+                                        <option value="Không đội mũ bảo hiểm">Không đội mũ bảo hiểm</option>
+                                        <option value="Không chấp hành tín hiệu giao thông">Không chấp hành tín hiệu giao thông</option>
+                                        <option value="Lấn làn / đi ngược chiều">Lấn làn / đi ngược chiều</option>
+                                        <option value="Sử dụng điện thoại khi lái xe">Sử dụng điện thoại khi lái xe</option>
+                                        <option value="Khác">Khác (ghi rõ trong mô tả)</option>
+                                    </select>
                                 </div>
-                                <div class="field">
+                                <div class="field date-field">
                                     <label for="violationDate">Ngày vi phạm <span class="required">*</span></label>
                                     <input class="input" id="violationDate" name="violationDate" type="datetime-local"
                                         required>
@@ -448,28 +455,31 @@
 
                 <section class="panel">
                     <div class="panel-title">Dự kiến hoàn tiền</div>
-                    <div class="refund-preview">
+                    <div class="refund-preview"
+                         th:attr="data-original-deposit=${depositHold.depositAmount},
+                                  data-deducted-at-return=${depositHold.deductedAtReturn},
+                                  data-total-fines=${totalFines}">
                         <div class="refund-row">
                             <span class="refund-label">Tiền cọc gốc:</span>
-                            <span class="refund-value"
+                            <span class="refund-value" id="refund-original"
                                 th:text="${#numbers.formatDecimal(depositHold.depositAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">50,000,000
                                 VNĐ</span>
                         </div>
                         <div class="refund-row">
                             <span class="refund-label">Khấu trừ khi trả xe:</span>
-                            <span class="refund-value"
+                            <span class="refund-value" id="refund-deducted"
                                 th:text="'-' + ${#numbers.formatDecimal(depositHold.deductedAtReturn, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">-0
                                 VNĐ</span>
                         </div>
                         <div class="refund-row">
                             <span class="refund-label">Phạt vi phạm giao thông:</span>
-                            <span class="refund-value"
+                            <span class="refund-value" id="refund-fines"
                                 th:text="'-' + ${#numbers.formatDecimal(totalFines, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">-500,000
                                 VNĐ</span>
                         </div>
                         <div class="refund-row">
                             <span class="refund-label">Số tiền hoàn lại:</span>
-                            <span class="refund-value"
+                            <span class="refund-value" id="refund-total"
                                 th:text="${#numbers.formatDecimal(refundPreview, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">49,500,000
                                 VNĐ</span>
                         </div>
@@ -486,6 +496,40 @@
             </div>
         </main>
     </div>
+
+    <script>
+        (function () {
+            const refundBox = document.querySelector('.refund-preview');
+            const fineInput = document.getElementById('fineAmount');
+            if (!refundBox || !fineInput) return;
+
+            const originalDeposit = Number(refundBox.dataset.originalDeposit || 0);
+            const deductedAtReturn = Number(refundBox.dataset.deductedAtReturn || 0);
+            const existingFines = Number(refundBox.dataset.totalFines || 0);
+
+            const finesSpan = document.getElementById('refund-fines');
+            const totalSpan = document.getElementById('refund-total');
+
+            function formatVnd(amount) {
+                return amount.toLocaleString('vi-VN') + ' VNĐ';
+            }
+
+            function updatePreview() {
+                const newFine = Number(fineInput.value || 0);
+                const totalFines = existingFines + (isNaN(newFine) ? 0 : newFine);
+                const refund = Math.max(0, originalDeposit - deductedAtReturn - totalFines);
+
+                if (finesSpan) {
+                    finesSpan.textContent = '-' + formatVnd(totalFines);
+                }
+                if (totalSpan) {
+                    totalSpan.textContent = formatVnd(refund);
+                }
+            }
+
+            fineInput.addEventListener('input', updatePreview);
+        })();
+    </script>
 </body>
 
 </html>
