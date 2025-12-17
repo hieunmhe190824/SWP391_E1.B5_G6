@@ -5,6 +5,8 @@ import com.carrental.model.Contract;
 import com.carrental.model.User;
 import com.carrental.repository.ContractRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +30,13 @@ public class ContractService {
 
     public List<Contract> getAllContracts() {
         return contractRepository.findAll();
+    }
+
+    /**
+     * Get paginated contracts
+     */
+    public Page<Contract> getContractsPage(Pageable pageable) {
+        return contractRepository.findAll(pageable);
     }
 
     public Optional<Contract> getContractById(Long id) {
@@ -147,6 +156,13 @@ public class ContractService {
         return contractRepository.findAll().stream()
                 .filter(c -> c.getStatus() == status)
                 .toList();
+    }
+
+    /**
+     * Get paginated contracts by status
+     */
+    public Page<Contract> getContractsByStatusPage(Contract.ContractStatus status, Pageable pageable) {
+        return contractRepository.findByStatus(status, pageable);
     }
 
     private String generateContractNumber() {

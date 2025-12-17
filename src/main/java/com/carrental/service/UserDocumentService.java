@@ -43,7 +43,8 @@ public class UserDocumentService {
         document.setDocumentType(documentType);
         document.setDocumentNumber(documentNumber);
         document.setExpiryDate(expiryDate);
-        document.setStatus(UserDocument.DocumentStatus.Pending);
+        // Tài liệu do khách hàng tự upload trên trang profile -> tự động phê duyệt
+        document.setStatus(UserDocument.DocumentStatus.Approved);
 
         if (imageFile != null && !imageFile.isEmpty()) {
             String imageUrl = saveFile(imageFile, user.getId());
@@ -60,10 +61,10 @@ public class UserDocumentService {
 
         document.setDocumentNumber(documentNumber);
         document.setExpiryDate(expiryDate);
-        
-        // If status was rejected, reset to pending when updating
-        if (document.getStatus() == UserDocument.DocumentStatus.Rejected) {
-            document.setStatus(UserDocument.DocumentStatus.Pending);
+        // Nếu tài liệu từng bị từ chối, khi khách hàng cập nhật lại thì tự động phê duyệt
+        if (document.getStatus() == UserDocument.DocumentStatus.Rejected
+                || document.getStatus() == UserDocument.DocumentStatus.Pending) {
+            document.setStatus(UserDocument.DocumentStatus.Approved);
             document.setVerifiedBy(null);
         }
 

@@ -97,8 +97,14 @@
 
         .contracts-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 1rem;
+        }
+
+        @media (max-width: 1024px) {
+            .contracts-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
         .contract-card {
@@ -347,7 +353,7 @@
                             th:classappend="${selectedStatus == null ? 'active' : ''}">
                             Tất cả
                         </a>
-                        <a th:href="@{/staff/contracts/pending-payment}" class="filter-btn"
+                        <a th:href="@{/staff/contracts(status='PENDING_PAYMENT')}" class="filter-btn"
                             th:classappend="${selectedStatus == 'PENDING_PAYMENT' ? 'active' : ''}">
                             Chờ thanh toán
                         </a>
@@ -375,9 +381,13 @@
                             <div class="contract-number" th:text="${contract.contractNumber}">CT-001</div>
                             <div class="customer-info">
                                 <span class="customer-name"
-                                    th:text="${contract.booking.customer.fullName}">Customer Name</span>
+                                    th:text="${contract.customer != null ? contract.customer.fullName : 'Khách hàng'}">
+                                    Customer Name
+                                </span>
                                 <span class="customer-email"
-                                    th:text="${contract.booking.customer.email}">Email</span>
+                                    th:text="${contract.customer != null ? contract.customer.email : ''}">
+                                    Email
+                                </span>
                             </div>
                         </div>
                         <div class="status-actions">
@@ -393,14 +403,18 @@
                     <div class="card-info-row">
                         <span class="info-label">Xe</span>
                         <div class="vehicle-info">
-                            <img th:src="${contract.booking.vehicle.firstImageUrl}"
-                                th:alt="${contract.booking.vehicle.model.brand.brandName}" class="vehicle-thumb">
+                            <img th:if="${contract.vehicle != null}"
+                                 th:src="${contract.vehicle.firstImageUrl}"
+                                 th:alt="${contract.vehicle.model.brand.brandName}" class="vehicle-thumb">
                             <div class="vehicle-details">
                                 <span class="vehicle-name"
-                                    th:text="${contract.booking.vehicle.model.brand.brandName + ' ' + contract.booking.vehicle.model.modelName}">
+                                    th:text="${contract.vehicle != null ? contract.vehicle.model.brand.brandName + ' ' + contract.vehicle.model.modelName : 'Xe'}">
                                     Vehicle
                                 </span>
-                                <span class="vehicle-plate" th:text="${contract.booking.vehicle.licensePlate}">Plate</span>
+                                <span class="vehicle-plate"
+                                      th:text="${contract.vehicle != null ? contract.vehicle.licensePlate : ''}">
+                                    Plate
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -408,11 +422,11 @@
                     <div class="card-info-row">
                         <span class="info-label">Thời gian thuê</span>
                         <div style="display: flex; gap: 0.5rem; align-items: center; color: var(--color-text-white); font-size: 0.95rem;">
-                            <span th:text="${#temporals.format(contract.booking.startDate, 'dd/MM/yyyy')}">Start</span>
+                            <span th:text="${#temporals.format(contract.startDate, 'dd/MM/yyyy')}">Start</span>
                             <span style="color: rgba(255, 255, 255, 0.7);">→</span>
-                            <span th:text="${#temporals.format(contract.booking.endDate, 'dd/MM/yyyy')}">End</span>
+                            <span th:text="${#temporals.format(contract.endDate, 'dd/MM/yyyy')}">End</span>
                             <span style="color: rgba(255, 255, 255, 0.7);"
-                                th:text="'(' + ${contract.booking.totalDays} + ' ngày)'">Days</span>
+                                th:text="'(' + ${contract.totalDays} + ' ngày)'">Days</span>
                         </div>
                     </div>
 
@@ -438,6 +452,49 @@
                         </a>
                     </div>
                 </div>
+            </div>
+
+            <!-- Pagination -->
+            <div th:if="${totalPages != null and totalPages > 1}" style="margin-top: 1.5rem; display: flex; justify-content: center;">
+                <nav class="pagination">
+                    <ul style="display: flex; list-style: none; gap: 0.5rem; padding: 0; margin: 0;">
+                        <!-- Previous page -->
+                        <li th:classappend="${currentPage == 0} ? 'disabled'">
+                            <a th:if="${currentPage > 0}"
+                               th:href="@{/staff/contracts(page=${currentPage - 1}, status=${selectedStatus})}"
+                               style="padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2); color: var(--color-text-white); text-decoration: none; font-size: 0.85rem;">
+                                «
+                            </a>
+                            <span th:if="${currentPage == 0}"
+                                  style="padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.5); font-size: 0.85rem;">
+                                «
+                            </span>
+                        </li>
+
+                        <!-- Page numbers -->
+                        <li th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
+                            <a th:href="@{/staff/contracts(page=${i}, status=${selectedStatus})}"
+                               th:text="${i + 1}"
+                               th:classappend="${i == currentPage} ? 'active'"
+                               style="padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2); color: var(--color-text-white); text-decoration: none; font-size: 0.85rem;"
+                               th:styleappend="${i == currentPage} ? ';background: var(--color-primary); border-color: var(--color-primary);' : ''">
+                            </a>
+                        </li>
+
+                        <!-- Next page -->
+                        <li th:classappend="${currentPage + 1 >= totalPages} ? 'disabled'">
+                            <a th:if="${currentPage + 1 < totalPages}"
+                               th:href="@{/staff/contracts(page=${currentPage + 1}, status=${selectedStatus})}"
+                               style="padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.2); color: var(--color-text-white); text-decoration: none; font-size: 0.85rem;">
+                                »
+                            </a>
+                            <span th:if="${currentPage + 1 >= totalPages}"
+                                  style="padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.5); font-size: 0.85rem;">
+                                »
+                            </span>
+                        </li>
+                    </ul>
+                </nav>
             </div>
 
             <!-- Empty State -->

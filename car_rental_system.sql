@@ -348,6 +348,7 @@ CREATE TABLE support_tickets (
     status ENUM('OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED') DEFAULT 'OPEN',
     assigned_to INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    resolved_at TIMESTAMP NULL DEFAULT NULL,
     FOREIGN KEY (customer_id) REFERENCES users(user_id) ON DELETE SET NULL,
     FOREIGN KEY (assigned_to) REFERENCES users(user_id) ON DELETE SET NULL,
     INDEX idx_status (status)
