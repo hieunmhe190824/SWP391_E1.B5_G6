@@ -27,6 +27,13 @@ public class UserService {
         return userRepository.findAll();
     }
 
+    /**
+     * Get all customers (role = CUSTOMER)
+     */
+    public List<User> getAllCustomers() {
+        return userRepository.findAllCustomers();
+    }
+
     public Optional<User> getUserById(Long id) {
         return userRepository.findById(id);
     }
@@ -114,6 +121,16 @@ public class UserService {
         return userRepository.findAll().stream()
                 .filter(user -> user.getRole() == User.UserRole.STAFF || user.getRole() == User.UserRole.ADMIN)
                 .toList();
+    }
+
+    /**
+     * Update user status (ACTIVE/INACTIVE)
+     */
+    public void updateUserStatus(Long userId, User.UserStatus status) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setStatus(status);
+        userRepository.save(user);
     }
     
     /**

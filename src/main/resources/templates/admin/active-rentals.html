@@ -213,8 +213,8 @@
 </head>
 
 <body>
-    <!-- Dashboard Layout -->
-    <div th:replace="~{fragments/dashboard-layout :: layout(~{::main})}">
+    <!-- Dashboard Layout (Admin Sidebar) -->
+    <div th:replace="~{fragments/dashboard-layout :: layout-admin(pageTitle='Tất Cả Xe Đang Cho Thuê', content=~{::main})}">
         <main class="active-rentals-page">
             <!-- Page Header -->
             <div class="page-header">

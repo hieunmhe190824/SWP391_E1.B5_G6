@@ -12,6 +12,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -91,7 +92,7 @@ public class DashboardController {
     }
 
     /**
-     * Admin - Quản lý người dùng
+     * Admin - Quản lý tất cả người dùng
      * GET /admin/users
      */
     @GetMapping("/admin/users")
@@ -101,7 +102,177 @@ public class DashboardController {
             model.addAttribute("currentUser", currentUser);
         }
         model.addAttribute("users", userService.getAllUsers());
+        model.addAttribute("activeFilter", "all");
         return "admin/users";
+    }
+
+    /**
+     * Admin - Chỉ xem khách hàng
+     * GET /admin/users/customers
+     */
+    @GetMapping("/admin/users/customers")
+    public String manageCustomerUsers(@AuthenticationPrincipal UserDetails userDetails, Model model) {
+        if (userDetails != null) {
+            User currentUser = userService.findByUsername(userDetails.getUsername());
+            model.addAttribute("currentUser", currentUser);
+        }
+        model.addAttribute("users", userService.getAllCustomers());
+        model.addAttribute("activeFilter", "customers");
+        return "admin/users";
+    }
+
+    /**
+     * Admin - Chỉ xem nhân viên & admin
+     * GET /admin/users/staff
+     */
+    @GetMapping("/admin/users/staff")
+    public String manageStaffUsers(@AuthenticationPrincipal UserDetails userDetails, Model model) {
+        if (userDetails != null) {
+            User currentUser = userService.findByUsername(userDetails.getUsername());
+            model.addAttribute("currentUser", currentUser);
+        }
+        model.addAttribute("users", userService.findAllStaff());
+        model.addAttribute("activeFilter", "staff");
+        return "admin/users";
+    }
+
+    /**
+     * Admin - Cập nhật trạng thái user (ACTIVE/INACTIVE)
+     * POST /admin/users/{id}/status
+     */
+    @PostMapping("/admin/users/{id}/status")
+    public String updateUserStatus(
+            @PathVariable Long id,
+            @RequestParam String status,
+            RedirectAttributes redirectAttributes) {
+        try {
+            User.UserStatus newStatus = User.UserStatus.valueOf(status);
+            userService.updateUserStatus(id, newStatus);
+            redirectAttributes.addFlashAttribute("successMessage", "Cập nhật trạng thái người dùng thành công");
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Trạng thái không hợp lệ");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Có lỗi xảy ra: " + e.getMessage());
+        }
+        return "redirect:/admin/users";
+    }
+
+    /**
+     * Admin - Xem chi tiết 1 user bất kỳ
+     * GET /admin/users/{id}
+     */
+    @GetMapping("/admin/users/{id}")
+    public String viewUserDetail(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable Long id,
+            Model model,
+            RedirectAttributes redirectAttributes) {
+        try {
+            // current logged-in admin
+            if (userDetails != null) {
+                User currentUser = userService.findByUsername(userDetails.getUsername());
+                model.addAttribute("currentUser", currentUser);
+            }
+
+            User targetUser = userService.getUserById(id)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+            model.addAttribute("user", targetUser);
+            return "admin/user-detail";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Không thể tải thông tin người dùng: " + e.getMessage());
+            return "redirect:/admin/users";
+        }
+    }
+
+    /**
+     * Admin - Form chỉnh sửa thông tin user
+     * GET /admin/users/{id}/edit
+     */
+    @GetMapping("/admin/users/{id}/edit")
+    public String editUserForm(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable Long id,
+            Model model,
+            RedirectAttributes redirectAttributes) {
+        try {
+            if (userDetails != null) {
+                User currentUser = userService.findByUsername(userDetails.getUsername());
+                model.addAttribute("currentUser", currentUser);
+            }
+
+            User targetUser = userService.getUserById(id)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+            model.addAttribute("user", targetUser);
+            model.addAttribute("allRoles", User.UserRole.values());
+            model.addAttribute("allStatuses", User.UserStatus.values());
+            return "admin/user-edit";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Không thể tải form chỉnh sửa: " + e.getMessage());
+            return "redirect:/admin/users";
+        }
+    }
+
+    /**
+     * Admin - Xử lý cập nhật thông tin & role của user
+     * POST /admin/users/{id}/edit
+     */
+    @PostMapping("/admin/users/{id}/edit")
+    public String updateUser(
+            @PathVariable Long id,
+            @RequestParam String fullName,
+            @RequestParam String email,
+            @RequestParam String phone,
+            @RequestParam(required = false) String address,
+            @RequestParam String role,
+            @RequestParam String status,
+            RedirectAttributes redirectAttributes) {
+        try {
+            User user = userService.getUserById(id)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng"));
+
+            // Validate email format
+            if (!email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Email không hợp lệ");
+                return "redirect:/admin/users/" + id + "/edit";
+            }
+
+            // Check if email is already taken by another user
+            User existingUser = userService.findByEmail(email);
+            if (existingUser != null && !existingUser.getId().equals(user.getId())) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Email đã được sử dụng bởi tài khoản khác");
+                return "redirect:/admin/users/" + id + "/edit";
+            }
+
+            // Clean phone number
+            String phoneDigits = phone.replaceAll("[\\s\\-]", "");
+            if (!phoneDigits.matches("^[0-9]{10,11}$")) {
+                redirectAttributes.addFlashAttribute("errorMessage", "Số điện thoại phải có 10-11 chữ số");
+                return "redirect:/admin/users/" + id + "/edit";
+            }
+
+            // Parse role & status
+            User.UserRole newRole = User.UserRole.valueOf(role);
+            User.UserStatus newStatus = User.UserStatus.valueOf(status);
+
+            // Update fields
+            user.setFullName(fullName);
+            user.setEmail(email);
+            user.setPhone(phoneDigits);
+            user.setAddress(address);
+            user.setRole(newRole);
+            user.setStatus(newStatus);
+
+            userService.updateUser(user);
+            redirectAttributes.addFlashAttribute("successMessage", "Cập nhật người dùng thành công");
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Dữ liệu không hợp lệ: " + e.getMessage());
+            return "redirect:/admin/users/" + id + "/edit";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Có lỗi xảy ra: " + e.getMessage());
+            return "redirect:/admin/users/" + id + "/edit";
+        }
+
+        return "redirect:/admin/users/" + id;
     }
 
     /**
