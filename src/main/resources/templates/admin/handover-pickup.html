@@ -1,0 +1,435 @@
+﻿<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bàn Giao Xe - Staff</title>
+    <link rel="stylesheet" th:href="@{/css/variables.css}">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <style>
+        /* Force consistent font stack across the page */
+        body {
+            background: var(--section-dark-bg);
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        .dashboard-content {
+            background: var(--section-dark-bg);
+            width: 100%;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+
+        .page,
+        .panel,
+        .input,
+        textarea.input,
+        .btn {
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+
+        .page {
+            width: 100%;
+            max-width: none;
+            margin: 0 0 2rem;
+            padding: 2rem 1.5rem 2.5rem;
+        }
+
+        .header {
+            margin-bottom: 1.5rem;
+        }
+        .title {
+            color: var(--color-text-white);
+            font-size: 1.9rem;
+            font-weight: 800;
+            letter-spacing: 0.2px;
+        }
+        .subtitle { color: rgba(255,255,255,0.78); }
+
+        .stack { display: grid; gap: 1rem; }
+
+        .panel {
+            background: rgba(20, 27, 38, 0.8);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 14px;
+            padding: 1.25rem 1.35rem;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+        }
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+        .panel-title {
+            color: var(--color-text-white);
+            font-weight: 800;
+            font-size: 1.05rem;
+            letter-spacing: 0.2px;
+        }
+        .badge {
+            padding: 0.35rem 0.65rem;
+            border-radius: 10px;
+            background: rgba(59,130,246,0.15);
+            color: var(--color-primary);
+            font-weight: 700;
+            font-family: monospace;
+            font-size: 0.9rem;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 0.75rem 1rem;
+        }
+        .info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.15rem;
+        }
+        .label {
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: rgba(255,255,255,0.65);
+            font-weight: 700;
+        }
+        .value {
+            color: var(--color-text-white);
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1rem;
+        }
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+        .field label {
+            color: var(--color-text-white);
+            font-weight: 700;
+            letter-spacing: 0.2px;
+        }
+        .field .required { color: #ef4444; }
+        .input, textarea.input {
+            background: rgba(15, 22, 32, 0.9);
+            border: 1px solid rgba(255,255,255,0.16);
+            border-radius: 12px;
+            padding: 0.85rem 1rem;
+            color: var(--color-text-white);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .input:focus, textarea.input:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 6px 20px rgba(59,130,246,0.18);
+        }
+        textarea.input { min-height: 120px; resize: vertical; }
+
+        .upload {
+            border: 2px dashed rgba(255,255,255,0.2);
+            border-radius: 12px;
+            padding: 1.75rem;
+            text-align: center;
+            background: rgba(15, 22, 32, 0.75);
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .upload:hover, .upload.drag-over {
+            border-color: var(--color-primary);
+            background: rgba(59,130,246,0.08);
+        }
+        .upload-icon { font-size: 2.3rem; opacity: 0.75; margin-bottom: 0.3rem; }
+        .upload-text { color: var(--color-text-white); font-weight: 700; }
+        .upload-hint { color: rgba(255,255,255,0.7); font-size: 0.9rem; }
+
+        .preview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 0.85rem;
+            margin-top: 1rem;
+        }
+        .preview-item {
+            position: relative;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.08);
+            aspect-ratio: 4/3;
+        }
+        .preview-item img { width: 100%; height: 100%; object-fit: cover; }
+        .remove-btn {
+            position: absolute; top: 6px; right: 6px;
+            width: 26px; height: 26px;
+            border: none; border-radius: 50%;
+            background: rgba(239,68,68,0.9);
+            color: #fff; cursor: pointer;
+        }
+
+        .actions {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+        .btn {
+            border: none;
+            border-radius: 12px;
+            padding: 0.9rem 1.3rem;
+            font-weight: 800;
+            letter-spacing: 0.2px;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+            color: #fff;
+            box-shadow: 0 10px 28px rgba(59,130,246,0.32);
+        }
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: #fff;
+            box-shadow: 0 10px 26px rgba(239,68,68,0.28);
+        }
+        .btn-ghost {
+            background: rgba(255,255,255,0.04);
+            color: rgba(255,255,255,0.9);
+            border: 1px solid rgba(255,255,255,0.18);
+        }
+        .btn:hover { transform: translateY(-1px); }
+
+        .alert {
+            padding: 0.9rem 1.1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+        .alert-error {
+            background: rgba(239,68,68,0.12);
+            border: 1px solid rgba(239,68,68,0.35);
+            color: #f87171;
+        }
+
+        /* Modal */
+        #cancelModal {
+            position: fixed;
+            inset: 0;
+            display: none;
+            place-items: center;
+            background: rgba(0,0,0,0.55);
+            z-index: 1000;
+            padding: 1rem;
+        }
+        #cancelModal.active { display: grid; }
+        .modal-content {
+            background: rgba(20,27,38,0.95);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 14px;
+            padding: 1.5rem;
+            max-width: 520px;
+            width: 100%;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/dashboard-layout :: layout-admin(pageTitle='Bàn Giao Xe', content=~{::main})}">
+    <main class="dashboard-content page">
+        <div class="header">
+            <div class="title">Bàn Giao Xe</div>
+            <div class="subtitle">Ghi nhận tình trạng xe khi khách nhận</div>
+        </div>
+
+        <div th:if="${errorMessage}" class="alert alert-error">
+            <span th:text="${errorMessage}">Đã có lỗi xảy ra</span>
+        </div>
+
+        <div class="stack">
+            <section class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">Thông tin hợp đồng</div>
+                    <span class="badge" th:text="${contract.contractNumber}">CT-0001</span>
+                </div>
+                <div class="info-grid">
+                    <div class="info">
+                        <span class="label">Khách hàng</span>
+                        <span class="value" th:text="${contract.customer.fullName}">Nguyễn Văn A</span>
+                    </div>
+                    <div class="info">
+                        <span class="label">Số điện thoại</span>
+                        <span class="value" th:text="${contract.customer.phone}">0900 000 000</span>
+                    </div>
+                    <div class="info">
+                        <span class="label">Xe</span>
+                        <span class="value"
+                              th:text="${contract.vehicle.model.brand.brandName + ' ' + contract.vehicle.model.modelName}">
+                            Toyota Vios
+                        </span>
+                    </div>
+                    <div class="info">
+                        <span class="label">Biển số</span>
+                        <span class="value" th:text="${contract.vehicle.licensePlate}">30A-12345</span>
+                    </div>
+                    <div class="info">
+                        <span class="label">Nhận xe</span>
+                        <span class="value"
+                              th:text="${#temporals.format(contract.startDate, 'dd/MM/yyyy HH:mm')}">01/01/2024 08:00</span>
+                    </div>
+                    <div class="info">
+                        <span class="label">Trả xe</span>
+                        <span class="value"
+                              th:text="${#temporals.format(contract.endDate, 'dd/MM/yyyy HH:mm')}">05/01/2024 08:00</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">Tình trạng xe</div>
+                </div>
+                <div class="form-grid">
+                    <div class="field">
+                        <label for="odometer">Số km hiện tại <span class="required">*</span></label>
+                        <input class="input" id="odometer" name="odometer" type="number" min="0" form="pickupForm" required placeholder="Ví dụ: 45000">
+                    </div>
+                    <div class="field">
+                        <label for="fuelLevel">Mức nhiên liệu (%) <span class="required">*</span></label>
+                        <input class="input" id="fuelLevel" name="fuelLevel" type="number" min="0" max="100" form="pickupForm" required placeholder="Ví dụ: 100">
+                    </div>
+                </div>
+            </section>
+
+            <form th:action="@{/admin/handover/pickup/{id}(id=${contract.id})}" method="post" enctype="multipart/form-data" id="pickupForm" class="stack" novalidate>
+                <section class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title">Ghi chú tình trạng xe</div>
+                    </div>
+                    <div class="field">
+                        <label for="conditionNotes">Chi tiết <span class="required">*</span></label>
+                        <textarea class="input" id="conditionNotes" name="conditionNotes" required placeholder="Mô tả ngoại thất, nội thất, thiết bị đi kèm..."></textarea>
+                    </div>
+                </section>
+
+                <section class="panel">
+                    <div class="panel-header">
+                        <div class="panel-title">Hình ảnh xe</div>
+                    </div>
+                    <div class="upload" id="uploadZone">
+                        <div class="upload-icon">📸</div>
+                        <div class="upload-text">Kéo thả hoặc bấm để chọn ảnh</div>
+                        <div class="upload-hint">Hỗ trợ JPG/PNG/WEBP, tối đa 5MB mỗi ảnh</div>
+                        <input type="file" id="imageInput" name="images" accept="image/*" multiple style="display:none">
+                    </div>
+                    <div class="preview-grid" id="previewGrid"></div>
+                </section>
+
+                <section class="panel">
+                    <div class="actions">
+                        <button type="submit" class="btn btn-primary">Hoàn tất bàn giao</button>
+                        <button type="button" class="btn btn-danger" id="cancelBtn">Hủy &amp; hoàn tiền</button>
+                        <a th:href="@{/admin/handover/pickup}" class="btn btn-ghost">Quay lại</a>
+                    </div>
+                </section>
+            </form>
+        </div>
+    </main>
+</div>
+
+<div id="cancelModal">
+    <div class="modal-content">
+        <h3 class="panel-title" style="margin-bottom: 0.75rem;">Hủy hợp đồng &amp; hoàn tiền</h3>
+        <form th:action="@{/admin/handover/pickup/{id}/cancel(id=${contract.id})}" method="post">
+            <div class="field">
+                <label for="cancelReason">Lý do hủy <span class="required">*</span></label>
+                <textarea class="input" id="cancelReason" name="reason" required placeholder="Ví dụ: Xe có vấn đề kỹ thuật..."></textarea>
+            </div>
+            <div class="actions" style="margin-top: 1rem;">
+                <button type="submit" class="btn btn-danger">Xác nhận hủy</button>
+                <button type="button" class="btn btn-ghost" id="closeCancelModal">Đóng</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const uploadZone = document.getElementById('uploadZone');
+    const imageInput = document.getElementById('imageInput');
+    const previewGrid = document.getElementById('previewGrid');
+    const selectedFiles = [];
+
+    uploadZone.addEventListener('click', () => imageInput.click());
+    uploadZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadZone.classList.add('drag-over');
+    });
+    uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
+    uploadZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadZone.classList.remove('drag-over');
+        const files = Array.from(e.dataTransfer.files || []).filter(f => f.type.startsWith('image/'));
+        addFiles(files);
+    });
+    imageInput.addEventListener('change', (e) => addFiles(Array.from(e.target.files || [])));
+
+    function addFiles(files) {
+        files.forEach(f => selectedFiles.push(f));
+        syncInput();
+        renderPreview();
+    }
+
+    function syncInput() {
+        const dt = new DataTransfer();
+        selectedFiles.forEach(f => dt.items.add(f));
+        imageInput.files = dt.files;
+    }
+
+    function renderPreview() {
+        previewGrid.innerHTML = '';
+        selectedFiles.forEach((file, idx) => {
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'preview-item';
+                wrapper.innerHTML = `
+                    <img src="${ev.target.result}" alt="Ảnh xe">
+                    <button type="button" class="remove-btn" aria-label="Xóa ảnh" data-index="${idx}">×</button>
+                `;
+                previewGrid.appendChild(wrapper);
+            };
+            reader.readAsDataURL(file);
+        });
+    }
+
+    previewGrid.addEventListener('click', (e) => {
+        if (e.target.classList.contains('remove-btn')) {
+            const idx = Number(e.target.dataset.index);
+            selectedFiles.splice(idx, 1);
+            syncInput();
+            renderPreview();
+        }
+    });
+
+    // Form validation - images are optional
+    document.getElementById('pickupForm').addEventListener('submit', (e) => {
+        // Ensure files are synced to input before submit (if any)
+        syncInput();
+        console.log('Form submit event triggered');
+        console.log('Selected files count:', selectedFiles.length);
+    });
+
+    const cancelBtn = document.getElementById('cancelBtn');
+    const cancelModal = document.getElementById('cancelModal');
+    const closeCancelModal = document.getElementById('closeCancelModal');
+
+    cancelBtn.addEventListener('click', () => cancelModal.classList.add('active'));
+    closeCancelModal.addEventListener('click', () => cancelModal.classList.remove('active'));
+    cancelModal.addEventListener('click', (e) => {
+        if (e.target === cancelModal) cancelModal.classList.remove('active');
+    });
+</script>
+</body>
+</html>
+

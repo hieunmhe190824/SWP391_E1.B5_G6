@@ -9,6 +9,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -16,7 +19,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Controller
-@RequestMapping("/staff/deposits")
+@RequestMapping({"/staff/deposits", "/admin/deposits"})
 public class DepositManagementController {
 
     @Autowired
@@ -27,6 +30,19 @@ public class DepositManagementController {
 
     @Autowired
     private RefundService refundService;
+
+    /**
+     * Check if current authenticated user has ADMIN role
+     */
+    private boolean isAdmin() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return false;
+        }
+        return authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch(role -> role.equals("ROLE_ADMIN") || role.equals("ADMIN"));
+    }
 
     /**
      * UC16, UC17, UC18: List all deposit holds
@@ -109,6 +125,10 @@ public class DepositManagementController {
         model.addAttribute("deposits", deposits);
         model.addAttribute("selectedStatus", statusStr);
         model.addAttribute("refundProcessed", refundProcessedMap);
+
+        if (isAdmin()) {
+            return "admin/deposit-holds";
+        }
         return "staff/deposit-holds";
     }
 
@@ -134,10 +154,16 @@ public class DepositManagementController {
             model.addAttribute("violations", violations);
             model.addAttribute("totalFines", totalFines);
             model.addAttribute("refundPreview", refundPreview);
-            
+
+            if (isAdmin()) {
+                return "admin/deposit-detail";
+            }
             return "staff/deposit-detail";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            if (isAdmin()) {
+                return "redirect:/admin/deposits/holds";
+            }
             return "redirect:/staff/deposits/holds";
         }
     }
@@ -164,9 +190,15 @@ public class DepositManagementController {
                     fineAmount, description, evidenceFile);
 
             redirectAttributes.addFlashAttribute("successMessage", "Thêm vi phạm thành công!");
+            if (isAdmin()) {
+                return "redirect:/admin/deposits/" + holdId;
+            }
             return "redirect:/staff/deposits/" + holdId;
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi thêm vi phạm: " + e.getMessage());
+            if (isAdmin()) {
+                return "redirect:/admin/deposits/" + holdId;
+            }
             return "redirect:/staff/deposits/" + holdId;
         }
     }
@@ -182,9 +214,15 @@ public class DepositManagementController {
         try {
             violationService.deleteViolation(violationId);
             redirectAttributes.addFlashAttribute("successMessage", "Xóa vi phạm thành công!");
+            if (isAdmin()) {
+                return "redirect:/admin/deposits/" + holdId;
+            }
             return "redirect:/staff/deposits/" + holdId;
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi xóa vi phạm: " + e.getMessage());
+            if (isAdmin()) {
+                return "redirect:/admin/deposits/" + holdId;
+            }
             return "redirect:/staff/deposits/" + holdId;
         }
     }
@@ -202,12 +240,18 @@ public class DepositManagementController {
             if (depositHold.getStatus() != DepositHold.DepositStatus.READY) {
                 redirectAttributes.addFlashAttribute("errorMessage", 
                     "Deposit hold is not ready for refund. Current status: " + depositHold.getStatus());
+                if (isAdmin()) {
+                    return "redirect:/admin/deposits/" + holdId;
+                }
                 return "redirect:/staff/deposits/" + holdId;
             }
 
             // Check if refund already processed
             if (refundService.getRefundByDepositHold(holdId).isPresent()) {
                 redirectAttributes.addFlashAttribute("errorMessage", "Refund already processed");
+                if (isAdmin()) {
+                    return "redirect:/admin/deposits/" + holdId;
+                }
                 return "redirect:/staff/deposits/" + holdId;
             }
 
@@ -222,10 +266,16 @@ public class DepositManagementController {
             model.addAttribute("violations", violations);
             model.addAttribute("totalFines", totalFines);
             model.addAttribute("refundAmount", refundAmount);
-            
+
+            if (isAdmin()) {
+                return "admin/refund-process";
+            }
             return "staff/refund-process";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            if (isAdmin()) {
+                return "redirect:/admin/deposits/holds";
+            }
             return "redirect:/staff/deposits/holds";
         }
     }
@@ -256,6 +306,9 @@ public class DepositManagementController {
 
             redirectAttributes.addFlashAttribute("successMessage", 
                 String.format("Hoàn tiền thành công! Số tiền: %,.0f VNĐ", refund.getRefundAmount()));
+            if (isAdmin()) {
+                return "redirect:/admin/deposits/" + holdId;
+            }
             return "redirect:/staff/deposits/" + holdId;
         } catch (Exception e) {
             System.err.println("=== REFUND ERROR ===");
@@ -265,6 +318,9 @@ public class DepositManagementController {
             System.err.println("=== END ERROR ===");
             
             redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi hoàn tiền: " + e.getMessage());
+            if (isAdmin()) {
+                return "redirect:/admin/deposits/" + holdId + "/refund";
+            }
             return "redirect:/staff/deposits/" + holdId + "/refund";
         }
     }

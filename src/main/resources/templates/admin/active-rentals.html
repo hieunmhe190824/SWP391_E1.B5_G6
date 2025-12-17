@@ -11,8 +11,22 @@
     <link rel="stylesheet" th:href="@{/css/components.css}">
     <link rel="stylesheet" th:href="@{/css/dashboard.css}">
     <style>
+        /* Dark Theme Styling (follow staff active-rentals) */
+        body {
+            background: var(--section-dark-bg) !important;
+        }
+
+        .dashboard-content {
+            background: var(--section-dark-bg) !important;
+            max-width: none !important;
+            width: 100% !important;
+        }
+
         .active-rentals-page {
             padding: 2rem;
+            min-height: 100vh;
+            background: transparent;
+            width: 100%;
         }
 
         .page-header {
@@ -25,7 +39,8 @@
         .page-title {
             font-size: 1.75rem;
             font-weight: 700;
-            color: var(--color-text-primary);
+            color: var(--color-text-white);
+            text-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
         }
 
         .stats-summary {
@@ -36,29 +51,33 @@
         }
 
         .stat-card {
-            background: var(--color-surface);
-            border: 1px solid var(--color-border);
+            background: rgba(31, 41, 55, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
             border-radius: 12px;
             padding: 1.5rem;
+            box-shadow: var(--shadow-lg);
         }
 
         .stat-value {
             font-size: 2rem;
             font-weight: 700;
-            color: var(--color-primary);
+            color: var(--color-text-white);
             margin-bottom: 0.5rem;
         }
 
         .stat-label {
-            color: var(--color-text-secondary);
+            color: rgba(255, 255, 255, 0.7);
             font-size: 0.875rem;
         }
 
         .contracts-table {
-            background: var(--color-surface);
-            border: 1px solid var(--color-border);
+            background: rgba(31, 41, 55, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
             border-radius: 12px;
             overflow: hidden;
+            box-shadow: var(--shadow-lg);
         }
 
         .table-wrapper {
@@ -71,27 +90,36 @@
         }
 
         thead {
-            background: var(--color-background);
+            background-color: rgba(15, 23, 42, 0.04);
         }
 
-        th {
+        thead th {
             padding: 1rem;
             text-align: left;
             font-weight: 600;
-            color: var(--color-text-primary);
-            border-bottom: 2px solid var(--color-border);
+            color: #111827 !important; /* dark text so it's always visible even on light header */
+            border-bottom: 2px solid rgba(148, 163, 184, 0.4);
             font-size: 0.875rem;
             text-transform: uppercase;
+            letter-spacing: 0.05em;
         }
 
         td {
             padding: 1rem;
-            border-bottom: 1px solid var(--color-border);
-            color: var(--color-text-primary);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            color: #e5e7eb; /* very light gray for strong contrast */
+        }
+
+        tbody tr {
+            background: rgba(15, 23, 42, 0.75);
+        }
+
+        tbody tr:nth-child(even) {
+            background: rgba(15, 23, 42, 0.9);
         }
 
         tbody tr:hover {
-            background: var(--color-background);
+            background: rgba(30, 64, 175, 0.75);
         }
 
         tbody tr:last-child td {
@@ -112,11 +140,12 @@
 
         .customer-name {
             font-weight: 600;
+            color: #ffffff;
         }
 
         .customer-email {
             font-size: 0.875rem;
-            color: var(--color-text-secondary);
+            color: #9ca3af;
         }
 
         .vehicle-info {
@@ -130,6 +159,7 @@
             height: 45px;
             object-fit: cover;
             border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .vehicle-details {
@@ -140,11 +170,12 @@
 
         .vehicle-name {
             font-weight: 600;
+            color: #ffffff;
         }
 
         .vehicle-plate {
             font-size: 0.875rem;
-            color: var(--color-text-secondary);
+            color: #9ca3af;
         }
 
         .days-remaining {
@@ -175,17 +206,19 @@
             background: var(--color-primary);
             color: white;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
             text-decoration: none;
             font-size: 0.875rem;
             font-weight: 600;
             transition: all 0.2s;
             display: inline-block;
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.35);
         }
 
         .btn-view:hover {
             background: var(--color-primary-dark);
+            transform: translateY(-1px);
         }
 
         .empty-state {
@@ -202,12 +235,12 @@
         .empty-title {
             font-size: 1.5rem;
             font-weight: 600;
-            color: var(--color-text-primary);
+            color: var(--color-text-white);
             margin-bottom: 0.5rem;
         }
 
         .empty-text {
-            color: var(--color-text-secondary);
+            color: rgba(255, 255, 255, 0.8);
         }
     </style>
 </head>
@@ -226,13 +259,6 @@
                 <div class="stat-card">
                     <div class="stat-value" th:text="${contracts.size()}">0</div>
                     <div class="stat-label">Tổng số xe đang cho thuê</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value"
-                        th:text="${contracts.stream().filter(c -> T(java.time.temporal.ChronoUnit).DAYS.between(T(java.time.LocalDateTime).now(), c.endDate) <= 3).count()}">
-                        0
-                    </div>
-                    <div class="stat-label">Sắp đến hạn trả (≤3 ngày)</div>
                 </div>
             </div>
 

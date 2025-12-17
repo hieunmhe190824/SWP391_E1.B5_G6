@@ -7,6 +7,9 @@ import com.carrental.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -19,7 +22,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Controller
-@RequestMapping("/staff/returns")
+@RequestMapping({"/staff/returns", "/admin/returns"})
 public class ReturnController {
 
     @Autowired
@@ -38,12 +41,28 @@ public class ReturnController {
     private UserRepository userRepository;
 
     /**
+     * Check if current authenticated user has ADMIN role
+     */
+    private boolean isAdmin() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return false;
+        }
+        return authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch(role -> role.equals("ROLE_ADMIN") || role.equals("ADMIN"));
+    }
+
+    /**
      * UC14: Show list of contracts ready for return
      */
     @GetMapping("/list")
     public String showReturnList(Model model) {
         List<Contract> contractsReadyForReturn = returnService.getContractsReadyForReturn();
         model.addAttribute("contracts", contractsReadyForReturn);
+        if (isAdmin()) {
+            return "admin/return-list";
+        }
         return "staff/return-list";
     }
 
@@ -73,9 +92,15 @@ public class ReturnController {
 
             model.addAttribute("contract", contract);
             model.addAttribute("locations", locations);
+            if (isAdmin()) {
+                return "admin/return-form";
+            }
             return "staff/return-form";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            if (isAdmin()) {
+                return "redirect:/admin/returns/list";
+            }
             return "redirect:/staff/returns/list";
         }
     }
@@ -109,12 +134,21 @@ public class ReturnController {
                     hasDamage, damageDescription, damageFee, returnLocationId, images, staff);
 
             redirectAttributes.addFlashAttribute("successMessage", "Trả xe thành công! Hóa đơn đã được tạo và thông báo đã gửi tới khách hàng.");
+            if (isAdmin()) {
+                return "redirect:/admin/returns/list";
+            }
             return "redirect:/staff/returns/list";
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("errorMessage", "Lỗi xác thực: " + e.getMessage());
+            if (isAdmin()) {
+                return "redirect:/admin/returns/" + contractId;
+            }
             return "redirect:/staff/returns/" + contractId;
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi trả xe: " + e.getMessage());
+            if (isAdmin()) {
+                return "redirect:/admin/returns/" + contractId;
+            }
             return "redirect:/staff/returns/" + contractId;
         }
     }
@@ -132,12 +166,18 @@ public class ReturnController {
             if (contract.getStatus() != Contract.ContractStatus.BILL_PENDING
                     && contract.getStatus() != Contract.ContractStatus.COMPLETED) {
                 redirectAttributes.addFlashAttribute("errorMessage", "Contract is not ready for bill payment");
+                if (isAdmin()) {
+                    return "redirect:/admin/returns/list";
+                }
                 return "redirect:/staff/returns/list";
             }
 
             // Check if payment already done
             if (paymentService.getRentalPayment(contractId).isPresent()) {
                 redirectAttributes.addFlashAttribute("errorMessage", "Rental payment already processed");
+                if (isAdmin()) {
+                    return "redirect:/admin/contracts/" + contractId;
+                }
                 return "redirect:/staff/contracts/" + contractId;
             }
 
@@ -147,9 +187,15 @@ public class ReturnController {
 
             model.addAttribute("contract", contract);
             model.addAttribute("returnFee", returnFee);
+            if (isAdmin()) {
+                return "admin/rental-payment";
+            }
             return "staff/rental-payment";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            if (isAdmin()) {
+                return "redirect:/admin/returns/list";
+            }
             return "redirect:/staff/returns/list";
         }
     }
@@ -180,9 +226,15 @@ public class ReturnController {
             paymentService.createRentalPayment(contractId, totalAmount, paymentMethod);
 
             redirectAttributes.addFlashAttribute("successMessage", "Thanh toán thành công!");
+            if (isAdmin()) {
+                return "redirect:/admin/contracts/" + contractId;
+            }
             return "redirect:/staff/contracts/" + contractId;
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", "Lỗi khi thanh toán: " + e.getMessage());
+            if (isAdmin()) {
+                return "redirect:/admin/returns/" + contractId + "/payment";
+            }
             return "redirect:/staff/returns/" + contractId + "/payment";
         }
     }

@@ -1,0 +1,400 @@
+﻿<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi Tiết Ticket Hỗ Trợ - Car Rental System</title>
+
+    <!-- ===== CSS FILES ===== -->
+    <link rel="stylesheet" th:href="@{/css/variables.css}">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/admin-vehicles.css}">
+
+    <style>
+        body {
+            font-family: var(--font-family-base);
+        }
+
+        .detail-card {
+            background: rgba(20, 27, 38, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            margin-bottom: 1.5rem;
+        }
+
+        .detail-card-header {
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .detail-card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #fff;
+            margin: 0;
+        }
+
+        .ticket-header-section {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .info-grid {
+            display: grid;
+            gap: 0.75rem;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.65);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .info-value {
+            font-size: 0.95rem;
+            color: var(--color-text-white);
+            font-weight: 700;
+            text-align: right;
+        }
+
+        .message-thread {
+            display: grid;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .message-item {
+            background: rgba(15, 22, 32, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 10px;
+            padding: 1rem;
+        }
+
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .message-sender {
+            font-weight: 700;
+            color: var(--color-primary);
+        }
+
+        .message-time {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .message-text {
+            color: rgba(255, 255, 255, 0.85);
+            line-height: 1.6;
+        }
+
+        .rating-display {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            border-radius: 10px;
+            padding: 1.5rem;
+        }
+
+        .rating-stars {
+            font-size: 1.5rem;
+            color: #fbbf24;
+            margin-bottom: 0.5rem;
+        }
+
+        .rating-feedback {
+            color: rgba(255, 255, 255, 0.85);
+            font-style: italic;
+            margin: 0;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.4rem 0.85rem;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-open {
+            background: rgba(59, 130, 246, 0.15);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .status-in_progress {
+            background: rgba(234, 179, 8, 0.15);
+            color: #fbbf24;
+            border: 1px solid rgba(234, 179, 8, 0.3);
+        }
+
+        .status-resolved {
+            background: rgba(34, 197, 94, 0.15);
+            color: #4ade80;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+
+        .status-closed {
+            background: rgba(148, 163, 184, 0.15);
+            color: #94a3b8;
+            border: 1px solid rgba(148, 163, 184, 0.3);
+        }
+
+        .status-update-inline {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-end;
+        }
+
+        .status-update-inline .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        @media (max-width: 968px) {
+            .ticket-header-section {
+                grid-template-columns: 1fr;
+            }
+
+            .status-update-inline {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .status-update-inline .form-group {
+                margin-bottom: 1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- ===== ADMIN DASHBOARD LAYOUT ===== -->
+    <div class="dashboard-container">
+        <!-- Sidebar Overlay for mobile -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <!-- Sidebar - ADMIN ONLY -->
+        <aside th:replace="~{fragments/components/sidebar-admin :: sidebar-admin}"></aside>
+
+        <!-- Main Content Area -->
+        <div class="dashboard-main">
+            <!-- Dashboard Header -->
+            <header th:replace="~{fragments/components/dashboard-header :: dashboard-header}"></header>
+
+            <!-- Dashboard Content -->
+            <main class="dashboard-content">
+                <!-- Back Button -->
+                <div style="margin-bottom: 1.5rem;">
+                    <a th:href="@{/admin/support/tickets}" class="btn btn-secondary">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <line x1="19" y1="12" x2="5" y2="12"></line>
+                            <polyline points="12 19 5 12 12 5"></polyline>
+                        </svg>
+                        Quay lại
+                    </a>
+                </div>
+
+                <!-- Flash Messages -->
+                <div th:if="${success}" class="alert alert-success" role="alert">
+                    <svg class="alert-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                    <span th:text="${success}"></span>
+                </div>
+                <div th:if="${error}" class="alert alert-danger" role="alert">
+                    <svg class="alert-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <span th:text="${error}"></span>
+                </div>
+
+                <!-- Ticket Header Section (2 columns) -->
+                <div class="ticket-header-section">
+                    <!-- Ticket Info Card -->
+                    <div class="detail-card">
+                        <div class="detail-card-header">
+                            <h2 class="detail-card-title" th:text="${ticket.subject}">Ticket Subject</h2>
+                        </div>
+                        <div class="info-grid">
+                            <div class="info-row">
+                                <span class="info-label">Mã ticket</span>
+                                <span class="info-value" th:text="${ticket.ticketNumber}">TK-2025-0001</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Khách hàng</span>
+                                <span class="info-value" th:if="${ticket.customer != null}"
+                                    th:text="${ticket.customer.fullName}">Customer</span>
+                                <span class="info-value" th:if="${ticket.customer == null}"
+                                    style="font-style: italic; color: rgba(255, 255, 255, 0.5);">Khách (không có
+                                    tài khoản)</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Danh mục</span>
+                                <span class="info-value" th:text="${ticket.category}">Category</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Tạo lúc</span>
+                                <span class="info-value"
+                                    th:text="${#temporals.format(ticket.createdAt, 'dd/MM/yyyy HH:mm')}">Date</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Status Update Card -->
+                    <div class="detail-card">
+                        <div class="detail-card-header">
+                            <h3 class="detail-card-title">Cập nhật trạng thái</h3>
+                        </div>
+                        <form th:action="@{/admin/support/tickets/{id}/status(id=${ticket.id})}" method="post">
+                            <div class="form-group">
+                                <label class="info-label" style="display: block; margin-bottom: 0.5rem;">Trạng thái hiện
+                                    tại</label>
+                                <span class="status-badge"
+                                    th:classappend="'status-' + ${ticket.status.toString().toLowerCase()}"
+                                    th:text="${ticket.status == T(com.carrental.model.SupportTicket$TicketStatus).OPEN ? 'Mở' :
+                                                ticket.status == T(com.carrental.model.SupportTicket$TicketStatus).IN_PROGRESS ? 'Đang xử lý' :
+                                                ticket.status == T(com.carrental.model.SupportTicket$TicketStatus).RESOLVED ? 'Đã giải quyết' : 'Đã đóng'}">
+                                    Status
+                                </span>
+                            </div>
+                            <div class="status-update-inline">
+                                <div class="form-group">
+                                    <label class="info-label" style="display: block; margin-bottom: 0.5rem;">Trạng thái
+                                        mới</label>
+                                    <select name="status" class="form-control">
+                                        <option th:each="status : ${statuses}" th:value="${status}"
+                                            th:text="${status == T(com.carrental.model.SupportTicket$TicketStatus).OPEN ? 'Mở' :
+                                                          status == T(com.carrental.model.SupportTicket$TicketStatus).IN_PROGRESS ? 'Đang xử lý' :
+                                                          status == T(com.carrental.model.SupportTicket$TicketStatus).RESOLVED ? 'Đã giải quyết' : 'Đã đóng'}"
+                                            th:selected="${status == ticket.status}">Status</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary">
+                                    Cập nhật
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Messages Card (Full width) -->
+                <div class="detail-card">
+                    <div class="detail-card-header">
+                        <h3 class="detail-card-title">Cuộc trò chuyện</h3>
+                    </div>
+                    <div class="message-thread" th:if="${messages != null and !messages.isEmpty()}">
+                        <div class="message-item" th:each="msg : ${messages}" th:if="${msg.rating == null}">
+                            <div class="message-header">
+                                <span class="message-sender" th:text="${msg.sender.fullName}">Sender</span>
+                                <span class="message-time"
+                                    th:text="${#temporals.format(msg.createdAt, 'dd/MM/yyyy HH:mm')}">Time</span>
+                            </div>
+                            <div class="message-text" th:text="${msg.messageText}">Message</div>
+                        </div>
+                    </div>
+                    <div th:if="${messages == null or messages.isEmpty()}"
+                        style="text-align: center; color: rgba(255, 255, 255, 0.5); padding: 2rem;">
+                        Chưa có tin nhắn
+                    </div>
+                </div>
+
+                <!-- Reply Form Card (Full width) -->
+                <div class="detail-card">
+                    <div class="detail-card-header">
+                        <h3 class="detail-card-title">Trả lời khách hàng</h3>
+                    </div>
+                    <form th:action="@{/admin/support/tickets/{id}/reply(id=${ticket.id})}" method="post">
+                        <div class="form-group">
+                            <textarea name="messageText" class="form-control" rows="4" placeholder="Nhập phản hồi..."
+                                required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <line x1="22" y1="2" x2="11" y2="13"></line>
+                                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                            </svg>
+                            Gửi phản hồi
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Rating Display (Full width) -->
+                <div class="detail-card rating-display" th:if="${rating != null}">
+                    <div class="detail-card-header" style="border-color: rgba(34, 197, 94, 0.3);">
+                        <h3 class="detail-card-title" style="color: #4ade80;">Đánh giá từ khách hàng</h3>
+                    </div>
+                    <div class="rating-stars">
+                        <span th:each="i : ${#numbers.sequence(1, rating.rating)}">★</span>
+                        <span th:each="i : ${#numbers.sequence(rating.rating + 1, 5)}"
+                            style="color: rgba(255, 255, 255, 0.2);">★</span>
+                    </div>
+                    <p class="rating-feedback" th:if="${rating.messageText != null and !rating.messageText.isEmpty()}"
+                        th:text="${rating.messageText}">Feedback</p>
+                </div>
+            </main>
+
+            <!-- Footer -->
+            <footer th:replace="~{fragments/footer :: footer}"></footer>
+        </div>
+
+        <!-- Scripts -->
+        <div th:replace="~{fragments/components/dashboard-header :: dashboard-scripts}"></div>
+    </div>
+
+    <script>
+        // Auto-hide flash messages after 3 seconds
+        document.addEventListener('DOMContentLoaded', function () {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                setTimeout(() => {
+                    alert.style.transition = 'opacity 0.5s ease-out';
+                    alert.style.opacity = '0';
+                    setTimeout(() => {
+                        alert.remove();
+                    }, 500);
+                }, 3000);
+            });
+        });
+    </script>
+</body>
+
+</html>

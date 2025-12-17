@@ -47,6 +47,15 @@ public class SupportController {
         return null;
     }
 
+    /**
+     * Check if current authenticated user has ADMIN role
+     */
+    private boolean isAdmin() {
+        User currentUser = getCurrentUser();
+        return currentUser != null && currentUser.getRole() != null
+                && "ADMIN".equalsIgnoreCase(currentUser.getRole().name());
+    }
+
     // ==================== UNIVERSAL ENDPOINT ====================
     
     /**
@@ -239,9 +248,9 @@ public class SupportController {
     
     /**
      * UC20: List all support tickets (staff/admin)
-     * GET /staff/support/tickets
+     * GET /staff/support/tickets or /admin/support/tickets
      */
-    @GetMapping("/staff/support/tickets")
+    @GetMapping({"/staff/support/tickets", "/admin/support/tickets"})
     public String listAllTickets(@RequestParam(required = false) String status,
                                  Model model) {
         List<SupportTicket> tickets;
@@ -256,20 +265,27 @@ public class SupportController {
         model.addAttribute("tickets", tickets);
         model.addAttribute("selectedStatus", status);
         model.addAttribute("statuses", TicketStatus.values());
+
+        if (isAdmin()) {
+            return "admin/support-tickets-manage";
+        }
         return "staff/support-tickets-manage";
     }
 
     /**
      * UC20: View ticket details (staff/admin)
-     * GET /staff/support/tickets/{id}
+     * GET /staff/support/tickets/{id} or /admin/support/tickets/{id}
      */
-    @GetMapping("/staff/support/tickets/{id}")
+    @GetMapping({"/staff/support/tickets/{id}", "/admin/support/tickets/{id}"})
     public String viewStaffTicket(@PathVariable Long id,
                                   Model model,
                                   RedirectAttributes redirectAttributes) {
         Optional<SupportTicket> ticketOpt = supportService.getTicketById(id);
         if (ticketOpt.isEmpty()) {
             redirectAttributes.addFlashAttribute("error", "Không tìm thấy ticket");
+            if (isAdmin()) {
+                return "redirect:/admin/support/tickets";
+            }
             return "redirect:/staff/support/tickets";
         }
         
@@ -285,15 +301,18 @@ public class SupportController {
         model.addAttribute("rating", rating.orElse(null));
         model.addAttribute("staffList", staffList);
         model.addAttribute("statuses", TicketStatus.values());
-        
+
+        if (isAdmin()) {
+            return "admin/support-ticket-detail";
+        }
         return "staff/support-ticket-detail";
     }
 
     /**
-     * UC20: Reply to ticket (staff)
-     * POST /staff/support/tickets/{id}/reply
+     * UC20: Reply to ticket (staff/admin)
+     * POST /staff/support/tickets/{id}/reply or /admin/support/tickets/{id}/reply
      */
-    @PostMapping("/staff/support/tickets/{id}/reply")
+    @PostMapping({"/staff/support/tickets/{id}/reply", "/admin/support/tickets/{id}/reply"})
     public String replyToTicket(@PathVariable Long id,
                                @RequestParam String messageText,
                                RedirectAttributes redirectAttributes) {
@@ -308,15 +327,18 @@ public class SupportController {
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Không thể gửi phản hồi: " + e.getMessage());
         }
-        
+
+        if (isAdmin()) {
+            return "redirect:/admin/support/tickets/" + id;
+        }
         return "redirect:/staff/support/tickets/" + id;
     }
 
     /**
      * UC20: Assign ticket to staff
-     * POST /staff/support/tickets/{id}/assign
+     * POST /staff/support/tickets/{id}/assign or /admin/support/tickets/{id}/assign
      */
-    @PostMapping("/staff/support/tickets/{id}/assign")
+    @PostMapping({"/staff/support/tickets/{id}/assign", "/admin/support/tickets/{id}/assign"})
     public String assignTicket(@PathVariable Long id,
                               @RequestParam Long staffId,
                               RedirectAttributes redirectAttributes) {
@@ -326,15 +348,18 @@ public class SupportController {
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Không thể phân công: " + e.getMessage());
         }
-        
+
+        if (isAdmin()) {
+            return "redirect:/admin/support/tickets/" + id;
+        }
         return "redirect:/staff/support/tickets/" + id;
     }
 
     /**
      * UC20: Update ticket status
-     * POST /staff/support/tickets/{id}/status
+     * POST /staff/support/tickets/{id}/status or /admin/support/tickets/{id}/status
      */
-    @PostMapping("/staff/support/tickets/{id}/status")
+    @PostMapping({"/staff/support/tickets/{id}/status", "/admin/support/tickets/{id}/status"})
     public String updateTicketStatus(@PathVariable Long id,
                                     @RequestParam String status,
                                     RedirectAttributes redirectAttributes) {
@@ -345,7 +370,10 @@ public class SupportController {
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Không thể cập nhật: " + e.getMessage());
         }
-        
+
+        if (isAdmin()) {
+            return "redirect:/admin/support/tickets/" + id;
+        }
         return "redirect:/staff/support/tickets/" + id;
     }
 }

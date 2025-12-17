@@ -1,0 +1,340 @@
+﻿<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thanh Toán Tiền Thuê - Staff</title>
+    <link rel="stylesheet" th:href="@{/css/variables.css}">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <style>
+        body {
+            background: var(--section-dark-bg);
+        }
+
+        .dashboard-content {
+            background: var(--section-dark-bg);
+            width: 100%;
+        }
+
+        .page {
+            width: 100%;
+            max-width: none;
+            margin: 0 0 2rem;
+            padding: 2rem 1.5rem;
+        }
+
+        .title {
+            color: var(--color-text-white);
+            font-size: 1.9rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: rgba(255, 255, 255, 0.75);
+            margin-bottom: 1.5rem;
+        }
+
+        .panel {
+            background: rgba(20, 27, 38, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            padding: 1.5rem;
+            margin-bottom: 1.25rem;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+        }
+
+        .panel-title {
+            color: var(--color-text-white);
+            font-weight: 800;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+        }
+
+        .invoice {
+            background: rgba(15, 22, 32, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 1.25rem;
+        }
+
+        .invoice-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.65rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .invoice-row:last-child {
+            border-bottom: none;
+        }
+
+        .invoice-label {
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 600;
+        }
+
+        .invoice-value {
+            color: var(--color-text-white);
+            font-weight: 700;
+        }
+
+        .invoice-total {
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 2px solid rgba(59, 130, 246, 0.3);
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--color-primary);
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+
+        .label {
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: rgba(255, 255, 255, 0.65);
+            font-weight: 700;
+        }
+
+        .value {
+            color: var(--color-text-white);
+            font-weight: 700;
+        }
+
+        .payment-methods {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .method-option {
+            position: relative;
+        }
+
+        .method-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+        }
+
+        .method-label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 1rem 0.75rem;
+            background: rgba(15, 22, 32, 0.9);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .method-option input:checked+.method-label {
+            border-color: var(--color-primary);
+            background: rgba(59, 130, 246, 0.12);
+        }
+
+        .method-icon {
+            font-size: 1.8rem;
+        }
+
+        .method-name {
+            color: var(--color-text-white);
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+
+        .actions {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 12px;
+            padding: 0.9rem 1.5rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: transform 0.15s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+            color: #fff;
+            box-shadow: 0 10px 28px rgba(59, 130, 246, 0.32);
+        }
+
+        .btn-ghost {
+            background: rgba(255, 255, 255, 0.04);
+            color: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .alert {
+            padding: 0.9rem 1.1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+
+        .alert-success {
+            background: rgba(34, 197, 94, 0.12);
+            border: 1px solid rgba(34, 197, 94, 0.35);
+            color: #4ade80;
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.35);
+            color: #f87171;
+        }
+    </style>
+</head>
+
+<body>
+    <div th:replace="~{fragments/dashboard-layout :: layout-admin(pageTitle='Thanh Toán', content=~{::main})}">
+        <main class="dashboard-content page">
+            <div class="title">Thanh Toán Tiền Thuê</div>
+            <div class="subtitle">Xác nhận thanh toán cho hợp đồng <span
+                    th:text="${contract.contractNumber}">CT-0001</span></div>
+
+            <div th:if="${successMessage}" class="alert alert-success">
+                <span th:text="${successMessage}">Thành công</span>
+            </div>
+            <div th:if="${errorMessage}" class="alert alert-error">
+                <span th:text="${errorMessage}">Lỗi</span>
+            </div>
+
+            <div class="panel">
+                <div class="panel-title">Thông tin hợp đồng</div>
+                <div class="info-grid">
+                    <div class="info">
+                        <span class="label">Khách hàng</span>
+                        <span class="value" th:text="${contract.customer.fullName}">Nguyễn Văn A</span>
+                    </div>
+                    <div class="info">
+                        <span class="label">Số điện thoại</span>
+                        <span class="value" th:text="${contract.customer.phone}">0900 000 000</span>
+                    </div>
+                    <div class="info">
+                        <span class="label">Xe</span>
+                        <span class="value"
+                            th:text="${contract.vehicle.model.brand.brandName + ' ' + contract.vehicle.model.modelName}">
+                            Toyota Vios
+                        </span>
+                    </div>
+                    <div class="info">
+                        <span class="label">Biển số</span>
+                        <span class="value" th:text="${contract.vehicle.licensePlate}">30A-12345</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-title">Hóa đơn thanh toán</div>
+                <div class="invoice">
+                    <div class="invoice-row">
+                        <span class="invoice-label">Phí thuê xe:</span>
+                        <span class="invoice-value"
+                            th:text="${#numbers.formatDecimal(contract.totalRentalFee, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">10,000,000
+                            VNĐ</span>
+                    </div>
+
+                    <div th:if="${returnFee != null}">
+                        <div class="invoice-row" th:if="${returnFee.late}">
+                            <span class="invoice-label">Phí trễ hạn (<span th:text="${returnFee.hoursLate}">2</span>
+                                giờ):</span>
+                            <span class="invoice-value"
+                                th:text="${#numbers.formatDecimal(returnFee.lateFee, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">100,000
+                                VNĐ</span>
+                        </div>
+                        <div class="invoice-row" th:if="${returnFee.hasDamage}">
+                            <span class="invoice-label">Phí hư hỏng:</span>
+                            <span class="invoice-value"
+                                th:text="${#numbers.formatDecimal(returnFee.damageFee, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">2,000,000
+                                VNĐ</span>
+                        </div>
+                        <div class="invoice-row" th:if="${returnFee.differentLocation}">
+                            <span class="invoice-label">Phí trả khác địa điểm:</span>
+                            <span class="invoice-value"
+                                th:text="${#numbers.formatDecimal(returnFee.oneWayFee, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">1,500,000
+                                VNĐ</span>
+                        </div>
+                    </div>
+
+                    <div class="invoice-row invoice-total">
+                        <span class="invoice-label">Tổng cộng:</span>
+                        <span class="invoice-value"
+                            th:text="${#numbers.formatDecimal(contract.totalRentalFee + (returnFee != null ? returnFee.totalFees : 0), 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">
+                            13,600,000 VNĐ
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <form th:action="@{/admin/returns/{id}/payment(id=${contract.id})}" method="post">
+                <div class="panel">
+                    <div class="panel-title">Phương thức thanh toán</div>
+                    <div class="payment-methods">
+                        <div class="method-option">
+                            <input type="radio" id="cash" name="paymentMethod" value="CASH" required checked>
+                            <label for="cash" class="method-label">
+                                <span class="method-icon">💵</span>
+                                <span class="method-name">Tiền mặt</span>
+                            </label>
+                        </div>
+                        <div class="method-option">
+                            <input type="radio" id="card" name="paymentMethod" value="CARD" required>
+                            <label for="card" class="method-label">
+                                <span class="method-icon">💳</span>
+                                <span class="method-name">Thẻ</span>
+                            </label>
+                        </div>
+                        <div class="method-option">
+                            <input type="radio" id="transfer" name="paymentMethod" value="TRANSFER" required>
+                            <label for="transfer" class="method-label">
+                                <span class="method-icon">🏦</span>
+                                <span class="method-name">Chuyển khoản</span>
+                            </label>
+                        </div>
+                        <div class="method-option">
+                            <input type="radio" id="online" name="paymentMethod" value="ONLINE" required>
+                            <label for="online" class="method-label">
+                                <span class="method-icon">📱</span>
+                                <span class="method-name">Online</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="actions">
+                        <button type="submit" class="btn btn-primary">Xác nhận thanh toán</button>
+                        <a th:href="@{/admin/contracts/{id}(id=${contract.id})}" class="btn btn-ghost">Xem hợp đồng</a>
+                    </div>
+                </div>
+            </form>
+        </main>
+    </div>
+</body>
+
+</html>

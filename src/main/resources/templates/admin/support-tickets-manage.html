@@ -1,0 +1,422 @@
+﻿<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Hỗ Trợ Khách Hàng - Car Rental System</title>
+
+    <!-- ===== CSS FILES ===== -->
+    <link rel="stylesheet" th:href="@{/css/variables.css}">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/admin-vehicles.css}">
+
+    <style>
+        body {
+            font-family: var(--font-family-base);
+        }
+
+        .ticket-card {
+            background: rgba(20, 27, 38, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .ticket-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(59, 130, 246, 0.2);
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+
+        .ticket-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .ticket-number {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--color-primary);
+            font-family: monospace;
+            letter-spacing: 0.5px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.4rem 0.85rem;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-open {
+            background: rgba(59, 130, 246, 0.15);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .status-in_progress {
+            background: rgba(234, 179, 8, 0.15);
+            color: #fbbf24;
+            border: 1px solid rgba(234, 179, 8, 0.3);
+        }
+
+        .status-resolved {
+            background: rgba(34, 197, 94, 0.15);
+            color: #4ade80;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+
+        .status-closed {
+            background: rgba(148, 163, 184, 0.15);
+            color: #94a3b8;
+            border: 1px solid rgba(148, 163, 184, 0.3);
+        }
+
+        .ticket-card-body {
+            display: grid;
+            gap: 0.75rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+        }
+
+        .info-label {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.65);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .info-value {
+            font-size: 0.95rem;
+            color: var(--color-text-white);
+            font-weight: 700;
+        }
+
+        .customer-name {
+            color: #fff;
+            font-weight: 700;
+        }
+
+        .ticket-subject {
+            color: #fff;
+            font-size: 1.05rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .ticket-description {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-bottom: 0.75rem;
+        }
+
+        .category-badge {
+            display: inline-block;
+            padding: 0.3rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            background: rgba(139, 92, 246, 0.15);
+            color: #a78bfa;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+
+        .ticket-card-footer {
+            display: flex;
+            gap: 0.75rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .btn-card {
+            flex: 1;
+            padding: 0.65rem 1rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-view {
+            background: rgba(59, 130, 246, 0.15);
+            color: var(--color-primary);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-view:hover {
+            background: rgba(59, 130, 246, 0.25);
+            transform: translateY(-1px);
+        }
+
+        .ticket-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-tab {
+            padding: 0.65rem 1.25rem;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(15, 22, 32, 0.8);
+            color: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.2s;
+            text-decoration: none;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .filter-tab:hover,
+        .filter-tab.active {
+            background: var(--color-primary);
+            color: #fff;
+            border-color: var(--color-primary);
+            transform: translateY(-1px);
+        }
+
+        .icon-sm {
+            width: 18px;
+            height: 18px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- ===== ADMIN DASHBOARD LAYOUT ===== -->
+    <div class="dashboard-container">
+        <!-- Sidebar Overlay for mobile -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <!-- Sidebar - ADMIN ONLY -->
+        <aside th:replace="~{fragments/components/sidebar-admin :: sidebar-admin}"></aside>
+
+        <!-- Main Content Area -->
+        <div class="dashboard-main">
+            <!-- Dashboard Header -->
+            <header th:replace="~{fragments/components/dashboard-header :: dashboard-header}"></header>
+
+            <!-- Dashboard Content -->
+            <main class="dashboard-content">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <div class="page-header-content">
+                        <h1 class="page-title">Quản lý hỗ trợ khách hàng</h1>
+                        <p class="page-description">Xem và xử lý các yêu cầu hỗ trợ từ khách hàng</p>
+                    </div>
+                </div>
+
+                <!-- Flash Messages -->
+                <div th:if="${success}" class="alert alert-success" role="alert">
+                    <svg class="alert-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                    <span th:text="${success}"></span>
+                </div>
+                <div th:if="${error}" class="alert alert-danger" role="alert">
+                    <svg class="alert-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <span th:text="${error}"></span>
+                </div>
+
+                <!-- Filter Tabs -->
+                <div class="filter-tabs">
+                    <a th:href="@{/admin/support/tickets}" class="filter-tab"
+                        th:classappend="${selectedStatus == null} ? 'active' : ''">
+                        <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="9" y1="3" x2="9" y2="21"></line>
+                        </svg>
+                        Tất cả
+                    </a>
+                    <a th:href="@{/admin/support/tickets(status='OPEN')}" class="filter-tab"
+                        th:classappend="${selectedStatus == 'OPEN'} ? 'active' : ''">
+                        <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="16"></line>
+                            <line x1="8" y1="12" x2="16" y2="12"></line>
+                        </svg>
+                        Mở
+                    </a>
+                    <a th:href="@{/admin/support/tickets(status='IN_PROGRESS')}" class="filter-tab"
+                        th:classappend="${selectedStatus == 'IN_PROGRESS'} ? 'active' : ''">
+                        <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                        Đang xử lý
+                    </a>
+                    <a th:href="@{/admin/support/tickets(status='RESOLVED')}" class="filter-tab"
+                        th:classappend="${selectedStatus == 'RESOLVED'} ? 'active' : ''">
+                        <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                        </svg>
+                        Đã giải quyết
+                    </a>
+                    <a th:href="@{/admin/support/tickets(status='CLOSED')}" class="filter-tab"
+                        th:classappend="${selectedStatus == 'CLOSED'} ? 'active' : ''">
+                        <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                        </svg>
+                        Đã đóng
+                    </a>
+                </div>
+
+                <!-- Ticket Cards Grid -->
+                <div class="ticket-grid" th:if="${tickets != null and !tickets.isEmpty()}">
+                    <div class="ticket-card" th:each="ticket : ${tickets}">
+                        <!-- Card Header -->
+                        <div class="ticket-card-header">
+                            <div class="ticket-number" th:text="${ticket.ticketNumber}">TK-2025-0001</div>
+                            <span class="status-badge"
+                                th:classappend="'status-' + ${ticket.status.toString().toLowerCase()}"
+                                th:text="${ticket.status == T(com.carrental.model.SupportTicket$TicketStatus).OPEN ? 'Mở' :
+                                            ticket.status == T(com.carrental.model.SupportTicket$TicketStatus).IN_PROGRESS ? 'Đang xử lý' :
+                                            ticket.status == T(com.carrental.model.SupportTicket$TicketStatus).RESOLVED ? 'Đã giải quyết' : 'Đã đóng'}">
+                                Status
+                            </span>
+                        </div>
+
+                        <!-- Card Body -->
+                        <div class="ticket-card-body">
+                            <div class="ticket-subject" th:text="${ticket.subject}">Ticket Subject</div>
+                            <div class="ticket-description" th:text="${#strings.abbreviate(ticket.description, 120)}">
+                                Ticket description...
+                            </div>
+
+                            <div class="info-row">
+                                <span class="info-label">Khách hàng</span>
+                                <span class="info-value customer-name" th:if="${ticket.customer != null}"
+                                    th:text="${ticket.customer.fullName}">Customer</span>
+                                <span class="info-value" th:if="${ticket.customer == null}"
+                                    style="color: rgba(255, 255, 255, 0.5); font-style: italic;">Khách</span>
+                            </div>
+
+                            <div class="info-row">
+                                <span class="info-label">Danh mục</span>
+                                <span class="category-badge"
+                                    th:text="${ticket.category == T(com.carrental.model.SupportTicket$Category).BOOKING ? 'Đặt xe' :
+                                                ticket.category == T(com.carrental.model.SupportTicket$Category).PAYMENT ? 'Thanh toán' :
+                                                ticket.category == T(com.carrental.model.SupportTicket$Category).VEHICLE ? 'Xe' : 'Khác'}">
+                                    Category
+                                </span>
+                            </div>
+
+                            <div class="info-row">
+                                <span class="info-label">Ngày tạo</span>
+                                <span class="info-value"
+                                    th:text="${#temporals.format(ticket.createdAt, 'dd/MM/yyyy HH:mm')}">Date</span>
+                            </div>
+                        </div>
+
+                        <!-- Card Footer -->
+                        <div class="ticket-card-footer">
+                            <a th:href="@{/admin/support/tickets/{id}(id=${ticket.id})}" class="btn-card btn-view">
+                                <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                                Xem chi tiết
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Empty State -->
+                <div class="empty-state" th:if="${tickets == null or tickets.isEmpty()}">
+                    <svg class="empty-icon" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z">
+                        </path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
+                    <h3>Không có yêu cầu hỗ trợ</h3>
+                    <p>Không tìm thấy yêu cầu hỗ trợ nào với bộ lọc hiện tại</p>
+                    <a th:href="@{/admin/support/tickets}" class="btn btn-primary">Xem tất cả</a>
+                </div>
+
+                <!-- Statistics -->
+                <div class="stats-summary" th:if="${tickets != null and !tickets.isEmpty()}">
+                    <div class="stat-item">
+                        <span class="stat-label">Tổng số yêu cầu:</span>
+                        <span class="stat-value" th:text="${tickets.size()}">0</span>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Footer -->
+            <footer th:replace="~{fragments/footer :: footer}"></footer>
+        </div>
+
+        <!-- Scripts -->
+        <div th:replace="~{fragments/components/dashboard-header :: dashboard-scripts}"></div>
+    </div>
+
+    <script>
+        // Auto-hide flash messages after 3 seconds
+        document.addEventListener('DOMContentLoaded', function () {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(alert => {
+                setTimeout(() => {
+                    alert.style.transition = 'opacity 0.5s ease-out';
+                    alert.style.opacity = '0';
+                    setTimeout(() => {
+                        alert.remove();
+                    }, 500);
+                }, 3000);
+            });
+        });
+    </script>
+</body>
+
+</html>

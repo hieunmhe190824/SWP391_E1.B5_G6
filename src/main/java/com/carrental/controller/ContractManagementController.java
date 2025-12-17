@@ -12,6 +12,10 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
+
 import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.Font;
@@ -33,19 +37,32 @@ import java.io.ByteArrayOutputStream;
 import java.util.List;
 
 /**
- * Contract Management Controller for Staff
- * Handles contract viewing and management for staff
+ * Contract Management Controller for Staff & Admin
+ * Handles contract viewing and management for staff and admin
  */
 @Controller
-@RequestMapping("/staff/contracts")
+@RequestMapping({"/staff/contracts", "/admin/contracts"})
 public class ContractManagementController {
 
     @Autowired
     private ContractService contractService;
+
+    /**
+     * Check if current authenticated user has ADMIN role
+     */
+    private boolean isAdmin() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return false;
+        }
+        return authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch(role -> role.equals("ROLE_ADMIN") || role.equals("ADMIN"));
+    }
     
     /**
-     * View all contracts (Staff)
-     * GET /staff/contracts
+     * View all contracts
+     * GET /staff/contracts or /admin/contracts
      */
     @GetMapping
     public String listContracts(@RequestParam(required = false) String status,
@@ -73,41 +90,53 @@ public class ContractManagementController {
         model.addAttribute("currentPage", contractsPage.getNumber());
         model.addAttribute("totalPages", contractsPage.getTotalPages());
 
+        // Choose view based on role
+        if (isAdmin()) {
+            return "admin/contracts-manage";
+        }
         return "staff/contracts-manage";
     }
     
     /**
      * View pending payment contracts
-     * GET /staff/contracts/pending-payment
+     * GET /staff/contracts/pending-payment or /admin/contracts/pending-payment
      */
     @GetMapping("/pending-payment")
     public String pendingPaymentContracts(@RequestParam(defaultValue = "0") int page, Model model) {
         // Redirect to main list with status filter and page parameter so pagination logic is reused
+        if (isAdmin()) {
+            return "redirect:/admin/contracts?status=PENDING_PAYMENT&page=" + page;
+        }
         return "redirect:/staff/contracts?status=PENDING_PAYMENT&page=" + page;
     }
     
     /**
      * View contract details
-     * GET /staff/contracts/{id}
+     * GET /staff/contracts/{id} or /admin/contracts/{id}
      */
     @GetMapping("/{id}")
     public String viewContractDetails(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
         try {
             Contract contract = contractService.getContractById(id)
                     .orElseThrow(() -> new RuntimeException("Contract not found"));
-            
             model.addAttribute("contract", contract);
-            
+
+            if (isAdmin()) {
+                return "admin/contract-detail";
+            }
             return "staff/contract-detail";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            if (isAdmin()) {
+                return "redirect:/admin/contracts";
+            }
             return "redirect:/staff/contracts";
         }
     }
     
     /**
      * Export contract PDF
-     * GET /staff/contracts/{id}/export
+     * GET /staff/contracts/{id}/export or /admin/contracts/{id}/export
      */
     @GetMapping("/{id}/export")
     public ResponseEntity<byte[]> exportContractPdf(@PathVariable Long id, RedirectAttributes redirectAttributes) {
@@ -239,7 +268,7 @@ public class ContractManagementController {
     
     /**
      * Cancel contract (if needed)
-     * POST /staff/contracts/{id}/cancel
+     * POST /staff/contracts/{id}/cancel or /admin/contracts/{id}/cancel
      */
     @PostMapping("/{id}/cancel")
     public String cancelContract(@PathVariable Long id, 
@@ -254,7 +283,9 @@ public class ContractManagementController {
             redirectAttributes.addFlashAttribute("errorMessage", 
                 "Lỗi khi hủy hợp đồng: " + e.getMessage());
         }
-        
+        if (isAdmin()) {
+            return "redirect:/admin/contracts/" + id;
+        }
         return "redirect:/staff/contracts/" + id;
     }
 }

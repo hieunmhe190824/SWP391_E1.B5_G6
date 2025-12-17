@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
@@ -308,7 +308,7 @@
                     <section class="dashboard-section">
                         <div class="section-header">
                             <h2 class="card-title">Đặt xe gần đây</h2>
-                            <a th:href="@{/staff/bookings}" class="btn btn-secondary">Xem tất cả</a>
+                            <a th:href="@{/admin/bookings}" class="btn btn-secondary">Xem tất cả</a>
                         </div>
                         <div th:if="${bookings != null and !#lists.isEmpty(bookings)}">
                             <table class="table recent-bookings-table">
@@ -345,7 +345,7 @@
                                                   th:text="${booking.status.value}">Pending</span>
                                         </td>
                                         <td>
-                                            <a th:href="@{/staff/bookings/{id}(id=${booking.id})}" class="btn btn-primary btn-sm">Chi tiết</a>
+                                            <a th:href="@{/admin/bookings/{id}(id=${booking.id})}" class="btn btn-primary btn-sm">Chi tiết</a>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -376,14 +376,14 @@
                                 </div>
                                 <span>→</span>
                             </a>
-                            <a class="action-card" th:href="@{/staff/bookings}">
+                            <a class="action-card" th:href="@{/admin/bookings}">
                                 <div class="action-text">
                                     <span class="action-title">Xem đặt xe</span>
                                     <span class="action-desc">Phê duyệt, hủy yêu cầu</span>
                                 </div>
                                 <span>→</span>
                             </a>
-                            <a class="action-card" th:href="@{/staff/support}">
+                            <a class="action-card" th:href="@{/admin/support}">
                                 <div class="action-text">
                                     <span class="action-title">Hỗ trợ & ticket</span>
                                     <span class="action-desc">Phân loại và phản hồi ticket</span>

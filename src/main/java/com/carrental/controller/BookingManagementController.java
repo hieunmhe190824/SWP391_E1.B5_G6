@@ -10,6 +10,7 @@ import com.carrental.service.ContractService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -22,7 +23,7 @@ import java.util.List;
  * Handles UC07 (Approve/Reject Booking) and UC10 (Create Contract)
  */
 @Controller
-@RequestMapping("/staff/bookings")
+@RequestMapping({"/staff/bookings", "/admin/bookings"})
 public class BookingManagementController {
 
     @Autowired
@@ -48,6 +49,19 @@ public class BookingManagementController {
     }
 
     /**
+     * Check if current authenticated user has ADMIN role
+     */
+    private boolean isAdmin() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return false;
+        }
+        return authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch(role -> role.equals("ROLE_ADMIN"));
+    }
+
+    /**
      * UC07: View all bookings (Staff)
      * GET /staff/bookings
      */
@@ -69,7 +83,11 @@ public class BookingManagementController {
         
         model.addAttribute("bookings", bookings);
         model.addAttribute("selectedStatus", status);
-        
+
+        // Return view based on role
+        if (isAdmin()) {
+            return "admin/bookings-manage";
+        }
         return "staff/bookings-manage";
     }
     
@@ -82,6 +100,11 @@ public class BookingManagementController {
         List<Booking> pendingBookings = bookingService.getPendingBookings();
         model.addAttribute("bookings", pendingBookings);
         model.addAttribute("selectedStatus", "Pending");
+
+        // Return view based on role
+        if (isAdmin()) {
+            return "admin/bookings-manage";
+        }
         return "staff/bookings-manage";
     }
     
@@ -104,6 +127,11 @@ public class BookingManagementController {
             return "staff/booking-detail";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+
+            // Redirect based on role
+            if (isAdmin()) {
+                return "redirect:/admin/bookings";
+            }
             return "redirect:/staff/bookings";
         }
     }
@@ -163,7 +191,11 @@ public class BookingManagementController {
             redirectAttributes.addFlashAttribute("errorMessage", 
                 "Lỗi khi từ chối đơn: " + e.getMessage());
         }
-        
+
+        // Redirect based on role
+        if (isAdmin()) {
+            return "redirect:/admin/bookings/" + id;
+        }
         return "redirect:/staff/bookings/" + id;
     }
 }

@@ -1,0 +1,545 @@
+﻿<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Đặt Xe - Car Rental System</title>
+    <!-- CSS Variables - Theme Black & Blue -->
+    <link rel="stylesheet" th:href="@{/css/variables.css}">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <style>
+        /* Dark Theme Styling */
+        body {
+            background: var(--section-dark-bg) !important;
+        }
+
+        .dashboard-content {
+            background: var(--section-dark-bg) !important;
+            max-width: none !important;
+            width: 100% !important;
+        }
+
+        .bookings-manage-page {
+            padding: 2rem;
+            min-height: 100vh;
+            background: transparent;
+            width: 100%;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--color-text-white);
+            text-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+        }
+
+        .filter-section {
+            background: rgba(31, 41, 55, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-label {
+            font-weight: 600;
+            color: var(--color-text-white);
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: transparent;
+            color: rgba(255, 255, 255, 0.8);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            font-size: 0.875rem;
+        }
+
+        .filter-btn:hover {
+            border-color: var(--color-primary);
+            color: var(--color-primary);
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .filter-btn.active {
+            background: var(--color-primary);
+            color: white;
+            border-color: var(--color-primary);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(31, 41, 55, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--color-text-white);
+        }
+
+        /* Bookings Grid - One per row */
+        .bookings-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            width: 100%;
+        }
+
+        /* Booking Card - Horizontal Layout */
+        .booking-card {
+            background: rgba(31, 41, 55, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+
+        .booking-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(59, 130, 246, 0.2);
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+
+        .booking-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(17, 24, 39, 0.5);
+        }
+
+        .booking-id {
+            font-weight: 700;
+            font-size: 1.125rem;
+            color: var(--color-primary);
+        }
+
+        .booking-status {
+            padding: 0.5rem 1rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            display: inline-block;
+        }
+
+        .status-pending {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+        }
+
+        .status-approved {
+            background: rgba(34, 197, 94, 0.1);
+            color: #22c55e;
+        }
+
+        .status-rejected {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        .status-cancelled {
+            background: rgba(107, 114, 128, 0.1);
+            color: #6b7280;
+        }
+
+        .booking-card-body {
+            padding: 1.5rem;
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        /* Vehicle Section */
+        .vehicle-section {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .vehicle-image {
+            width: 140px;
+            height: 105px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .vehicle-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .vehicle-name {
+            font-weight: 700;
+            font-size: 1.125rem;
+            color: var(--color-text-white);
+        }
+
+        .vehicle-plate {
+            font-size: 0.875rem;
+            color: rgba(255, 255, 255, 0.7);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .vehicle-plate::before {
+            content: '🚗';
+            font-size: 1rem;
+        }
+
+        /* Customer Section */
+        .customer-section {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            min-width: 200px;
+            flex-shrink: 0;
+        }
+
+        .section-label {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.6);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .customer-name {
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--color-text-white);
+        }
+
+        .customer-email {
+            font-size: 0.875rem;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Booking Details */
+        .booking-details {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.5rem;
+            flex: 1;
+        }
+
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .detail-label {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.6);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .detail-value {
+            font-size: 0.875rem;
+            color: var(--color-text-white);
+            font-weight: 500;
+        }
+
+        .detail-value.highlight {
+            color: var(--color-primary);
+            font-weight: 600;
+        }
+
+        /* Card Footer */
+        .booking-card-footer {
+            padding: 1rem 1.5rem;
+            background: rgba(17, 24, 39, 0.3);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .btn-view {
+            display: inline-block;
+            padding: 0.75rem 2rem;
+            background: var(--color-primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .btn-view:hover {
+            background: var(--color-primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .booking-card-body {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 1.5rem;
+            }
+
+            .vehicle-section {
+                padding-bottom: 1.25rem;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            }
+
+            .customer-section {
+                padding-bottom: 1.25rem;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            }
+
+            .booking-details {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .booking-details {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+            filter: grayscale(1);
+        }
+
+        .empty-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--color-text-white);
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-text {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Alert Styling for Dark Theme */
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+
+        .alert-success {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid #22c55e;
+            color: #22c55e;
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid #ef4444;
+            color: #ef4444;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Dashboard Layout (Staff Sidebar) -->
+    <div th:replace="~{fragments/dashboard-layout :: layout-admin(pageTitle='Quản Lý Đặt Xe', content=~{::main})}">
+        <main class="bookings-manage-page">
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1 class="page-title">Quản Lý Đặt Xe</h1>
+            </div>
+
+            <!-- Messages -->
+            <div th:if="${successMessage}" class="alert alert-success" style="margin-bottom: 1.5rem;">
+                <span th:text="${successMessage}">Success message</span>
+            </div>
+
+            <div th:if="${errorMessage}" class="alert alert-error" style="margin-bottom: 1.5rem;">
+                <span th:text="${errorMessage}">Error message</span>
+            </div>
+
+            <!-- Filter Section -->
+            <div class="filter-section">
+                <div class="filter-group">
+                    <span class="filter-label">Lọc theo trạng thái:</span>
+                    <div class="filter-buttons">
+                        <a th:href="@{/admin/bookings}" class="filter-btn"
+                            th:classappend="${selectedStatus == null ? 'active' : ''}">
+                            Tất cả
+                        </a>
+                        <a th:href="@{/admin/bookings/pending}" class="filter-btn"
+                            th:classappend="${selectedStatus == 'Pending' ? 'active' : ''}">
+                            Chờ duyệt
+                        </a>
+                        <a th:href="@{/admin/bookings(status='Approved')}" class="filter-btn"
+                            th:classappend="${selectedStatus == 'Approved' ? 'active' : ''}">
+                            Đã duyệt
+                        </a>
+                        <a th:href="@{/admin/bookings(status='Rejected')}" class="filter-btn"
+                            th:classappend="${selectedStatus == 'Rejected' ? 'active' : ''}">
+                            Từ chối
+                        </a>
+                        <a th:href="@{/admin/bookings(status='Cancelled')}" class="filter-btn"
+                            th:classappend="${selectedStatus == 'Cancelled' ? 'active' : ''}">
+                            Đã hủy
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bookings Grid -->
+            <div class="bookings-grid" th:if="${bookings != null and !bookings.isEmpty()}">
+                <div class="booking-card" th:each="booking : ${bookings}">
+                    <!-- Card Header -->
+                    <div class="booking-card-header">
+                        <span class="booking-id" th:text="'#' + ${booking.id}">ID</span>
+                        <span class="booking-status" th:classappend="${'status-' + booking.status.name().toLowerCase()}"
+                            th:text="${booking.status.value}">
+                            Status
+                        </span>
+                    </div>
+
+                    <!-- Card Body -->
+                    <div class="booking-card-body">
+                        <!-- Vehicle Section -->
+                        <div class="vehicle-section">
+                            <img th:src="${booking.vehicle.firstImageUrl}"
+                                th:alt="${booking.vehicle.model.brand.brandName}" class="vehicle-image">
+                            <div class="vehicle-info">
+                                <div class="vehicle-name"
+                                    th:text="${booking.vehicle.model.brand.brandName + ' ' + booking.vehicle.model.modelName}">
+                                    Vehicle Name
+                                </div>
+                                <div class="vehicle-plate" th:text="${booking.vehicle.licensePlate}">
+                                    Plate Number
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Customer Section -->
+                        <div class="customer-section">
+                            <div class="section-label">Khách hàng</div>
+                            <div class="customer-name" th:text="${booking.customer.fullName}">
+                                Customer Name
+                            </div>
+                            <div class="customer-email" th:text="${booking.customer.email}">
+                                customer@email.com
+                            </div>
+                        </div>
+
+                        <!-- Booking Details -->
+                        <div class="booking-details">
+                            <div class="detail-item">
+                                <span class="detail-label">Ngày nhận</span>
+                                <span class="detail-value"
+                                    th:text="${#temporals.format(booking.startDate, 'dd/MM/yyyy')}">
+                                    Start Date
+                                </span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Ngày trả</span>
+                                <span class="detail-value"
+                                    th:text="${#temporals.format(booking.endDate, 'dd/MM/yyyy')}">
+                                    End Date
+                                </span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Số ngày</span>
+                                <span class="detail-value highlight" th:text="${booking.totalDays} + ' ngày'">
+                                    Days
+                                </span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Ngày tạo</span>
+                                <span class="detail-value"
+                                    th:text="${#temporals.format(booking.createdAt, 'dd/MM/yyyy')}">
+                                    Created Date
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card Footer -->
+                    <div class="booking-card-footer">
+                        <a th:href="@{/admin/bookings/{id}(id=${booking.id})}" class="btn-view">
+                            Xem chi tiết
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div class="empty-state" th:if="${bookings == null or bookings.isEmpty()}">
+                <div class="empty-icon">📋</div>
+                <h2 class="empty-title">Không có đơn đặt xe nào</h2>
+                <p class="empty-text">Chưa có đơn đặt xe nào trong hệ thống</p>
+            </div>
+        </main>
+    </div>
+</body>
+
+</html>
