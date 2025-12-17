@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý người dùng - Car Rental System</title>
+
+    <!-- ===== CSS FILES ===== -->
+    <link rel="stylesheet" th:href="@{/css/variables.css}">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+</head>
+<body>
+    <div class="dashboard-layout">
+        <!-- Sidebar -->
+        <aside th:replace="~{fragments/components/sidebar-admin :: sidebar-admin}"></aside>
+
+        <!-- Sidebar Overlay (Mobile) -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <!-- Main Content -->
+        <div class="dashboard-main">
+            <!-- Header -->
+            <header th:replace="~{fragments/components/dashboard-header :: dashboard-header}"></header>
+
+            <!-- Page Content -->
+            <main class="dashboard-content">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <div class="page-header-content">
+                        <h1 class="page-title">Quản lý người dùng</h1>
+                        <p class="page-description">
+                            Xem và quản lý tài khoản khách hàng, nhân viên và quản trị viên.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Flash Messages -->
+                <div th:if="${successMessage}" class="alert alert-success" role="alert">
+                    <span th:text="${successMessage}"></span>
+                </div>
+                <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
+                    <span th:text="${errorMessage}"></span>
+                </div>
+
+                <!-- Filter Tabs -->
+                <div class="card" style="margin-bottom: 1rem;">
+                    <div class="card-body" style="padding-bottom: 0.5rem;">
+                        <div class="tabs">
+                            <a th:href="@{/admin/users}"
+                               class="tab"
+                               th:classappend="${activeFilter} == 'all' ? ' tab-active'">
+                                Tất cả
+                            </a>
+                            <a th:href="@{/admin/users/customers}"
+                               class="tab"
+                               th:classappend="${activeFilter} == 'customers' ? ' tab-active'">
+                                Khách hàng
+                            </a>
+                            <a th:href="@{/admin/users/staff}"
+                               class="tab"
+                               th:classappend="${activeFilter} == 'staff' ? ' tab-active'">
+                                Nhân viên & Admin
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Users Table -->
+                <div class="dashboard-section">
+                    <div class="section-header">
+                        <h2 class="card-title" style="color: #ffffff;">Danh sách người dùng</h2>
+                    </div>
+
+                    <div th:if="${users != null and !#lists.isEmpty(users)}">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Họ tên</th>
+                                        <th>Email</th>
+                                        <th>Vai trò</th>
+                                        <th>Trạng thái</th>
+                                        <th>Ngày tạo</th>
+                                        <th>Hành động</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="user : ${users}">
+                                        <td th:text="${user.fullName}">Nguyễn Văn A</td>
+                                        <td th:text="${user.email}">email@example.com</td>
+                                        <td th:text="${user.role}">CUSTOMER</td>
+                                        <td>
+                                            <span class="pill"
+                                                  th:classappend="${user.status.name().toLowerCase() == 'active'} ? ' approved' : ' cancelled'"
+                                                  th:text="${user.status}">
+                                                ACTIVE
+                                            </span>
+                                        </td>
+                                        <td th:text="${user.createdAt != null ? #temporals.format(user.createdAt, 'dd/MM/yyyy HH:mm') : '-'}">
+                                            01/01/2025
+                                        </td>
+                                        <td>
+                                            <a th:href="@{/admin/users/{id}(id=${user.id})}"
+                                               class="btn btn-secondary btn-sm"
+                                               style="margin-right: 0.25rem;">
+                                                Chi tiết
+                                            </a>
+                                            <a th:href="@{/admin/users/{id}/edit(id=${user.id})}"
+                                               class="btn btn-primary btn-sm"
+                                               style="margin-right: 0.25rem;">
+                                                Sửa
+                                            </a>
+                                            <form th:action="@{/admin/users/{id}/status(id=${user.id})}"
+                                                  method="post"
+                                                  style="display:inline;">
+                                                <input type="hidden"
+                                                       name="status"
+                                                       th:value="${user.status.name() == 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'}"/>
+                                                <button type="submit"
+                                                        class="btn btn-sm"
+                                                        th:classappend="${user.status.name() == 'ACTIVE'} ? ' btn-danger' : ' btn-outline'">
+                                                    <span th:text="${user.status.name() == 'ACTIVE' ? 'Khóa' : 'Mở khóa'}">
+                                                        Khóa
+                                                    </span>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div th:if="${users == null or #lists.isEmpty(users)}" class="empty-state">
+                        <h3>Không tìm thấy người dùng</h3>
+                        <p>Hiện chưa có dữ liệu người dùng cho bộ lọc đang chọn.</p>
+                    </div>
+                </div>
+            </main>
+
+            <!-- Footer -->
+            <footer th:replace="~{fragments/footer :: footer}"></footer>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <div th:replace="~{fragments/components/dashboard-header :: dashboard-scripts}"></div>
+</body>
+</html>
+
+

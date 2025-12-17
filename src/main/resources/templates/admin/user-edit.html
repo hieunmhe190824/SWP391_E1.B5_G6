@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chỉnh sửa người dùng - Car Rental System</title>
+
+    <!-- ===== CSS FILES ===== -->
+    <link rel="stylesheet" th:href="@{/css/variables.css}">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/profile.css}">
+</head>
+<body>
+    <div class="dashboard-layout">
+        <!-- Sidebar -->
+        <aside th:replace="~{fragments/components/sidebar-admin :: sidebar-admin}"></aside>
+
+        <!-- Sidebar Overlay (Mobile) -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <!-- Main Content -->
+        <div class="dashboard-main">
+            <!-- Header -->
+            <header th:replace="~{fragments/components/dashboard-header :: dashboard-header}"></header>
+
+            <!-- Page Content -->
+            <main class="dashboard-content">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <div class="page-header-content">
+                        <h1 class="page-title">Chỉnh sửa người dùng</h1>
+                        <p class="page-description">Cập nhật thông tin và vai trò của tài khoản.</p>
+                    </div>
+                    <div class="page-header-actions">
+                        <a th:href="@{/admin/users/{id}(id=${user.id})}" class="btn btn-secondary">
+                            Quay lại chi tiết
+                        </a>
+                        <a th:href="@{/admin/users}" class="btn btn-secondary">
+                            Danh sách người dùng
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Flash Messages -->
+                <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
+                    <span th:text="${errorMessage}"></span>
+                </div>
+                <div th:if="${successMessage}" class="alert alert-success" role="alert">
+                    <span th:text="${successMessage}"></span>
+                </div>
+
+                <!-- Form Container -->
+                <div class="form-container">
+                    <form th:action="@{/admin/users/{id}/edit(id=${user.id})}" method="post" class="profile-form">
+                        <div class="form-section">
+                            <h2 class="form-section-title">Thông tin cá nhân</h2>
+
+                            <div class="form-row">
+                                <!-- Full Name -->
+                                <div class="form-group">
+                                    <label for="fullName">
+                                        Họ và tên
+                                        <span class="required-asterisk">*</span>
+                                    </label>
+                                    <input type="text"
+                                           id="fullName"
+                                           name="fullName"
+                                           th:value="${user.fullName}"
+                                           placeholder="Nhập họ và tên đầy đủ"
+                                           class="form-control"
+                                           required>
+                                </div>
+
+                                <!-- Phone -->
+                                <div class="form-group">
+                                    <label for="phone">
+                                        Số điện thoại
+                                        <span class="required-asterisk">*</span>
+                                    </label>
+                                    <input type="tel"
+                                           id="phone"
+                                           name="phone"
+                                           th:value="${user.phone}"
+                                           placeholder="Nhập số điện thoại (10-11 chữ số)"
+                                           class="form-control"
+                                           required>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <!-- Email -->
+                                <div class="form-group">
+                                    <label for="email">
+                                        Email
+                                        <span class="required-asterisk">*</span>
+                                    </label>
+                                    <input type="email"
+                                           id="email"
+                                           name="email"
+                                           th:value="${user.email}"
+                                           placeholder="Nhập địa chỉ email hợp lệ"
+                                           class="form-control"
+                                           required>
+                                </div>
+
+                                <!-- Role -->
+                                <div class="form-group">
+                                    <label for="role">
+                                        Vai trò
+                                        <span class="required-asterisk">*</span>
+                                    </label>
+                                    <select id="role" name="role" class="form-control" required>
+                                        <option th:each="r : ${allRoles}"
+                                                th:value="${r.name()}"
+                                                th:text="${r.name()}"
+                                                th:selected="${r == user.role}">
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <!-- Address -->
+                                <div class="form-group" style="grid-column: 1 / -1;">
+                                    <label for="address">Địa chỉ</label>
+                                    <textarea id="address"
+                                              name="address"
+                                              th:text="${user.address}"
+                                              placeholder="Nhập địa chỉ của người dùng"
+                                              class="form-control"
+                                              rows="3"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <!-- Status -->
+                                <div class="form-group">
+                                    <label for="status">
+                                        Trạng thái tài khoản
+                                        <span class="required-asterisk">*</span>
+                                    </label>
+                                    <select id="status" name="status" class="form-control" required>
+                                        <option th:each="st : ${allStatuses}"
+                                                th:value="${st.name()}"
+                                                th:text="${st.name()}"
+                                                th:selected="${st == user.status}">
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                Lưu thay đổi
+                            </button>
+                            <a th:href="@{/admin/users/{id}(id=${user.id})}" class="btn btn-secondary btn-lg">
+                                Hủy
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </main>
+
+            <!-- Footer -->
+            <footer th:replace="~{fragments/footer :: footer}"></footer>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <div th:replace="~{fragments/components/dashboard-header :: dashboard-scripts}"></div>
+</body>
+</html>
+
+
