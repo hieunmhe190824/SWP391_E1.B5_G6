@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{fragments/layout :: layout('Thêm giấy tờ - Car Rental System', ~{::content}, ~{::extraCss})}">
+    th:replace="~{fragments/layout :: layout('Thêm giấy tờ - Car Rental System', ~{::content}, ~{::extraCss})}">
 
 <th:block th:fragment="extraCss">
     <link rel="stylesheet" th:href="@{/css/profile.css}">
+    <script th:src="@{/js/document-upload.js}" defer></script>
 </th:block>
 
 <div th:fragment="content">
@@ -33,11 +34,17 @@
                                     <option value="Driver_License">Giấy phép lái xe</option>
                                 </select>
                             </div>
-                            <div th:replace="~{fragments/components/forms :: input-text('Số giấy tờ', 'documentNumber', '', true, 'Nhập số CMND/CCCD hoặc số GPLX')}"></div>
+                            <div
+                                th:replace="~{fragments/components/forms :: input-text('Số giấy tờ', 'documentNumber', '', true, 'Nhập số CMND/CCCD hoặc số GPLX')}">
+                            </div>
                         </div>
                         <div class="form-col">
-                            <div th:replace="~{fragments/components/forms :: input-date-only('Ngày hết hạn', 'expiryDate', '', false)}"></div>
-                            <div th:replace="~{fragments/components/forms :: input-file('Ảnh giấy tờ', 'imageFile', false, 'image/*,.pdf')}"></div>
+                            <div
+                                th:replace="~{fragments/components/forms :: input-date-only('Ngày hết hạn', 'expiryDate', '', false)}">
+                            </div>
+                            <div
+                                th:replace="~{fragments/components/forms :: input-file('Ảnh giấy tờ', 'imageFile', false, 'image/*,.pdf')}">
+                            </div>
                         </div>
                     </div>
 
@@ -50,4 +57,5 @@
         </div>
     </section>
 </div>
+
 </html>

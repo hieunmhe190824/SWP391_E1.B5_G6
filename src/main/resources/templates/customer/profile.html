@@ -4,6 +4,7 @@
 
 <th:block th:fragment="head">
     <link rel="stylesheet" th:href="@{/css/profile.css}">
+    <script th:src="@{/js/profile-reload.js}" defer></script>
 </th:block>
 
 <div th:fragment="content">
@@ -247,9 +248,10 @@
                                 <div th:if="${doc.imageUrl}" class="document-image-section">
                                     <div class="document-image-wrapper"
                                         th:if="${!#strings.endsWith(#strings.toLowerCase(doc.imageUrl), '.pdf')}">
-                                        <img th:src="${doc.imageUrl}" alt="Document Image" class="document-image">
+                                        <!-- Use formattedImageUrl to ensure correct leading slash and base path -->
+                                        <img th:src="${doc.formattedImageUrl}" alt="Document Image" class="document-image">
                                         <div class="document-image-overlay">
-                                            <a th:href="${doc.imageUrl}" target="_blank" class="btn-view-image">
+                                            <a th:href="${doc.formattedImageUrl}" target="_blank" class="btn-view-image">
                                                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none"
                                                     xmlns="http://www.w3.org/2000/svg">
                                                     <path
@@ -280,7 +282,7 @@
                                                     stroke-linejoin="round" />
                                             </svg>
                                         </div>
-                                        <a th:href="${doc.imageUrl}" target="_blank" class="btn btn-primary btn-sm"
+                                        <a th:href="${doc.formattedImageUrl}" target="_blank" class="btn btn-primary btn-sm"
                                             style="width:max-content;">Xem / tải tài liệu</a>
                                     </div>
                                 </div>

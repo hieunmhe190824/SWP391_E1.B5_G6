@@ -92,8 +92,8 @@ public class UserDocumentService {
     }
 
     private String saveFile(MultipartFile file, Long userId) throws IOException {
-        // Create upload directory if it doesn't exist
-        Path uploadPath = Paths.get("src/main/resources/static/uploads/docs");
+        // Use same pattern as VehicleService - external uploads directory
+        Path uploadPath = Paths.get("uploads/docs");
         if (!Files.exists(uploadPath)) {
             Files.createDirectories(uploadPath);
         }
@@ -109,14 +109,16 @@ public class UserDocumentService {
         Path filePath = uploadPath.resolve(filename);
         Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
 
-        // Return URL path
+        // Return URL path (same pattern as vehicle - just the filename path)
         return "/uploads/docs/" + filename;
     }
 
     private void deleteFile(String imageUrl) {
         try {
             if (imageUrl != null && imageUrl.startsWith("/uploads/")) {
-                Path filePath = Paths.get("src/main/resources/static" + imageUrl);
+                // Extract filename from URL (same pattern as vehicle)
+                String filename = imageUrl.substring("/uploads/docs/".length());
+                Path filePath = Paths.get("uploads/docs").resolve(filename);
                 Files.deleteIfExists(filePath);
             }
         } catch (IOException e) {

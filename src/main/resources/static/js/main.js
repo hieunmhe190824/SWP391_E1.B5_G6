@@ -2,7 +2,7 @@
 console.log('main.js loaded!');
 
 // Initialize on page load
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     console.log('Car Rental System Initialized');
 
     // Initialize tooltips if any
@@ -53,7 +53,7 @@ function hideTooltip() {
 function initializeModals() {
     const modalTriggers = document.querySelectorAll('[data-modal]');
     modalTriggers.forEach(trigger => {
-        trigger.addEventListener('click', function(e) {
+        trigger.addEventListener('click', function (e) {
             e.preventDefault();
             const modalId = this.getAttribute('data-modal');
             openModal(modalId);
@@ -84,12 +84,12 @@ function closeModal() {
 function addDeleteConfirmations() {
     const deleteForms = document.querySelectorAll('form[data-delete-form]');
     const deleteButtons = document.querySelectorAll('[data-delete-trigger]');
-    
+
     // Handle forms with data-delete-form attribute
     deleteForms.forEach(form => {
         const submitButton = form.querySelector('button[type="submit"]');
         if (submitButton) {
-            submitButton.addEventListener('click', function(e) {
+            submitButton.addEventListener('click', function (e) {
                 e.preventDefault();
                 const formId = form.id || 'deleteForm_' + Date.now();
                 if (!form.id) form.id = formId;
@@ -97,10 +97,10 @@ function addDeleteConfirmations() {
             });
         }
     });
-    
+
     // Handle buttons with data-delete-trigger attribute
     deleteButtons.forEach(button => {
-        button.addEventListener('click', function(e) {
+        button.addEventListener('click', function (e) {
             e.preventDefault();
             const formId = this.getAttribute('data-delete-trigger');
             const form = document.getElementById(formId) || this.closest('form');
@@ -121,20 +121,20 @@ function showDeleteModal(form) {
         console.error('Delete modal not found');
         return;
     }
-    
+
     // Store form reference
     currentDeleteForm = form;
-    
+
     // Get custom message if available
-    const customMessage = form.getAttribute('data-delete-message') || 
-                         'Bạn có chắc chắn muốn xóa mục này? Hành động này không thể hoàn tác.';
-    
+    const customMessage = form.getAttribute('data-delete-message') ||
+        'Bạn có chắc chắn muốn xóa mục này? Hành động này không thể hoàn tác.';
+
     // Update modal message
     const messageElement = modal.querySelector('.delete-modal-message');
     if (messageElement) {
         messageElement.textContent = customMessage;
     }
-    
+
     // Show modal
     modal.classList.add('active');
     document.body.style.overflow = 'hidden'; // Prevent background scrolling
@@ -154,32 +154,35 @@ function closeDeleteModal() {
 function initializeDeleteModal() {
     const modal = document.getElementById('deleteConfirmModal');
     if (!modal) return;
-    
+
     // Confirm button
     const confirmBtn = modal.querySelector('.delete-modal-confirm');
     if (confirmBtn) {
-        confirmBtn.addEventListener('click', function() {
+        confirmBtn.addEventListener('click', function () {
             if (currentDeleteForm) {
+                // IMPORTANT: Save reference before closing modal
+                // closeDeleteModal() sets currentDeleteForm to null
+                const formToSubmit = currentDeleteForm;
                 closeDeleteModal();
-                currentDeleteForm.submit();
+                formToSubmit.submit();
             }
         });
     }
-    
+
     // Cancel button
     const cancelBtn = modal.querySelector('.delete-modal-cancel');
     if (cancelBtn) {
         cancelBtn.addEventListener('click', closeDeleteModal);
     }
-    
+
     // Overlay click
     const overlay = modal.querySelector('.delete-modal-overlay');
     if (overlay) {
         overlay.addEventListener('click', closeDeleteModal);
     }
-    
+
     // Escape key
-    document.addEventListener('keydown', function(e) {
+    document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') {
             const modal = document.getElementById('deleteConfirmModal');
             if (modal && modal.classList.contains('active')) {
@@ -242,15 +245,15 @@ function showAlert(message, type = 'info') {
 // Initialize dropdown menu
 function initializeDropdown() {
     // Wait a bit to ensure DOM is fully loaded
-    setTimeout(function() {
+    setTimeout(function () {
         const dropdownToggle = document.getElementById('userDropdownToggle');
         const dropdownMenu = document.getElementById('userDropdownMenu');
 
         if (dropdownToggle && dropdownMenu) {
             console.log('Dropdown initialized successfully');
-            
+
             // Toggle dropdown when clicking on toggle
-            dropdownToggle.addEventListener('click', function(e) {
+            dropdownToggle.addEventListener('click', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
                 console.log('Toggle clicked, current state:', dropdownMenu.classList.contains('active'));
@@ -259,7 +262,7 @@ function initializeDropdown() {
             });
 
             // Close dropdown when clicking outside
-            document.addEventListener('click', function(e) {
+            document.addEventListener('click', function (e) {
                 if (dropdownMenu && dropdownToggle) {
                     const isClickInside = dropdownToggle.contains(e.target) || dropdownMenu.contains(e.target);
                     if (!isClickInside && dropdownMenu.classList.contains('active')) {
@@ -272,7 +275,7 @@ function initializeDropdown() {
             // Close dropdown when clicking on a menu item
             const menuItems = dropdownMenu.querySelectorAll('a');
             menuItems.forEach(item => {
-                item.addEventListener('click', function() {
+                item.addEventListener('click', function () {
                     console.log('Menu item clicked, closing dropdown');
                     dropdownMenu.classList.remove('active');
                 });

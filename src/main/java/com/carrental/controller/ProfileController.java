@@ -236,7 +236,7 @@ public class ProfileController {
 
         try {
             userDocumentService.createDocument(currentUser, documentType, documentNumber, expiryDate, imageFile);
-            redirectAttributes.addFlashAttribute("success", "Thêm giấy tờ thành công. Vui lòng chờ phê duyệt.");
+            redirectAttributes.addFlashAttribute("success", "Thêm giấy tờ thành công.");
         } catch (IOException e) {
             redirectAttributes.addFlashAttribute("error", "Lỗi khi upload ảnh: " + e.getMessage());
             return "redirect:/profile/documents/add";

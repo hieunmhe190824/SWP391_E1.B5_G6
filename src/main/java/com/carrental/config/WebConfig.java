@@ -9,11 +9,16 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // Keep a simple handler for explicit /static/** paths if used anywhere
+        // Note: default Spring Boot mapping already serves resources from classpath:/static/**
         registry.addResourceHandler("/static/**")
                 .addResourceLocations("classpath:/static/");
 
-        registry.addResourceHandler("/uploads/**")
-                .addResourceLocations("classpath:/static/uploads/");
+        // Do NOT re-map "/uploads/**" here.
+        // FileUploadConfig already configures "/uploads/**" to serve from the external
+        // "uploads" directory as well as classpath:/static/uploads/.
+        // Duplicating the handler here would override that configuration and break
+        // serving user-uploaded documents and images.
     }
 
 }

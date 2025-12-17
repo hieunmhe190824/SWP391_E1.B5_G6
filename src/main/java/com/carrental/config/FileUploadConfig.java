@@ -4,6 +4,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import java.nio.file.Paths;
+
 /**
  * Configuration for file upload and static resource handling
  * UC05: Manage Vehicles - Image Upload Configuration
@@ -24,16 +26,25 @@ public class FileUploadConfig implements WebMvcConfigurer {
      */
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // Get absolute path to uploads directory using Path API
+        String uploadsPath = Paths.get(UPLOAD_DIR).toAbsolutePath().toUri().toString();
+        
+        System.out.println("=== FILE UPLOAD CONFIG ===");
+        System.out.println("Uploads URI: " + uploadsPath);
+        
         // Serve uploaded images from external uploads directory (checked first)
         // This directory is outside the classpath to avoid issues with Spring Boot DevTools
         registry.addResourceHandler("/images/**")
-                .addResourceLocations("file:uploads/images/")
+                .addResourceLocations(uploadsPath + "images/")
                 .addResourceLocations("classpath:/static/images/");
         
         // Serve uploaded documents (ID cards, driver licenses, etc.)
         registry.addResourceHandler("/uploads/**")
-                .addResourceLocations("file:uploads/")
+                .addResourceLocations(uploadsPath)
                 .addResourceLocations("classpath:/static/uploads/");
+        
+        System.out.println("Resource handlers configured successfully");
+        System.out.println("==========================");
     }
 
     /**

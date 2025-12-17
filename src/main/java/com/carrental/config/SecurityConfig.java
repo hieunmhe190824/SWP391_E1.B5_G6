@@ -29,7 +29,7 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 // Đảm bảo các path public được xử lý trước
-                .requestMatchers("/static/**", "/css/**", "/js/**", "/images/**").permitAll()
+                .requestMatchers("/static/**", "/css/**", "/js/**", "/images/**", "/uploads/**").permitAll()
                 .requestMatchers("/", "/home", "/about").permitAll()
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/vehicles/**").permitAll()
