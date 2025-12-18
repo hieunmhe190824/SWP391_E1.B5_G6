@@ -250,6 +250,14 @@ public class BookingService {
             throw new RuntimeException("Only pending bookings can be rejected");
         }
 
+        // Validate rejection reason (must not be empty)
+        if (reason == null || reason.trim().isEmpty()) {
+            throw new RuntimeException("Vui lòng nhập lý do từ chối đơn đặt xe");
+        }
+
+        // Save rejection reason on booking
+        booking.setRejectionReason(reason.trim());
+
         // Update booking status
         booking.setStatus(BookingStatus.REJECTED);
         Booking savedBooking = bookingRepository.save(booking);

@@ -644,6 +644,8 @@
 
                     <form id="rejectForm" th:action="@{/staff/bookings/{id}/reject(id=${booking.id})}" method="post"
                         style="flex: 1;">
+                        <!-- Hidden field to carry rejection reason from modal -->
+                        <input type="hidden" name="reason" id="rejectReasonHidden">
                         <button type="button" class="btn-reject" onclick="showRejectModal()">✗ Từ chối</button>
                     </form>
                 </div>
@@ -696,8 +698,21 @@
                 <h3 class="delete-modal-title">Xác nhận từ chối</h3>
             </div>
             <div class="delete-modal-body">
-                <p class="delete-modal-message">Bạn có chắc chắn muốn từ chối đơn đặt xe này? Hành động này không thể
-                    hoàn tác.</p>
+                <p class="delete-modal-message">
+                    Bạn có chắc chắn muốn từ chối đơn đặt xe này? Hành động này không thể hoàn tác.
+                </p>
+                <div style="margin-top: 1rem; text-align: left;">
+                    <label for="rejectReasonTextarea"
+                        style="display:block; margin-bottom:0.5rem; font-size:0.9rem; color:rgba(255,255,255,0.8);">
+                        Lý do từ chối <span style="color:#ef4444;">*</span>
+                    </label>
+                    <textarea id="rejectReasonTextarea" rows="3"
+                        style="width:100%; resize: vertical; padding:0.5rem 0.75rem; border-radius:8px; border:1px solid rgba(255,255,255,0.2); background:rgba(15,23,42,0.9); color:#fff; font-size:0.9rem;"
+                        placeholder="Nhập lý do từ chối đơn đặt xe..."></textarea>
+                    <small style="display:block; margin-top:0.25rem; font-size:0.8rem; color:rgba(248,250,252,0.7);">
+                        Lý do sẽ được gửi cho khách hàng và hiển thị trong lịch sử đặt xe.
+                    </small>
+                </div>
             </div>
             <div class="delete-modal-footer">
                 <button type="button" class="btn btn-secondary delete-modal-cancel"
@@ -730,6 +745,22 @@
         }
 
         function confirmReject() {
+            const textarea = document.getElementById('rejectReasonTextarea');
+            const hiddenInput = document.getElementById('rejectReasonHidden');
+
+            if (!textarea || !hiddenInput) {
+                alert('Không thể gửi lý do từ chối. Vui lòng tải lại trang và thử lại.');
+                return;
+            }
+
+            const reason = textarea.value.trim();
+            if (!reason) {
+                alert('Vui lòng nhập lý do từ chối đơn đặt xe.');
+                textarea.focus();
+                return;
+            }
+
+            hiddenInput.value = reason;
             document.getElementById('rejectForm').submit();
         }
 

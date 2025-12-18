@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <meta charset="UTF-8">
 </head>
+
 <body>
     <!-- ===== FORM COMPONENTS =====
          Tất cả form controls sử dụng CSS Variables từ variables.css
@@ -17,13 +19,8 @@
             <span th:text="${label}">Label</span>
             <span th:if="${required}" class="required-asterisk">*</span>
         </label>
-        <input type="text"
-               th:id="${name}"
-               th:name="${name}"
-               th:value="${value}"
-               th:required="${required}"
-               th:placeholder="${placeholder}"
-               class="form-control" />
+        <input type="text" th:id="${name}" th:name="${name}" th:value="${value}" th:required="${required}"
+            th:placeholder="${placeholder}" class="form-control" />
     </div>
 
     <!-- Phone Input - Chỉ cho phép nhập số -->
@@ -32,14 +29,8 @@
             <span th:text="${label}">Label</span>
             <span th:if="${required}" class="required-asterisk">*</span>
         </label>
-        <input type="tel"
-               th:id="${name}"
-               th:name="${name}"
-               th:value="${value}"
-               th:required="${required}"
-               th:placeholder="${placeholder}"
-               pattern="[0-9]{10,11}"
-               class="form-control" />
+        <input type="tel" th:id="${name}" th:name="${name}" th:value="${value}" th:required="${required}"
+            th:placeholder="${placeholder}" pattern="[0-9]{10,11}" class="form-control" />
     </div>
 
     <!-- Email Input -->
@@ -48,13 +39,8 @@
             <span th:text="${label}">Label</span>
             <span th:if="${required}" class="required-asterisk">*</span>
         </label>
-        <input type="email"
-               th:id="${name}"
-               th:name="${name}"
-               th:value="${value}"
-               th:required="${required}"
-               th:placeholder="${placeholder}"
-               class="form-control" />
+        <input type="email" th:id="${name}" th:name="${name}" th:value="${value}" th:required="${required}"
+            th:placeholder="${placeholder}" class="form-control" />
     </div>
 
     <!-- Password Input -->
@@ -63,12 +49,8 @@
             <span th:text="${label}">Label</span>
             <span th:if="${required}" class="required-asterisk">*</span>
         </label>
-        <input type="password"
-               th:id="${name}"
-               th:name="${name}"
-               th:required="${required}"
-               th:placeholder="${placeholder}"
-               class="form-control" />
+        <input type="password" th:id="${name}" th:name="${name}" th:required="${required}"
+            th:placeholder="${placeholder}" class="form-control" />
     </div>
 
     <!-- Password Confirm Input -->
@@ -77,12 +59,8 @@
             <span th:text="${label}">Label</span>
             <span th:if="${required}" class="required-asterisk">*</span>
         </label>
-        <input type="password"
-               th:id="${name}"
-               th:name="${name}"
-               th:required="${required}"
-               th:placeholder="${placeholder}"
-               class="form-control" />
+        <input type="password" th:id="${name}" th:name="${name}" th:required="${required}"
+            th:placeholder="${placeholder}" class="form-control" />
     </div>
 
     <!-- Date Input -->
@@ -91,12 +69,8 @@
             <span th:text="${label}">Label</span>
             <span th:if="${required}" class="required-asterisk">*</span>
         </label>
-        <input type="datetime-local"
-               th:id="${name}"
-               th:name="${name}"
-               th:value="${value}"
-               th:required="${required}"
-               class="form-control" />
+        <input type="datetime-local" th:id="${name}" th:name="${name}" th:value="${value}" th:required="${required}"
+            class="form-control" />
     </div>
 
     <!-- Date Input (Date only) -->
@@ -105,12 +79,8 @@
             <span th:text="${label}">Label</span>
             <span th:if="${required}" class="required-asterisk">*</span>
         </label>
-        <input type="date"
-               th:id="${name}"
-               th:name="${name}"
-               th:value="${value}"
-               th:required="${required}"
-               class="form-control" />
+        <input type="date" th:id="${name}" th:name="${name}" th:value="${value}" th:required="${required}"
+            class="form-control" />
     </div>
 
     <!-- File Upload Input -->
@@ -119,13 +89,9 @@
             <span th:text="${label}">Label</span>
             <span th:if="${required}" class="required-asterisk">*</span>
         </label>
-        <input type="file"
-               th:id="${name}"
-               th:name="${name}"
-               th:accept="${accept}"
-               th:required="${required}"
-               class="form-control" />
-        <small class="form-text text-muted">Tối đa 10MB. Định dạng: JPG, JPEG, PNG, WEBP, PDF</small>
+        <input type="file" th:id="${name}" th:name="${name}" th:accept="${accept}" th:required="${required}"
+            class="form-control" />
+        <small class="form-text text-muted">Tối đa 5MB. Định dạng: JPG, JPEG, PNG, WEBP, PDF</small>
     </div>
 
     <!-- Select Dropdown -->
@@ -134,14 +100,9 @@
             <span th:text="${label}">Label</span>
             <span th:if="${required}" class="required-asterisk">*</span>
         </label>
-        <select th:id="${name}"
-                th:name="${name}"
-                th:required="${required}"
-                class="form-control">
+        <select th:id="${name}" th:name="${name}" th:required="${required}" class="form-control">
             <option value="">Select...</option>
-            <option th:each="option : ${options}"
-                    th:value="${option.id}"
-                    th:text="${option.name}">Option</option>
+            <option th:each="option : ${options}" th:value="${option.id}" th:text="${option.name}">Option</option>
         </select>
     </div>
 
@@ -151,13 +112,9 @@
             <span th:text="${label}">Label</span>
             <span th:if="${required}" class="required-asterisk">*</span>
         </label>
-        <textarea th:id="${name}"
-                  th:name="${name}"
-                  th:required="${required}"
-                  th:placeholder="${placeholder}"
-                  class="form-control"
-                  rows="4"
-                  th:text="${value}"></textarea>
+        <textarea th:id="${name}" th:name="${name}" th:required="${required}" th:placeholder="${placeholder}"
+            class="form-control" rows="4" th:text="${value}"></textarea>
     </div>
 </body>
+
 </html>

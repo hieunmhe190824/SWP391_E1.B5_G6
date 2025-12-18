@@ -128,6 +128,7 @@ CREATE TABLE bookings (
     end_date DATETIME NOT NULL,
     total_days INT NOT NULL,
     status ENUM('Pending', 'Approved', 'Rejected', 'Cancelled', 'Completed') DEFAULT 'Pending',
+    rejection_reason VARCHAR(500) NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (customer_id) REFERENCES users(user_id) ON DELETE CASCADE,
     FOREIGN KEY (vehicle_id) REFERENCES vehicles(vehicle_id) ON DELETE CASCADE,
@@ -608,25 +609,25 @@ INSERT INTO vehicles (model_id, location_id, license_plate, color, status, daily
 (26, 1, '30AA-78914', 'Xanh', 'Available', 1900000, 50000000, '["30aa78914.webp"]');
 
 -- 7. BOOKINGS
-INSERT INTO bookings (booking_id, customer_id, vehicle_id, pickup_location_id, return_location_id, start_date, end_date, total_days, status, created_at) VALUES
+INSERT INTO bookings (booking_id, customer_id, vehicle_id, pickup_location_id, return_location_id, start_date, end_date, total_days, status, rejection_reason, created_at) VALUES
 -- Approved bookings (will create contracts)
-(1, 5, 21, 1, 1, '2025-03-12 09:00:00', '2025-03-15 18:00:00', 3, 'Approved', '2025-03-07 10:30:00'),
-(2, 6, 22, 2, 2, '2025-03-14 08:00:00', '2025-03-17 17:00:00', 3, 'Approved', '2025-03-08 14:20:00'),
-(3, 7, 23, 3, 4, '2025-03-17 10:00:00', '2025-03-22 16:00:00', 5, 'Approved', '2025-03-09 09:15:00'),
+(1, 5, 21, 1, 1, '2025-03-12 09:00:00', '2025-03-15 18:00:00', 3, 'Approved', NULL, '2025-03-07 10:30:00'),
+(2, 6, 22, 2, 2, '2025-03-14 08:00:00', '2025-03-17 17:00:00', 3, 'Approved', NULL, '2025-03-08 14:20:00'),
+(3, 7, 23, 3, 4, '2025-03-17 10:00:00', '2025-03-22 16:00:00', 5, 'Approved', NULL, '2025-03-09 09:15:00'),
 
 -- Pending bookings (waiting for review)
-(4, 8, 1, 1, 1, '2025-03-22 09:00:00', '2025-03-27 18:00:00', 5, 'Pending', '2025-03-06 11:00:00'),
-(5, 9, 5, 2, 2, '2025-03-24 08:30:00', '2025-03-29 17:30:00', 5, 'Pending', '2025-03-06 13:45:00'),
-(6, 10, 12, 3, 3, '2025-03-27 10:00:00', '2025-04-01 16:00:00', 5, 'Pending', '2025-03-06 15:20:00'),
-(7, 11, 16, 4, 4, '2025-03-30 09:00:00', '2025-04-04 18:00:00', 5, 'Pending', '2025-03-06 16:30:00'),
+(4, 8, 1, 1, 1, '2025-03-22 09:00:00', '2025-03-27 18:00:00', 5, 'Pending', NULL, '2025-03-06 11:00:00'),
+(5, 9, 5, 2, 2, '2025-03-24 08:30:00', '2025-03-29 17:30:00', 5, 'Pending', NULL, '2025-03-06 13:45:00'),
+(6, 10, 12, 3, 3, '2025-03-27 10:00:00', '2025-04-01 16:00:00', 5, 'Pending', NULL, '2025-03-06 15:20:00'),
+(7, 11, 16, 4, 4, '2025-03-30 09:00:00', '2025-04-04 18:00:00', 5, 'Pending', NULL, '2025-03-06 16:30:00'),
 
 -- Rejected bookings
-(8, 13, 8, 3, 3, '2025-03-17 09:00:00', '2025-03-20 18:00:00', 3, 'Rejected', '2025-03-05 10:00:00'),
-(9, 14, 11, 4, 4, '2025-03-20 08:00:00', '2025-03-24 17:00:00', 4, 'Rejected', '2025-03-05 14:30:00'),
+(8, 13, 8, 3, 3, '2025-03-17 09:00:00', '2025-03-20 18:00:00', 3, 'Rejected', 'Không đủ giấy tờ xác minh.', '2025-03-05 10:00:00'),
+(9, 14, 11, 4, 4, '2025-03-20 08:00:00', '2025-03-24 17:00:00', 4, 'Rejected', 'Lịch thuê trùng với lịch bảo dưỡng xe.', '2025-03-05 14:30:00'),
 
 -- Cancelled bookings
-(10, 6, 7, 3, 3, '2025-02-25 09:00:00', '2025-02-28 18:00:00', 3, 'Cancelled', '2025-02-24 09:00:00'),
-(11, 5, 8, 1, 2, '2025-03-22 09:00:00', '2025-03-25 18:00:00', 3, 'Cancelled', '2025-03-21 11:30:00');
+(10, 6, 7, 3, 3, '2025-02-25 09:00:00', '2025-02-28 18:00:00', 3, 'Cancelled', NULL, '2025-02-24 09:00:00'),
+(11, 5, 8, 1, 2, '2025-03-22 09:00:00', '2025-03-25 18:00:00', 3, 'Cancelled', NULL, '2025-03-21 11:30:00');
 
 -- 8. BOOKING DOCUMENTS
 INSERT INTO booking_documents (booking_id, document_id) VALUES

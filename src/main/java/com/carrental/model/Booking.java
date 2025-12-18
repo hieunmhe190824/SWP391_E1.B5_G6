@@ -42,6 +42,9 @@ public class Booking {
     @Column(name = "status", nullable = false)
     private String statusString;
 
+    @Column(name = "rejection_reason", length = 500)
+    private String rejectionReason;
+
     @Column(name = "created_at", nullable = false, insertable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -169,6 +172,14 @@ public class Booking {
         if (statusString != null) {
             this.status = BookingStatus.fromValue(statusString);
         }
+    }
+
+    public String getRejectionReason() {
+        return rejectionReason;
+    }
+
+    public void setRejectionReason(String rejectionReason) {
+        this.rejectionReason = rejectionReason;
     }
 
     public LocalDateTime getCreatedAt() {

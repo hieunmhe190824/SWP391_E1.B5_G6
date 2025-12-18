@@ -35,6 +35,15 @@ document.addEventListener('DOMContentLoaded', function() {
             const file = e.target.files[0];
             
             if (file) {
+                // Check file size (5MB limit)
+                const MAX_SIZE = 5 * 1024 * 1024; // 5MB in bytes
+                if (file.size > MAX_SIZE) {
+                    alert('Kích thước tệp quá lớn. Vui lòng chọn tệp nhỏ hơn 5MB.\nFile too large. Please choose a file smaller than 5MB.');
+                    e.target.value = ''; // Clear the input
+                    previewContainer.style.display = 'none';
+                    return;
+                }
+
                 // Check if it's an image or PDF
                 const fileType = file.type;
                 const fileName = file.name.toLowerCase();
