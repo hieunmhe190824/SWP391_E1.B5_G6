@@ -1,65 +1,83 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org"
-    th:replace="~{fragments/auth-layout :: auth-layout('Đăng nhập - Car Rental System', ~{::authForm})}">
+    th:replace="~{fragments/layout :: layout('Đăng nhập - Car Rental System', ~{::content}, ~{::extraCss})}">
 
-<div th:fragment="authForm">
-    <!-- Form Icon -->
-    <div class="form-icon">
-        <div class="icon-holder">
-            <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M5 17h14l-1-7H6l-1 7z"></path>
-                <path d="M7 10V7a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v3"></path>
-                <circle cx="7" cy="17" r="2"></circle>
-                <circle cx="17" cy="17" r="2"></circle>
-            </svg>
+<th:block th:fragment="extraCss">
+    <link rel="stylesheet" th:href="@{/css/auth.css}">
+</th:block>
+
+<div th:fragment="content">
+    <div class="auth-layout">
+        <div class="form-holder">
+            <div class="form-content">
+                <div class="form-items">
+                    <!-- Form Icon -->
+                    <div class="form-icon">
+                        <div class="icon-holder">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M5 17h14l-1-7H6l-1 7z"></path>
+                                <path d="M7 10V7a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v3"></path>
+                                <circle cx="7" cy="17" r="2"></circle>
+                                <circle cx="17" cy="17" r="2"></circle>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- Form Title -->
+                    <h3 class="form-title-center">Đăng nhập để sử dụng hệ thống thuê xe</h3>
+
+                    <!-- Global messages - Sử dụng components có sẵn -->
+                    <div th:if="${param.error}">
+                        <div th:replace="~{fragments/components/messages :: error('Email hoặc mật khẩu không đúng')}">
+                        </div>
+                    </div>
+                    <div th:if="${param.logout}">
+                        <div th:replace="~{fragments/components/messages :: info('Bạn đã đăng xuất thành công')}"></div>
+                    </div>
+                    <div th:if="${param.registered}">
+                        <div
+                            th:replace="~{fragments/components/messages :: success('Đăng ký thành công, vui lòng đăng nhập')}">
+                        </div>
+                    </div>
+                    <div th:if="${param.passwordReset}">
+                        <div
+                            th:replace="~{fragments/components/messages :: success('Mật khẩu mới đã được gửi đến email của bạn')}">
+                        </div>
+                    </div>
+
+                    <!-- Login Form -->
+                    <form th:action="@{/auth/login}" method="post">
+                        <!-- Reusable form components - Sử dụng components có sẵn -->
+                        <div
+                            th:replace="~{fragments/components/forms :: input-email('Email đăng nhập', 'username', null, true, 'Nhập email của bạn')}">
+                        </div>
+                        <div
+                            th:replace="~{fragments/components/forms :: input-password('Mật khẩu', 'password', true, 'Nhập mật khẩu của bạn')}">
+                        </div>
+
+                        <!-- Forgot Password Link -->
+                        <div
+                            style="text-align: right; margin-top: var(--spacing-sm); margin-bottom: var(--spacing-md);">
+                            <a th:href="@{/auth/forgot-password}" style="font-size: 0.9rem;">Quên mật khẩu?</a>
+                        </div>
+
+                        <!-- Submit Button - Sử dụng component button có sẵn -->
+                        <div class="form-button">
+                            <button th:replace="~{fragments/components/buttons :: btn-submit('Đăng nhập')}"></button>
+                        </div>
+                    </form>
+
+                    <!-- Link to Register -->
+                    <p class="text-center" style="margin-top: var(--spacing-xl);">
+                        Chưa có tài khoản?
+                        <a th:href="@{/auth/register}">Đăng ký ngay</a>
+                    </p>
+                </div>
+            </div>
         </div>
     </div>
-
-    <!-- Form Title -->
-    <h3 class="form-title-center">Đăng nhập để sử dụng hệ thống thuê xe</h3>
-
-    <!-- Global messages - Sử dụng components có sẵn -->
-    <div th:if="${param.error}">
-        <div th:replace="~{fragments/components/messages :: error('Email hoặc mật khẩu không đúng')}"></div>
-    </div>
-    <div th:if="${param.logout}">
-        <div th:replace="~{fragments/components/messages :: info('Bạn đã đăng xuất thành công')}"></div>
-    </div>
-    <div th:if="${param.registered}">
-        <div th:replace="~{fragments/components/messages :: success('Đăng ký thành công, vui lòng đăng nhập')}"></div>
-    </div>
-    <div th:if="${param.passwordReset}">
-        <div th:replace="~{fragments/components/messages :: success('Mật khẩu mới đã được gửi đến email của bạn')}">
-        </div>
-    </div>
-
-    <!-- Login Form -->
-    <form th:action="@{/auth/login}" method="post">
-        <!-- Reusable form components - Sử dụng components có sẵn -->
-        <div
-            th:replace="~{fragments/components/forms :: input-email('Email đăng nhập', 'username', null, true, 'Nhập email của bạn')}">
-        </div>
-        <div
-            th:replace="~{fragments/components/forms :: input-password('Mật khẩu', 'password', true, 'Nhập mật khẩu của bạn')}">
-        </div>
-
-        <!-- Forgot Password Link -->
-        <div style="text-align: right; margin-top: var(--spacing-sm); margin-bottom: var(--spacing-md);">
-            <a th:href="@{/auth/forgot-password}" style="font-size: 0.9rem;">Quên mật khẩu?</a>
-        </div>
-
-        <!-- Submit Button - Sử dụng component button có sẵn -->
-        <div class="form-button">
-            <button th:replace="~{fragments/components/buttons :: btn-submit('Đăng nhập')}"></button>
-        </div>
-    </form>
-
-    <!-- Link to Register -->
-    <p class="text-center" style="margin-top: var(--spacing-xl);">
-        Chưa có tài khoản?
-        <a th:href="@{/auth/register}">Đăng ký ngay</a>
-    </p>
 </div>
 
 </html>

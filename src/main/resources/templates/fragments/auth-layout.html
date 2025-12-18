@@ -23,6 +23,9 @@
 </head>
 
 <body>
+<!-- Header chung -->
+<div th:replace="~{fragments/header :: header}"></div>
+
 <div class="form-body without-side">
     <div class="auth-layout">
         <div class="form-holder">
@@ -34,6 +37,9 @@
         </div>
     </div>
 </div>
+
+<!-- Footer chung -->
+<div th:replace="~{fragments/footer :: footer}"></div>
 
 <script th:src="@{/js/jquery.min.js}"></script>
 <script th:src="@{/js/popper.min.js}"></script>
