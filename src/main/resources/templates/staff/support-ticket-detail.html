@@ -344,7 +344,10 @@
                     <form th:action="@{/staff/support/tickets/{id}/reply(id=${ticket.id})}" method="post">
                         <div class="form-group">
                             <textarea name="messageText" class="form-control" rows="4" placeholder="Nhập phản hồi..."
-                                required></textarea>
+                                required maxlength="1000"></textarea>
+                            <small style="display:block; margin-top: 0.25rem; color: rgba(255,255,255,0.7);">
+                                Tối đa 1000 ký tự.
+                            </small>
                         </div>
                         <button type="submit" class="btn btn-primary" style="width: 100%;">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
