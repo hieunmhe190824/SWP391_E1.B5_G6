@@ -52,6 +52,9 @@ public class BookingService {
     @Autowired
     private VehicleService vehicleService;
 
+    @Autowired
+    private UserService userService;
+
     /**
      * Get all bookings with relationships loaded
      */
@@ -402,5 +405,96 @@ public class BookingService {
     public boolean isVehicleAvailable(Long vehicleId, LocalDateTime startDate, LocalDateTime endDate) {
         long conflicts = bookingRepository.countConflictingBookings(vehicleId, startDate, endDate);
         return conflicts == 0;
+    }
+
+    /**
+     * Assign booking to a staff member
+     * @param bookingId Booking ID
+     * @param staffId Staff user ID to assign
+     * @return Updated booking
+     */
+    public Booking assignBookingToStaff(Long bookingId, Long staffId) {
+        Booking booking = bookingRepository.findByIdWithRelations(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        // Validate staff exists and is a staff member
+        User staff = userService.getUserById(staffId)
+                .orElseThrow(() -> new RuntimeException("Staff not found"));
+        
+        if (staff.getRole() != User.UserRole.STAFF) {
+            throw new RuntimeException("User is not a staff member");
+        }
+
+        booking.setAssignedStaff(staff);
+        return bookingRepository.save(booking);
+    }
+
+    /**
+     * Automatically assign booking to staff with least workload
+     * Priority: 1. Staff with fewest pending bookings
+     *           2. If equal, sort alphabetically by full name
+     * @param bookingId Booking ID
+     * @return Updated booking with assigned staff
+     */
+    public Booking autoAssignBookingToStaff(Long bookingId) {
+        Booking booking = bookingRepository.findByIdWithRelations(bookingId)
+                .orElseThrow(() -> new RuntimeException("Booking not found"));
+
+        List<User> allStaff = userService.findAllStaff();
+        
+        if (allStaff.isEmpty()) {
+            throw new RuntimeException("No staff members available for assignment");
+        }
+
+        // Get pending booking count for each staff
+        User selectedStaff = allStaff.stream()
+                .map(staff -> {
+                    long pendingCount = bookingRepository.countPendingBookingsByStaffId(staff.getId());
+                    return new java.util.AbstractMap.SimpleEntry<>(staff, pendingCount);
+                })
+                .min((a, b) -> {
+                    // First compare by pending count (ascending)
+                    int countCompare = Long.compare(a.getValue(), b.getValue());
+                    if (countCompare != 0) {
+                        return countCompare;
+                    }
+                    // If equal, compare by full name alphabetically
+                    return a.getKey().getFullName().compareToIgnoreCase(b.getKey().getFullName());
+                })
+                .map(java.util.Map.Entry::getKey)
+                .orElseThrow(() -> new RuntimeException("No staff available"));
+
+        booking.setAssignedStaff(selectedStaff);
+        return bookingRepository.save(booking);
+    }
+
+    /**
+     * Get bookings assigned to a specific staff member
+     */
+    public List<Booking> getBookingsByAssignedStaff(Long staffId) {
+        return bookingRepository.findByAssignedStaffIdWithRelations(staffId);
+    }
+
+    /**
+     * Get pending bookings assigned to a specific staff member
+     */
+    public List<Booking> getPendingBookingsByAssignedStaff(Long staffId) {
+        return bookingRepository.findPendingBookingsByAssignedStaffIdWithRelations(staffId);
+    }
+
+    /**
+     * Get bookings by assigned staff and status
+     */
+    public List<Booking> getBookingsByAssignedStaffAndStatus(Long staffId, BookingStatus status) {
+        return bookingRepository.findByAssignedStaffIdAndStatusWithRelations(staffId, status.getValue());
+    }
+
+    /**
+     * Get unassigned bookings (bookings without assigned staff)
+     */
+    public List<Booking> getUnassignedBookings() {
+        return bookingRepository.findAllWithRelations().stream()
+                .filter(b -> b.getAssignedStaff() == null && b.getStatus() == BookingStatus.PENDING)
+                .collect(Collectors.toList());
     }
 }

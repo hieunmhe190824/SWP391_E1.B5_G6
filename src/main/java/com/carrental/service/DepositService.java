@@ -67,6 +67,37 @@ public class DepositService {
     }
 
     /**
+     * Get deposits by booking assigned staff ID (through contract.booking.assigned_staff_id)
+     * 
+     * @param assignedStaffId Staff user ID (booking.assigned_staff_id)
+     * @return List of deposit holds for contracts whose bookings are assigned to the staff
+     */
+    public List<DepositHold> getDepositsByStaffId(Long assignedStaffId) {
+        return depositHoldRepository.findAll().stream()
+                .filter(deposit -> deposit.getContract() != null 
+                        && deposit.getContract().getBooking() != null
+                        && deposit.getContract().getBooking().getAssignedStaff() != null
+                        && deposit.getContract().getBooking().getAssignedStaff().getId().equals(assignedStaffId))
+                .toList();
+    }
+
+    /**
+     * Get deposits by booking assigned staff ID and status
+     * 
+     * @param assignedStaffId Staff user ID (booking.assigned_staff_id)
+     * @param status Deposit status
+     * @return List of deposit holds for contracts whose bookings are assigned to the staff with specific status
+     */
+    public List<DepositHold> getDepositsByStaffIdAndStatus(Long assignedStaffId, DepositStatus status) {
+        return depositHoldRepository.findByStatus(status).stream()
+                .filter(deposit -> deposit.getContract() != null 
+                        && deposit.getContract().getBooking() != null
+                        && deposit.getContract().getBooking().getAssignedStaff() != null
+                        && deposit.getContract().getBooking().getAssignedStaff().getId().equals(assignedStaffId))
+                .toList();
+    }
+
+    /**
      * Get deposit hold by ID
      */
     public Optional<DepositHold> getDepositById(Long id) {

@@ -21,6 +21,50 @@ public interface ContractRepository extends JpaRepository<Contract, Long> {
     // Paginated contracts by status
     Page<Contract> findByStatus(Contract.ContractStatus status, Pageable pageable);
     
+    // Find contracts by staff ID (contract.staff_id - staff who created the contract)
+    Page<Contract> findByStaffId(Long staffId, Pageable pageable);
+    
+    // Find contracts by staff ID and status (contract.staff_id)
+    Page<Contract> findByStaffIdAndStatus(Long staffId, Contract.ContractStatus status, Pageable pageable);
+    
+    // Find contracts by booking assigned staff ID (booking.assigned_staff_id)
+    // Only includes contracts that have a booking with assigned staff
+    @Query("SELECT c FROM Contract c " +
+           "WHERE c.booking IS NOT NULL " +
+           "AND c.booking.assignedStaff IS NOT NULL " +
+           "AND c.booking.assignedStaff.id = :assignedStaffId " +
+           "ORDER BY c.createdAt DESC")
+    Page<Contract> findByBookingAssignedStaffId(@Param("assignedStaffId") Long assignedStaffId, Pageable pageable);
+    
+    // Find contracts by booking assigned staff ID and status
+    @Query("SELECT c FROM Contract c " +
+           "WHERE c.booking IS NOT NULL " +
+           "AND c.booking.assignedStaff IS NOT NULL " +
+           "AND c.booking.assignedStaff.id = :assignedStaffId " +
+           "AND c.status = :status " +
+           "ORDER BY c.createdAt DESC")
+    Page<Contract> findByBookingAssignedStaffIdAndStatus(@Param("assignedStaffId") Long assignedStaffId, 
+                                                          @Param("status") Contract.ContractStatus status, 
+                                                          Pageable pageable);
+    
+    // Find contracts by booking assigned staff ID (non-paginated)
+    @Query("SELECT c FROM Contract c " +
+           "WHERE c.booking IS NOT NULL " +
+           "AND c.booking.assignedStaff IS NOT NULL " +
+           "AND c.booking.assignedStaff.id = :assignedStaffId " +
+           "ORDER BY c.createdAt DESC")
+    List<Contract> findByBookingAssignedStaffIdList(@Param("assignedStaffId") Long assignedStaffId);
+    
+    // Find contracts by booking assigned staff ID and status (non-paginated)
+    @Query("SELECT c FROM Contract c " +
+           "WHERE c.booking IS NOT NULL " +
+           "AND c.booking.assignedStaff IS NOT NULL " +
+           "AND c.booking.assignedStaff.id = :assignedStaffId " +
+           "AND c.status = :status " +
+           "ORDER BY c.createdAt DESC")
+    List<Contract> findByBookingAssignedStaffIdAndStatusList(@Param("assignedStaffId") Long assignedStaffId, 
+                                                             @Param("status") Contract.ContractStatus status);
+    
     // ========== ANALYTICS QUERIES FOR REPORTS ==========
     
     /**

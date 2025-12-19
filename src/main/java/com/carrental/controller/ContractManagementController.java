@@ -47,6 +47,9 @@ public class ContractManagementController {
     @Autowired
     private ContractService contractService;
 
+    @Autowired
+    private com.carrental.repository.UserRepository userRepository;
+
     /**
      * Check if current authenticated user has ADMIN role
      */
@@ -58,6 +61,19 @@ public class ContractManagementController {
         return authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .anyMatch(role -> role.equals("ROLE_ADMIN") || role.equals("ADMIN"));
+    }
+
+    /**
+     * Get current authenticated user
+     */
+    private com.carrental.model.User getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new RuntimeException("User not authenticated");
+        }
+        String email = authentication.getName();
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
     }
     
     /**
@@ -72,17 +88,34 @@ public class ContractManagementController {
         // Each page 6 items, sorted by createdAt desc
         Pageable pageable = PageRequest.of(page, 6, Sort.by(Sort.Direction.DESC, "createdAt"));
         Page<Contract> contractsPage;
+        com.carrental.model.User currentUser = getCurrentUser();
 
-        if (status != null && !status.isEmpty()) {
-            try {
-                Contract.ContractStatus contractStatus = Contract.ContractStatus.valueOf(status.toUpperCase());
-                contractsPage = contractService.getContractsByStatusPage(contractStatus, pageable);
-            } catch (IllegalArgumentException e) {
+        if (isAdmin()) {
+            // Admin sees all contracts
+            if (status != null && !status.isEmpty()) {
+                try {
+                    Contract.ContractStatus contractStatus = Contract.ContractStatus.valueOf(status.toUpperCase());
+                    contractsPage = contractService.getContractsByStatusPage(contractStatus, pageable);
+                } catch (IllegalArgumentException e) {
+                    contractsPage = contractService.getContractsPage(pageable);
+                    status = null;
+                }
+            } else {
                 contractsPage = contractService.getContractsPage(pageable);
-                status = null;
             }
         } else {
-            contractsPage = contractService.getContractsPage(pageable);
+            // Staff only sees contracts for bookings assigned to them (booking.assigned_staff_id)
+            if (status != null && !status.isEmpty()) {
+                try {
+                    Contract.ContractStatus contractStatus = Contract.ContractStatus.valueOf(status.toUpperCase());
+                    contractsPage = contractService.getContractsByBookingAssignedStaffIdAndStatusPage(currentUser.getId(), contractStatus, pageable);
+                } catch (IllegalArgumentException e) {
+                    contractsPage = contractService.getContractsByBookingAssignedStaffIdPage(currentUser.getId(), pageable);
+                    status = null;
+                }
+            } else {
+                contractsPage = contractService.getContractsByBookingAssignedStaffIdPage(currentUser.getId(), pageable);
+            }
         }
 
         model.addAttribute("contracts", contractsPage.getContent());

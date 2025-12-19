@@ -415,8 +415,12 @@ public class DashboardController {
      * GET /staff/dashboard
      */
     @GetMapping("/staff/dashboard")
-    public String staffDashboard(Model model) {
-        var bookings = bookingService.getAllBookings();
+    public String staffDashboard(@AuthenticationPrincipal UserDetails userDetails, Model model) {
+        // Get current staff user
+        User currentUser = userService.findByUsername(userDetails.getUsername());
+        
+        // Only show bookings assigned to this staff
+        var bookings = bookingService.getBookingsByAssignedStaff(currentUser.getId());
         model.addAttribute("bookings", bookings);
         addBookingStatusCounts(model, bookings);
         return "staff/dashboard";

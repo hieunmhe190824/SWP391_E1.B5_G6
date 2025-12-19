@@ -8,6 +8,9 @@ import com.carrental.service.ContractService;
 import com.carrental.service.HandoverService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -30,12 +33,45 @@ public class HandoverController {
     private ContractService contractService;
 
     /**
+     * Check if current authenticated user has ADMIN role
+     */
+    private boolean isAdmin() {
+        org.springframework.security.core.Authentication authentication = 
+            org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return false;
+        }
+        return authentication.getAuthorities().stream()
+                .map(auth -> auth.getAuthority())
+                .anyMatch(role -> role.equals("ROLE_ADMIN") || role.equals("ADMIN"));
+    }
+
+    /**
+     * Get current authenticated user
+     */
+    private User getCurrentUser() {
+        org.springframework.security.core.Authentication authentication = 
+            org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new RuntimeException("User not authenticated");
+        }
+        String email = authentication.getName();
+        return getUserByEmail(email);
+    }
+
+    /**
      * UC12: Display list of contracts ready for pickup
      * Staff view
      */
     @GetMapping("/staff/handover/pickup")
     public String showPickupList(Model model) {
-        List<Contract> contractsReadyForPickup = handoverService.getContractsReadyForPickup();
+        List<Contract> contractsReadyForPickup;
+        if (isAdmin()) {
+            contractsReadyForPickup = handoverService.getContractsReadyForPickup();
+        } else {
+            User currentUser = getCurrentUser();
+            contractsReadyForPickup = handoverService.getContractsReadyForPickupByStaff(currentUser.getId());
+        }
         model.addAttribute("contracts", contractsReadyForPickup);
         return "staff/pickup-list";
     }
@@ -117,7 +153,13 @@ public class HandoverController {
      */
     @GetMapping("/staff/rentals/active")
     public String showActiveRentalsStaff(Model model) {
-        List<Contract> activeRentals = handoverService.getActiveRentals();
+        List<Contract> activeRentals;
+        if (isAdmin()) {
+            activeRentals = handoverService.getActiveRentals();
+        } else {
+            User currentUser = getCurrentUser();
+            activeRentals = handoverService.getActiveRentalsByStaff(currentUser.getId());
+        }
         model.addAttribute("contracts", activeRentals);
         model.addAttribute("pageTitle", "Active Rentals");
         return "staff/active-rentals";

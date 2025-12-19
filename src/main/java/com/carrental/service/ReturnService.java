@@ -52,11 +52,42 @@ public class ReturnService {
     @Autowired
     private BookingRepository bookingRepository;
 
+    @Autowired
+    private ContractService contractService;
+
     /**
      * Get contracts ready for return (active rentals with pickup completed but no return)
      */
     public List<Contract> getContractsReadyForReturn() {
         List<Contract> activeContracts = contractRepository.findByStatus(Contract.ContractStatus.ACTIVE);
+        List<Contract> readyForReturn = new ArrayList<>();
+
+        for (Contract contract : activeContracts) {
+            // Check if pickup completed
+            Optional<Handover> pickupHandover = handoverRepository
+                    .findByContractIdAndType(contract.getId(), Handover.HandoverType.PICKUP);
+            
+            // Check if return NOT completed
+            Optional<Handover> returnHandover = handoverRepository
+                    .findByContractIdAndType(contract.getId(), Handover.HandoverType.RETURN);
+
+            if (pickupHandover.isPresent() && returnHandover.isEmpty()) {
+                readyForReturn.add(contract);
+            }
+        }
+
+        return readyForReturn;
+    }
+
+    /**
+     * Get contracts ready for return by booking assigned staff ID
+     * 
+     * @param assignedStaffId Staff user ID (booking.assigned_staff_id)
+     * @return List of contracts ready for return for bookings assigned to the staff
+     */
+    public List<Contract> getContractsReadyForReturnByStaff(Long assignedStaffId) {
+        List<Contract> activeContracts = contractService.getContractsByBookingAssignedStaffIdAndStatus(
+                assignedStaffId, Contract.ContractStatus.ACTIVE);
         List<Contract> readyForReturn = new ArrayList<>();
 
         for (Contract contract : activeContracts) {

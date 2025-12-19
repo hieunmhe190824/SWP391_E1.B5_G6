@@ -287,12 +287,50 @@ public class HandoverService {
     }
 
     /**
+     * Get contracts ready for pickup by booking assigned staff ID
+     * 
+     * @param assignedStaffId Staff user ID (booking.assigned_staff_id)
+     * @return List of contracts ready for pickup for bookings assigned to the staff
+     */
+    public List<Contract> getContractsReadyForPickupByStaff(Long assignedStaffId) {
+        List<Contract> activeContracts = contractService.getContractsByBookingAssignedStaffIdAndStatus(
+                assignedStaffId, Contract.ContractStatus.ACTIVE);
+
+        return activeContracts.stream()
+                .filter(contract -> {
+                    Optional<Handover> pickup = handoverRepository.findByContractIdAndType(
+                            contract.getId(), Handover.HandoverType.PICKUP);
+                    return pickup.isEmpty();
+                })
+                .toList();
+    }
+
+    /**
      * Get all active rentals (contracts with pickup completed)
      * 
      * @return List of active rental contracts
      */
     public List<Contract> getActiveRentals() {
         List<Contract> activeContracts = contractService.getContractsByStatus(Contract.ContractStatus.ACTIVE);
+
+        return activeContracts.stream()
+                .filter(contract -> {
+                    Optional<Handover> pickup = handoverRepository.findByContractIdAndType(
+                            contract.getId(), Handover.HandoverType.PICKUP);
+                    return pickup.isPresent();
+                })
+                .toList();
+    }
+
+    /**
+     * Get active rentals by booking assigned staff ID
+     * 
+     * @param assignedStaffId Staff user ID (booking.assigned_staff_id)
+     * @return List of active rental contracts for bookings assigned to the staff
+     */
+    public List<Contract> getActiveRentalsByStaff(Long assignedStaffId) {
+        List<Contract> activeContracts = contractService.getContractsByBookingAssignedStaffIdAndStatus(
+                assignedStaffId, Contract.ContractStatus.ACTIVE);
 
         return activeContracts.stream()
                 .filter(contract -> {

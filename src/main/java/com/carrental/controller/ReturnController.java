@@ -58,7 +58,13 @@ public class ReturnController {
      */
     @GetMapping("/list")
     public String showReturnList(Model model) {
-        List<Contract> contractsReadyForReturn = returnService.getContractsReadyForReturn();
+        List<Contract> contractsReadyForReturn;
+        if (isAdmin()) {
+            contractsReadyForReturn = returnService.getContractsReadyForReturn();
+        } else {
+            com.carrental.model.User currentUser = getCurrentUser();
+            contractsReadyForReturn = returnService.getContractsReadyForReturnByStaff(currentUser.getId());
+        }
         model.addAttribute("contracts", contractsReadyForReturn);
         if (isAdmin()) {
             return "admin/return-list";
@@ -237,6 +243,18 @@ public class ReturnController {
             }
             return "redirect:/staff/returns/" + contractId + "/payment";
         }
+    }
+
+    /**
+     * Get current authenticated user
+     */
+    private com.carrental.model.User getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new RuntimeException("User not authenticated");
+        }
+        String email = authentication.getName();
+        return getUserByEmail(email);
     }
 
     private User getUserByEmail(String email) {

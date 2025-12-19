@@ -45,6 +45,10 @@ public class Booking {
     @Column(name = "rejection_reason", length = 500)
     private String rejectionReason;
 
+    @ManyToOne
+    @JoinColumn(name = "assigned_staff_id", nullable = true)
+    private User assignedStaff;
+
     @Column(name = "created_at", nullable = false, insertable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -180,6 +184,14 @@ public class Booking {
 
     public void setRejectionReason(String rejectionReason) {
         this.rejectionReason = rejectionReason;
+    }
+
+    public User getAssignedStaff() {
+        return assignedStaff;
+    }
+
+    public void setAssignedStaff(User assignedStaff) {
+        this.assignedStaff = assignedStaff;
     }
 
     public LocalDateTime getCreatedAt() {

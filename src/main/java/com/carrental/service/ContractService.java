@@ -190,6 +190,60 @@ public class ContractService {
     }
 
     /**
+     * Get paginated contracts by staff ID (contract.staff_id - staff who created contract)
+     */
+    public Page<Contract> getContractsByStaffIdPage(Long staffId, Pageable pageable) {
+        return contractRepository.findByStaffId(staffId, pageable);
+    }
+
+    /**
+     * Get paginated contracts by staff ID and status (contract.staff_id)
+     */
+    public Page<Contract> getContractsByStaffIdAndStatusPage(Long staffId, Contract.ContractStatus status, Pageable pageable) {
+        return contractRepository.findByStaffIdAndStatus(staffId, status, pageable);
+    }
+
+    /**
+     * Get contracts by staff ID and status (non-paginated) - contract.staff_id
+     */
+    public List<Contract> getContractsByStaffIdAndStatus(Long staffId, Contract.ContractStatus status) {
+        return contractRepository.findAll().stream()
+                .filter(c -> c.getStaff().getId().equals(staffId) && c.getStatus() == status)
+                .toList();
+    }
+
+    /**
+     * Get paginated contracts by booking assigned staff ID (booking.assigned_staff_id)
+     * This is used for staff to see contracts for bookings assigned to them
+     */
+    public Page<Contract> getContractsByBookingAssignedStaffIdPage(Long assignedStaffId, Pageable pageable) {
+        return contractRepository.findByBookingAssignedStaffId(assignedStaffId, pageable);
+    }
+
+    /**
+     * Get paginated contracts by booking assigned staff ID and status
+     */
+    public Page<Contract> getContractsByBookingAssignedStaffIdAndStatusPage(Long assignedStaffId, 
+                                                                             Contract.ContractStatus status, 
+                                                                             Pageable pageable) {
+        return contractRepository.findByBookingAssignedStaffIdAndStatus(assignedStaffId, status, pageable);
+    }
+
+    /**
+     * Get contracts by booking assigned staff ID (non-paginated)
+     */
+    public List<Contract> getContractsByBookingAssignedStaffId(Long assignedStaffId) {
+        return contractRepository.findByBookingAssignedStaffIdList(assignedStaffId);
+    }
+
+    /**
+     * Get contracts by booking assigned staff ID and status (non-paginated)
+     */
+    public List<Contract> getContractsByBookingAssignedStaffIdAndStatus(Long assignedStaffId, Contract.ContractStatus status) {
+        return contractRepository.findByBookingAssignedStaffIdAndStatusList(assignedStaffId, status);
+    }
+
+    /**
      * Generate unique contract number
      * Format: HD-YYYYMMDD-XXXXXX (max 50 chars)
      * Example: HD-20251219-A1B2C3

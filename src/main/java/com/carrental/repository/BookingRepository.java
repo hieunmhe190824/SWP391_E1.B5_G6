@@ -35,6 +35,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
            "LEFT JOIN FETCH m.brand " +
            "LEFT JOIN FETCH b.pickupLocation " +
            "LEFT JOIN FETCH b.returnLocation " +
+           "LEFT JOIN FETCH b.assignedStaff " +
            "WHERE b.id = :id")
     Optional<Booking> findByIdWithRelations(@Param("id") Long id);
 
@@ -49,6 +50,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
            "LEFT JOIN FETCH m.brand " +
            "LEFT JOIN FETCH b.pickupLocation " +
            "LEFT JOIN FETCH b.returnLocation " +
+           "LEFT JOIN FETCH b.assignedStaff " +
            "ORDER BY b.createdAt DESC")
     List<Booking> findAllWithRelations();
 
@@ -63,6 +65,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
            "LEFT JOIN FETCH m.brand " +
            "LEFT JOIN FETCH b.pickupLocation " +
            "LEFT JOIN FETCH b.returnLocation " +
+           "LEFT JOIN FETCH b.assignedStaff " +
            "WHERE b.customer.id = :customerId " +
            "ORDER BY b.createdAt DESC")
     List<Booking> findByCustomerIdWithRelations(@Param("customerId") Long customerId);
@@ -77,6 +80,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
            "LEFT JOIN FETCH m.brand " +
            "LEFT JOIN FETCH b.pickupLocation " +
            "LEFT JOIN FETCH b.returnLocation " +
+           "LEFT JOIN FETCH b.assignedStaff " +
            "WHERE b.statusString = :status " +
            "ORDER BY b.createdAt DESC")
     List<Booking> findByStatusStringWithRelations(@Param("status") String status);
@@ -91,9 +95,66 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
            "LEFT JOIN FETCH m.brand " +
            "LEFT JOIN FETCH b.pickupLocation " +
            "LEFT JOIN FETCH b.returnLocation " +
+           "LEFT JOIN FETCH b.assignedStaff " +
            "WHERE b.statusString = 'Pending' " +
            "ORDER BY b.createdAt ASC")
     List<Booking> findPendingBookingsWithRelations();
+
+    /**
+     * Find bookings by assigned staff ID with relationships loaded
+     */
+    @Query("SELECT DISTINCT b FROM Booking b " +
+           "LEFT JOIN FETCH b.customer " +
+           "LEFT JOIN FETCH b.vehicle v " +
+           "LEFT JOIN FETCH v.model m " +
+           "LEFT JOIN FETCH m.brand " +
+           "LEFT JOIN FETCH b.pickupLocation " +
+           "LEFT JOIN FETCH b.returnLocation " +
+           "INNER JOIN FETCH b.assignedStaff " +
+           "WHERE b.assignedStaff.id = :staffId " +
+           "ORDER BY b.createdAt DESC")
+    List<Booking> findByAssignedStaffIdWithRelations(@Param("staffId") Long staffId);
+
+    /**
+     * Find pending bookings by assigned staff ID
+     */
+    @Query("SELECT b FROM Booking b " +
+           "LEFT JOIN FETCH b.customer " +
+           "LEFT JOIN FETCH b.vehicle v " +
+           "LEFT JOIN FETCH v.model m " +
+           "LEFT JOIN FETCH m.brand " +
+           "LEFT JOIN FETCH b.pickupLocation " +
+           "LEFT JOIN FETCH b.returnLocation " +
+           "LEFT JOIN FETCH b.assignedStaff " +
+           "WHERE b.assignedStaff.id = :staffId " +
+           "AND b.statusString = 'Pending' " +
+           "ORDER BY b.createdAt ASC")
+    List<Booking> findPendingBookingsByAssignedStaffIdWithRelations(@Param("staffId") Long staffId);
+
+    /**
+     * Find bookings by assigned staff ID and status
+     */
+    @Query("SELECT b FROM Booking b " +
+           "LEFT JOIN FETCH b.customer " +
+           "LEFT JOIN FETCH b.vehicle v " +
+           "LEFT JOIN FETCH v.model m " +
+           "LEFT JOIN FETCH m.brand " +
+           "LEFT JOIN FETCH b.pickupLocation " +
+           "LEFT JOIN FETCH b.returnLocation " +
+           "LEFT JOIN FETCH b.assignedStaff " +
+           "WHERE b.assignedStaff.id = :staffId " +
+           "AND b.statusString = :status " +
+           "ORDER BY b.createdAt DESC")
+    List<Booking> findByAssignedStaffIdAndStatusWithRelations(@Param("staffId") Long staffId, 
+                                                              @Param("status") String status);
+
+    /**
+     * Count pending bookings assigned to a staff member
+     */
+    @Query("SELECT COUNT(b) FROM Booking b " +
+           "WHERE b.assignedStaff.id = :staffId " +
+           "AND b.statusString = 'Pending'")
+    long countPendingBookingsByStaffId(@Param("staffId") Long staffId);
 
     /**
      * Check if vehicle is available for booking in a date range
@@ -117,6 +178,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
            "LEFT JOIN FETCH m.brand " +
            "LEFT JOIN FETCH b.pickupLocation " +
            "LEFT JOIN FETCH b.returnLocation " +
+           "LEFT JOIN FETCH b.assignedStaff " +
            "WHERE b.customer.id = :customerId " +
            "AND b.statusString = :status " +
            "ORDER BY b.createdAt DESC")

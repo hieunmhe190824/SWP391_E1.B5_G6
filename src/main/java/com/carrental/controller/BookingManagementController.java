@@ -68,17 +68,34 @@ public class BookingManagementController {
     @GetMapping
     public String listBookings(@RequestParam(required = false) String status, Model model) {
         List<Booking> bookings;
+        User currentUser = getCurrentUser();
         
-        if (status != null && !status.isEmpty()) {
-            // Filter by status
-            try {
-                Booking.BookingStatus bookingStatus = Booking.BookingStatus.valueOf(status.toUpperCase());
-                bookings = bookingService.getBookingsByStatus(bookingStatus);
-            } catch (IllegalArgumentException e) {
+        if (isAdmin()) {
+            // Admin sees all bookings
+            if (status != null && !status.isEmpty()) {
+                // Filter by status
+                try {
+                    Booking.BookingStatus bookingStatus = Booking.BookingStatus.valueOf(status.toUpperCase());
+                    bookings = bookingService.getBookingsByStatus(bookingStatus);
+                } catch (IllegalArgumentException e) {
+                    bookings = bookingService.getAllBookings();
+                }
+            } else {
                 bookings = bookingService.getAllBookings();
             }
         } else {
-            bookings = bookingService.getAllBookings();
+            // Staff only sees bookings assigned to them
+            if (status != null && !status.isEmpty()) {
+                // Filter by status
+                try {
+                    Booking.BookingStatus bookingStatus = Booking.BookingStatus.valueOf(status.toUpperCase());
+                    bookings = bookingService.getBookingsByAssignedStaffAndStatus(currentUser.getId(), bookingStatus);
+                } catch (IllegalArgumentException e) {
+                    bookings = bookingService.getBookingsByAssignedStaff(currentUser.getId());
+                }
+            } else {
+                bookings = bookingService.getBookingsByAssignedStaff(currentUser.getId());
+            }
         }
         
         model.addAttribute("bookings", bookings);
@@ -97,7 +114,17 @@ public class BookingManagementController {
      */
     @GetMapping("/pending")
     public String pendingBookings(Model model) {
-        List<Booking> pendingBookings = bookingService.getPendingBookings();
+        User currentUser = getCurrentUser();
+        List<Booking> pendingBookings;
+        
+        if (isAdmin()) {
+            // Admin sees all pending bookings
+            pendingBookings = bookingService.getPendingBookings();
+        } else {
+            // Staff only sees pending bookings assigned to them
+            pendingBookings = bookingService.getPendingBookingsByAssignedStaff(currentUser.getId());
+        }
+        
         model.addAttribute("bookings", pendingBookings);
         model.addAttribute("selectedStatus", "Pending");
 
@@ -141,15 +168,32 @@ public class BookingManagementController {
      * POST /staff/bookings/{id}/approve
      *
      * Workflow:
-     * 1. Staff reviews documents
-     * 2. Staff approves booking
-     * 3. System automatically creates contract with PENDING_PAYMENT status
-     * 4. Contract is sent to customer for review and deposit payment
+     * 1. Admin assigns booking to staff
+     * 2. Staff reviews documents
+     * 3. Staff approves booking
+     * 4. System automatically creates contract with PENDING_PAYMENT status
+     * 5. Contract is sent to customer for review and deposit payment
      */
     @PostMapping("/{id}/approve")
     public String approveBooking(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
             User currentStaff = getCurrentUser();
+            
+            // Check if booking is assigned to current staff (if not admin)
+            if (!isAdmin()) {
+                Booking bookingCheck = bookingService.getBookingById(id)
+                        .orElseThrow(() -> new RuntimeException("Booking not found"));
+                if (bookingCheck.getAssignedStaff() == null) {
+                    redirectAttributes.addFlashAttribute("errorMessage",
+                        "Đơn đặt này chưa được phân công. Vui lòng liên hệ admin để phân công.");
+                    return "redirect:/staff/bookings/" + id;
+                }
+                if (!bookingCheck.getAssignedStaff().getId().equals(currentStaff.getId())) {
+                    redirectAttributes.addFlashAttribute("errorMessage",
+                        "Bạn không có quyền duyệt đơn đặt này. Đơn đặt đã được phân công cho nhân viên khác.");
+                    return "redirect:/staff/bookings/" + id;
+                }
+            }
 
             // Approve booking; service will auto-create contract if needed
             Booking booking = bookingService.approveBooking(id, currentStaff);
@@ -182,6 +226,22 @@ public class BookingManagementController {
                                RedirectAttributes redirectAttributes) {
         try {
             User currentStaff = getCurrentUser();
+            
+            // Check if booking is assigned to current staff (if not admin)
+            if (!isAdmin()) {
+                Booking bookingCheck = bookingService.getBookingById(id)
+                        .orElseThrow(() -> new RuntimeException("Booking not found"));
+                if (bookingCheck.getAssignedStaff() == null) {
+                    redirectAttributes.addFlashAttribute("errorMessage",
+                        "Đơn đặt này chưa được phân công. Vui lòng liên hệ admin để phân công.");
+                    return "redirect:/staff/bookings/" + id;
+                }
+                if (!bookingCheck.getAssignedStaff().getId().equals(currentStaff.getId())) {
+                    redirectAttributes.addFlashAttribute("errorMessage",
+                        "Bạn không có quyền từ chối đơn đặt này. Đơn đặt đã được phân công cho nhân viên khác.");
+                    return "redirect:/staff/bookings/" + id;
+                }
+            }
             
             Booking booking = bookingService.rejectBooking(id, currentStaff, reason);
             

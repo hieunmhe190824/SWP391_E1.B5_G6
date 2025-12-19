@@ -31,6 +31,22 @@ public class DepositManagementController {
     @Autowired
     private RefundService refundService;
 
+    @Autowired
+    private com.carrental.repository.UserRepository userRepository;
+
+    /**
+     * Get current authenticated user
+     */
+    private com.carrental.model.User getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new RuntimeException("User not authenticated");
+        }
+        String email = authentication.getName();
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
     /**
      * Check if current authenticated user has ADMIN role
      */
@@ -56,22 +72,43 @@ public class DepositManagementController {
         System.out.println("Status parameter: '" + statusStr + "'");
         
         List<DepositHold> deposits;
+        com.carrental.model.User currentUser = getCurrentUser();
         
-        if (statusStr != null && !statusStr.isEmpty()) {
-            try {
-                // Convert to uppercase to handle case-insensitive input
-                DepositHold.DepositStatus status = DepositHold.DepositStatus.valueOf(statusStr.toUpperCase());
-                System.out.println("Parsed status enum: " + status);
-                deposits = depositService.getDepositsByStatus(status);
-                System.out.println("Found " + deposits.size() + " deposits with status: " + status);
-            } catch (IllegalArgumentException e) {
-                System.err.println("Invalid status value: " + statusStr);
+        if (isAdmin()) {
+            // Admin sees all deposits
+            if (statusStr != null && !statusStr.isEmpty()) {
+                try {
+                    // Convert to uppercase to handle case-insensitive input
+                    DepositHold.DepositStatus status = DepositHold.DepositStatus.valueOf(statusStr.toUpperCase());
+                    System.out.println("Parsed status enum: " + status);
+                    deposits = depositService.getDepositsByStatus(status);
+                    System.out.println("Found " + deposits.size() + " deposits with status: " + status);
+                } catch (IllegalArgumentException e) {
+                    System.err.println("Invalid status value: " + statusStr);
+                    deposits = depositService.getAllDeposits();
+                    statusStr = null; // Reset to show all
+                }
+            } else {
+                System.out.println("No status filter, showing all deposits");
                 deposits = depositService.getAllDeposits();
-                statusStr = null; // Reset to show all
             }
         } else {
-            System.out.println("No status filter, showing all deposits");
-            deposits = depositService.getAllDeposits();
+            // Staff only sees deposits for contracts assigned to them
+            if (statusStr != null && !statusStr.isEmpty()) {
+                try {
+                    DepositHold.DepositStatus status = DepositHold.DepositStatus.valueOf(statusStr.toUpperCase());
+                    System.out.println("Parsed status enum: " + status);
+                    deposits = depositService.getDepositsByStaffIdAndStatus(currentUser.getId(), status);
+                    System.out.println("Found " + deposits.size() + " deposits with status: " + status + " for staff: " + currentUser.getId());
+                } catch (IllegalArgumentException e) {
+                    System.err.println("Invalid status value: " + statusStr);
+                    deposits = depositService.getDepositsByStaffId(currentUser.getId());
+                    statusStr = null; // Reset to show all
+                }
+            } else {
+                System.out.println("No status filter, showing all deposits for staff: " + currentUser.getId());
+                deposits = depositService.getDepositsByStaffId(currentUser.getId());
+            }
         }
         
         // Auto-update deposits from HOLDING to READY when holdEndDate has passed
