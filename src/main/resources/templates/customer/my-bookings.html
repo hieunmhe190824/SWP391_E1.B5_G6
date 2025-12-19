@@ -50,7 +50,7 @@
         .page-container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 0 1rem;
+            padding: 0 0.5rem;
         }
 
         .page-header {
@@ -122,39 +122,104 @@
             border-color: var(--color-primary);
         }
 
-        .bookings-list {
-            display: grid;
-            gap: 1.5rem;
-        }
-
-        .booking-card {
-            background: rgba(31, 41, 55, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        .bookings-table-container {
+            background: #ffffff;
+            border: 1px solid rgba(0, 0, 0, 0.1);
             border-radius: 12px;
             padding: 1.5rem;
-            transition: all 0.2s;
             backdrop-filter: blur(10px);
+            overflow-x: auto;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
-        .booking-card:hover {
-            border-color: var(--color-primary);
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-            transform: translateY(-2px);
+        .bookings-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1100px;
         }
 
-        .booking-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: start;
-            margin-bottom: 1rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        .bookings-table thead {
+            background: rgba(59, 130, 246, 0.08);
+        }
+
+        .bookings-table th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 700;
+            color: #1f2937;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .bookings-table td {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            color: #374151;
+            vertical-align: middle;
+        }
+
+        .bookings-table tbody tr {
+            transition: all 0.2s;
+        }
+
+        .bookings-table tbody tr:hover {
+            background: rgba(59, 130, 246, 0.04);
+        }
+
+        .bookings-table tbody tr:last-child td {
+            border-bottom: none;
         }
 
         .booking-id {
-            font-size: 1.125rem;
             font-weight: 600;
-            color: var(--color-text-white);
+            color: #111827;
+        }
+
+        .booking-date {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        .vehicle-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .vehicle-image-small {
+            width: 60px;
+            height: 40px;
+            object-fit: cover;
+            border-radius: 6px;
+        }
+
+        .vehicle-name {
+            font-weight: 500;
+            color: #111827;
+        }
+
+        .vehicle-plate {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-top: 0.25rem;
+        }
+
+        .rental-period {
+            font-size: 0.875rem;
+            color: #374151;
+        }
+
+        .location-info {
+            font-size: 0.875rem;
+            color: #4b5563;
+        }
+
+        .total-amount {
+            color: var(--color-primary);
+            font-weight: 700;
+            font-size: 1rem;
         }
 
         .booking-status {
@@ -163,6 +228,7 @@
             font-size: 0.75rem;
             font-weight: 600;
             text-transform: uppercase;
+            display: inline-block;
         }
 
         .status-pending {
@@ -201,52 +267,53 @@
             color: #60a5fa;
         }
 
-        .booking-content {
-            display: grid;
-            grid-template-columns: 200px 1fr;
-            gap: 1.5rem;
+        .booking-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .contract-link {
+            font-size: 0.75rem;
+            color: var(--color-primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .contract-link:hover {
+            text-decoration: underline;
+        }
+
+        .rejection-reason {
+            font-size: 0.75rem;
+            color: #dc2626;
+            font-style: italic;
+            margin-top: 0.25rem;
         }
 
         @media (max-width: 768px) {
-            .booking-content {
-                grid-template-columns: 1fr;
+            .bookings-table-container {
+                padding: 0.5rem;
             }
-        }
 
-        .vehicle-image {
-            width: 100%;
-            height: 150px;
-            object-fit: cover;
-            border-radius: 8px;
-        }
+            .bookings-table {
+                font-size: 0.875rem;
+            }
 
-        .booking-details {
-            display: grid;
-            gap: 0.75rem;
-        }
+            .bookings-table th,
+            .bookings-table td {
+                padding: 0.75rem 0.5rem;
+            }
 
-        .detail-row {
-            display: grid;
-            grid-template-columns: 150px 1fr;
-            gap: 1rem;
-        }
+            .booking-actions {
+                flex-direction: column;
+            }
 
-        .detail-label {
-            color: rgba(255, 255, 255, 0.6);
-            font-size: 0.875rem;
-        }
-
-        .detail-value {
-            color: var(--color-text-white);
-            font-weight: 500;
-        }
-
-        .booking-actions {
-            display: flex;
-            gap: 1rem;
-            margin-top: 1rem;
-            padding-top: 1rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            .btn-view,
+            .btn-cancel {
+                width: 100%;
+                text-align: center;
+            }
         }
 
         .btn-view {
@@ -556,174 +623,136 @@
                 </div>
             </div>
 
-            <!-- Bookings List -->
-            <div class="bookings-list" th:if="${bookings != null and !bookings.isEmpty()}">
-                <div class="booking-card" th:each="booking : ${bookings}"
-                    th:with="contract=${contractMap != null and contractMap.containsKey(booking.id) ? contractMap.get(booking.id) : null}">
-                    <!-- Booking Header -->
-                    <div class="booking-header">
-                        <div>
-                            <div class="booking-id" th:text="'Đơn đặt xe #' + ${booking.id}">Booking #1</div>
-                            <div style="font-size: 0.875rem; color: var(--color-text-secondary); margin-top: 0.25rem;">
-                                <span th:text="${#temporals.format(booking.createdAt, 'dd/MM/yyyy HH:mm')}">Created
-                                    Date</span>
-                            </div>
-                        </div>
-                        <span class="booking-status" th:classappend="${'status-' + booking.status.name().toLowerCase()}"
-                            th:text="${booking.status.value}">
-                            Status
-                        </span>
-                    </div>
-
-                    <!-- Booking Content -->
-                    <div class="booking-content">
-                        <!-- Vehicle Image -->
-                        <div>
-                            <img th:src="${booking.vehicle.firstImageUrl}"
-                                th:alt="${booking.vehicle.model.brand.brandName + ' ' + booking.vehicle.model.modelName}"
-                                class="vehicle-image">
-                        </div>
-
-                        <!-- Booking Details -->
-                        <div class="booking-details">
-                            <div class="detail-row">
-                                <span class="detail-label">Xe:</span>
-                                <span class="detail-value"
-                                    th:text="${booking.vehicle.model.brand.brandName + ' ' + booking.vehicle.model.modelName}">
-                                    Vehicle Name
-                                </span>
-                            </div>
-
-                            <div class="detail-row">
-                                <span class="detail-label">Biển số:</span>
-                                <span class="detail-value" th:text="${booking.vehicle.licensePlate}">License
-                                    Plate</span>
-                            </div>
-
-                            <div class="detail-row">
-                                <span class="detail-label">Thời gian thuê:</span>
-                                <span class="detail-value">
-                                    <span
-                                        th:text="${#temporals.format(booking.startDate, 'dd/MM/yyyy HH:mm')}">Start</span>
-                                    →
-                                    <span th:text="${#temporals.format(booking.endDate, 'dd/MM/yyyy HH:mm')}">End</span>
-                                    (<span th:text="${booking.totalDays}">0</span> ngày)
-                                </span>
-                            </div>
-
-                            <div class="detail-row">
-                                <span class="detail-label">Điểm nhận:</span>
-                                <span class="detail-value" th:text="${booking.pickupLocation.locationName}">Pickup
-                                    Location</span>
-                            </div>
-
-                            <div class="detail-row">
-                                <span class="detail-label">Điểm trả:</span>
-                                <span class="detail-value" th:text="${booking.returnLocation.locationName}">Return
-                                    Location</span>
-                            </div>
-
-                            <div class="detail-row">
-                                <span class="detail-label">Tổng tiền:</span>
-                                <span class="detail-value" style="color: var(--color-primary); font-weight: 700;">
-                                    <span
-                                        th:text="${#numbers.formatDecimal(booking.vehicle.dailyRate * booking.totalDays + booking.vehicle.depositAmount, 0, 'COMMA', 0, 'POINT')}">
+            <!-- Bookings Table -->
+            <div class="bookings-table-container" th:if="${bookings != null and !bookings.isEmpty()}">
+                <table class="bookings-table">
+                    <thead>
+                        <tr>
+                            <th>Ngày tạo</th>
+                            <th>Xe</th>
+                            <th>Thời gian thuê</th>
+                            <th>Địa điểm</th>
+                            <th>Tổng tiền</th>
+                            <th>Trạng thái</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="booking : ${bookings}"
+                            th:with="contract=${contractMap != null and contractMap.containsKey(booking.id) ? contractMap.get(booking.id) : null}">
+                            <!-- Created Date -->
+                            <td>
+                                <div class="booking-date" th:text="${#temporals.format(booking.createdAt, 'dd/MM/yyyy HH:mm')}">
+                                    Date
+                                </div>
+                            </td>
+                            <!-- Vehicle Info -->
+                            <td>
+                                <div class="vehicle-info">
+                                    <img th:src="${booking.vehicle.firstImageUrl}"
+                                        th:alt="${booking.vehicle.model.brand.brandName + ' ' + booking.vehicle.model.modelName}"
+                                        class="vehicle-image-small">
+                                    <div>
+                                        <div class="vehicle-name"
+                                            th:text="${booking.vehicle.model.brand.brandName + ' ' + booking.vehicle.model.modelName}">
+                                            Vehicle Name
+                                        </div>
+                                        <div class="vehicle-plate" th:text="${booking.vehicle.licensePlate}">
+                                            License Plate
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <!-- Rental Period -->
+                            <td>
+                                <div class="rental-period">
+                                    <div>
+                                        <span th:text="${#temporals.format(booking.startDate, 'dd/MM/yyyy HH:mm')}">Start</span>
+                                        →
+                                        <span th:text="${#temporals.format(booking.endDate, 'dd/MM/yyyy HH:mm')}">End</span>
+                                    </div>
+                                    <div style="font-size: 0.75rem; color: #6b7280; margin-top: 0.25rem;">
+                                        <span th:text="${booking.totalDays}">0</span> ngày
+                                    </div>
+                                </div>
+                            </td>
+                            <!-- Location -->
+                            <td>
+                                <div class="location-info">
+                                    <div>Nhận: <span th:text="${booking.pickupLocation.locationName}">Pickup</span></div>
+                                    <div style="margin-top: 0.25rem;">Trả: <span th:text="${booking.returnLocation.locationName}">Return</span></div>
+                                </div>
+                            </td>
+                            <!-- Total Amount -->
+                            <td>
+                                <div class="total-amount">
+                                    <span th:text="${#numbers.formatDecimal(booking.vehicle.dailyRate * booking.totalDays + booking.vehicle.depositAmount, 0, 'COMMA', 0, 'POINT')}">
                                         Total
                                     </span> VND
+                                </div>
+                                <div th:if="${contract != null}" style="font-size: 0.75rem; color: #6b7280; margin-top: 0.25rem;">
+                                    Cọc: <span th:text="${#numbers.formatDecimal(contract.depositAmount, 0, 'COMMA', 0, 'POINT')}"></span> VND
+                                </div>
+                            </td>
+                            <!-- Status -->
+                            <td>
+                                <span class="booking-status" th:classappend="${'status-' + booking.status.name().toLowerCase()}"
+                                    th:text="${booking.status.value}">
+                                    Status
                                 </span>
-                            </div>
-
-                            <!-- Rejection reason (only for rejected bookings) -->
-                            <div class="detail-row"
-                                 th:if="${booking.status.name() == 'REJECTED' and booking.rejectionReason != null and !#strings.isEmpty(booking.rejectionReason)}">
-                                <span class="detail-label">Lý do từ chối:</span>
-                                <span class="detail-value" th:text="${booking.rejectionReason}">
-                                    Lý do từ chối sẽ được hiển thị tại đây.
-                                </span>
-                            </div>
-
-                            <div class="detail-row" th:if="${contract != null}">
-                                <span class="detail-label">Hợp đồng:</span>
-                                <span class="detail-value" style="display: flex; gap: 0.5rem; align-items: center;">
-                                    <a th:href="@{/contracts/{id}(id=${contract.id})}"
-                                       style="color: var(--color-primary); text-decoration: none; font-weight: 700;">
-                                        <span th:text="${contract.contractNumber}">CTR-XXXX</span>
+                                <div th:if="${contract != null}" style="margin-top: 0.5rem;">
+                                    <a th:href="@{/contracts/{id}(id=${contract.id})}" class="contract-link"
+                                        th:text="${contract.contractNumber}">CTR-XXXX</a>
+                                    <div style="margin-top: 0.25rem;">
+                                        <span class="booking-status"
+                                            th:classappend="${' status-' + contract.status.name().toLowerCase()}"
+                                            th:text="${contract.status}">
+                                            PENDING_PAYMENT
+                                        </span>
+                                    </div>
+                                </div>
+                                <div th:if="${contract == null}" style="font-size: 0.75rem; color: #9ca3af; margin-top: 0.5rem;">
+                                    Chưa có hợp đồng
+                                </div>
+                                <div th:if="${booking.status.name() == 'REJECTED' and booking.rejectionReason != null and !#strings.isEmpty(booking.rejectionReason)}"
+                                    class="rejection-reason" th:text="${booking.rejectionReason}">
+                                    Lý do từ chối
+                                </div>
+                            </td>
+                            <!-- Actions -->
+                            <td>
+                                <div class="booking-actions">
+                                    <a th:href="@{/bookings/{id}(id=${booking.id})}" class="btn-view">
+                                        Chi tiết
                                     </a>
-                                    <span class="booking-status"
-                                        th:classappend="${' status-' + contract.status.name().toLowerCase()}"
-                                        th:text="${contract.status}">
-                                        PENDING_PAYMENT
-                                    </span>
-                                </span>
-                            </div>
-
-                            <div class="detail-row" th:if="${contract != null}">
-                                <span class="detail-label">Tiền đặt cọc:</span>
-                                <span class="detail-value" style="color: var(--color-primary); font-weight: 700;"
-                                    th:text="${#numbers.formatDecimal(contract.depositAmount, 0, 'COMMA', 0, 'POINT')} + ' VND'">
-                                    50,000,000 VND
-                                </span>
-                            </div>
-
-                            <div class="detail-row" th:if="${contract == null}">
-                                <span class="detail-label">Hợp đồng:</span>
-                                <span class="detail-value" style="color: rgba(255,255,255,0.7);">
-                                    Hợp đồng đang được tạo hoặc chưa sẵn sàng.
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Booking Actions -->
-                    <div class="booking-actions">
-                        <a th:href="@{/bookings/{id}(id=${booking.id})}" class="btn-view">
-                            Xem chi tiết
-                        </a>
-
-                        <!-- Debug: Contract = [[${contract}]] -->
-                        <a th:if="${contract != null}" th:href="@{/contracts/{id}(id=${contract.id})}" class="btn-view"
-                            style="background: transparent; color: var(--color-primary); border-color: var(--color-primary);">
-                            Xem hợp đồng
-                        </a>
-
-                        <a th:if="${contract != null
-                                  and billMap != null
-                                  and billMap.containsKey(booking.id)
-                                  and billMap.get(booking.id).status.name() == 'PENDING'}"
-                           th:href="@{/contracts/{id}/pay-bill(id=${contract.id})}"
-                           class="btn-view"
-                           style="background: #10b981; border-color: #10b981;">
-                            Thanh toán bill
-                        </a>
-
-                        <span th:if="${contract != null
-                                  and billMap != null
-                                  and billMap.containsKey(booking.id)
-                                  and billMap.get(booking.id).status.name() != 'PENDING'}"
-                              style="color: rgba(255,255,255,0.7); font-size: 0.9rem;">
-                            Bill đã xử lý (trạng thái:
-                            <strong th:text="${billMap.get(booking.id).status}">COMPLETED</strong>)
-                        </span>
-
-                        <a th:if="${contract != null and contract.status.name() == 'PENDING_PAYMENT'}"
-                            th:href="@{/contracts/{id}/pay-deposit(id=${contract.id})}" class="btn-view">
-                            Thanh toán cọc
-                        </a>
-
-                        <span th:if="${contract == null}" style="color: rgba(255,255,255,0.6); font-size: 0.9rem;">
-                            Hợp đồng sẽ hiển thị sau khi được tạo.
-                        </span>
-
-                        <!-- Show cancel button only for Pending bookings -->
-                        <form th:if="${booking.status.name() == 'PENDING'}"
-                            th:action="@{/bookings/{id}/cancel(id=${booking.id})}" method="post"
-                            class="cancel-booking-form" style="display: inline;">
-                            <button type="button" class="btn-cancel" onclick="showCancelModal(this)">Hủy đơn</button>
-                            <!-- Hidden submit to trigger native form submit -->
-                            <button type="submit" class="cancel-submit-hidden" style="display: none;">Submit</button>
-                        </form>
-                    </div>
-                </div>
+                                    <a th:if="${contract != null}" th:href="@{/contracts/{id}(id=${contract.id})}" class="btn-view"
+                                        style="background: transparent; color: var(--color-primary); border-color: var(--color-primary);">
+                                        Hợp đồng
+                                    </a>
+                                    <a th:if="${contract != null
+                                              and billMap != null
+                                              and billMap.containsKey(booking.id)
+                                              and billMap.get(booking.id).status.name() == 'PENDING'}"
+                                       th:href="@{/contracts/{id}/pay-bill(id=${contract.id})}"
+                                       class="btn-view"
+                                       style="background: #10b981; border-color: #10b981;">
+                                        Thanh toán bill
+                                    </a>
+                                    <a th:if="${contract != null and contract.status.name() == 'PENDING_PAYMENT'}"
+                                        th:href="@{/contracts/{id}/pay-deposit(id=${contract.id})}" class="btn-view">
+                                        Thanh toán cọc
+                                    </a>
+                                    <form th:if="${booking.status.name() == 'PENDING'}"
+                                        th:action="@{/bookings/{id}/cancel(id=${booking.id})}" method="post"
+                                        class="cancel-booking-form" style="display: inline;">
+                                        <button type="button" class="btn-cancel" onclick="showCancelModal(this)">Hủy</button>
+                                        <button type="submit" class="cancel-submit-hidden" style="display: none;">Submit</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
 
             <!-- Empty State -->
@@ -852,12 +881,12 @@
                 hideAlert(errorAlert);
             }
 
-            // Log bookings list status
-            const bookingsList = document.querySelector('.bookings-list');
-            if (bookingsList) {
-                console.log('Bookings list found on page load');
+            // Log bookings table status
+            const bookingsTable = document.querySelector('.bookings-table-container');
+            if (bookingsTable) {
+                console.log('Bookings table found on page load');
             } else {
-                console.log('No bookings list found (might be empty state)');
+                console.log('No bookings table found (might be empty state)');
             }
         });
     </script>
