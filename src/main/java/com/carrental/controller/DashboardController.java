@@ -101,7 +101,8 @@ public class DashboardController {
             User currentUser = userService.findByUsername(userDetails.getUsername());
             model.addAttribute("currentUser", currentUser);
         }
-        model.addAttribute("users", userService.getAllUsers());
+        // Ẩn tài khoản ADMIN khỏi danh sách "Tất cả"
+        model.addAttribute("users", userService.getAllNonAdminUsers());
         model.addAttribute("activeFilter", "all");
         return "admin/users";
     }

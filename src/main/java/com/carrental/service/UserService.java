@@ -28,6 +28,15 @@ public class UserService {
     }
 
     /**
+     * Get all users except admins (for general user management list)
+     */
+    public List<User> getAllNonAdminUsers() {
+        return userRepository.findAll().stream()
+                .filter(user -> user.getRole() != User.UserRole.ADMIN)
+                .toList();
+    }
+
+    /**
      * Get all customers (role = CUSTOMER)
      */
     public List<User> getAllCustomers() {
@@ -118,8 +127,9 @@ public class UserService {
      * Find all staff members (for ticket assignment)
      */
     public List<User> findAllStaff() {
+        // Chỉ lấy nhân viên (STAFF), không bao gồm ADMIN
         return userRepository.findAll().stream()
-                .filter(user -> user.getRole() == User.UserRole.STAFF || user.getRole() == User.UserRole.ADMIN)
+                .filter(user -> user.getRole() == User.UserRole.STAFF)
                 .toList();
     }
 
