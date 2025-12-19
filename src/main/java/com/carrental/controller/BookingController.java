@@ -99,10 +99,19 @@ public class BookingController {
         // Get user's approved documents
         List<UserDocument> userDocuments = userDocumentService.getDocumentsByUser(currentUser);
 
+        // Get blocked dates for date picker validation
+        List<String> blockedDates = vehicleService.getBlockedDates(vehicleId, 90);
+        LocalDateTime nextAvailableDate = vehicleService.getNextAvailableDate(vehicleId);
+        Vehicle.VehicleStatus effectiveStatus = vehicleService.getEffectiveVehicleStatus(vehicleId);
+        boolean isAvailable = effectiveStatus == Vehicle.VehicleStatus.Available;
+
         model.addAttribute("vehicle", vehicle);
         model.addAttribute("locations", locations);
         model.addAttribute("userDocuments", userDocuments);
         model.addAttribute("bookingDTO", new BookingCreateDTO());
+        model.addAttribute("blockedDates", blockedDates);
+        model.addAttribute("nextAvailableDate", nextAvailableDate);
+        model.addAttribute("isAvailable", isAvailable);
 
         return "customer/booking-create";
     }

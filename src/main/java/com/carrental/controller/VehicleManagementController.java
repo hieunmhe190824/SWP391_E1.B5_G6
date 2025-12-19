@@ -265,7 +265,15 @@ public class VehicleManagementController {
     public String viewVehicleDetailAdmin(@PathVariable Long id, Model model) {
         Vehicle vehicle = vehicleService.getVehicleById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy xe với ID: " + id));
-        model.addAttribute("vehicle", vehicle);
+        
+        // Get effective status based on bookings and contracts
+        Vehicle.VehicleStatus effectiveStatus = vehicleService.getEffectiveVehicleStatus(id);
+        
+        // Update vehicle status for display (temporary, doesn't save to DB)
+        Vehicle displayVehicle = vehicle;
+        displayVehicle.setStatus(effectiveStatus);
+        
+        model.addAttribute("vehicle", displayVehicle);
         return "admin/vehicle-detail";
     }
 
@@ -361,6 +369,23 @@ public class VehicleManagementController {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
         return "redirect:/admin/vehicles/" + id;
+    }
+
+    /**
+     * Sync all vehicle statuses based on current bookings and contracts
+     * Useful when there are discrepancies between vehicle status and actual bookings
+     */
+    @PostMapping("/admin/vehicles/sync-statuses")
+    public String syncAllVehicleStatuses(RedirectAttributes redirectAttributes) {
+        try {
+            int updatedCount = vehicleService.syncVehicleStatuses();
+            redirectAttributes.addFlashAttribute("successMessage", 
+                "Đã đồng bộ trạng thái cho " + updatedCount + " xe dựa trên bookings và contracts hiện tại.");
+        } catch (RuntimeException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", 
+                "Lỗi khi đồng bộ trạng thái: " + e.getMessage());
+        }
+        return "redirect:/admin/vehicles";
     }
     
     // ========================================
@@ -460,7 +485,15 @@ public class VehicleManagementController {
     public String viewVehicleDetailStaff(@PathVariable Long id, Model model, HttpServletRequest request) {
         Vehicle vehicle = vehicleService.getVehicleById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy xe với ID: " + id));
-        model.addAttribute("vehicle", vehicle);
+        
+        // Get effective status based on bookings and contracts
+        Vehicle.VehicleStatus effectiveStatus = vehicleService.getEffectiveVehicleStatus(id);
+        
+        // Update vehicle status for display (temporary, doesn't save to DB)
+        Vehicle displayVehicle = vehicle;
+        displayVehicle.setStatus(effectiveStatus);
+        
+        model.addAttribute("vehicle", displayVehicle);
         String templatePrefix = getTemplatePrefix(request);
         return templatePrefix + "/vehicle-detail";
     }

@@ -1590,11 +1590,16 @@ DELIMITER ;
 -- ===================================================================
 -- TRIGGERS
 -- ===================================================================
+-- NOTE: Vehicle status is now managed dynamically by the application
+-- based on active bookings and contracts. The triggers below are kept
+-- for backward compatibility but the main logic is in VehicleService.
 
 DELIMITER //
 
 -- Update vehicle status when contract becomes ACTIVE (after deposit payment)
 -- Vehicle should NOT be marked as Rented when contract is created with Pending_Payment status
+-- NOTE: This trigger marks vehicle as Rented when contract becomes Active.
+-- However, the application also checks bookings (Pending/Approved) to determine availability.
 CREATE TRIGGER trg_contract_created
 AFTER INSERT ON contracts
 FOR EACH ROW
@@ -1608,6 +1613,8 @@ BEGIN
 END//
 
 -- Update vehicle status when contract status changes to ACTIVE
+-- NOTE: When booking is approved, the application marks vehicle as Rented immediately.
+-- This trigger handles the case when contract status changes to Active (after deposit payment).
 CREATE TRIGGER trg_contract_activated
 AFTER UPDATE ON contracts
 FOR EACH ROW
@@ -1621,6 +1628,8 @@ BEGIN
 END//
 
 -- Update vehicle status khi có return fees (tức là đã trả xe)
+-- NOTE: When vehicle is returned, ReturnService sets status to Available.
+-- This trigger ensures database consistency.
 CREATE TRIGGER trg_vehicle_returned
 AFTER INSERT ON return_fees
 FOR EACH ROW
@@ -1736,7 +1745,78 @@ WHERE tv.status = 'Pending';
 -- INDEXES
 -- ===================================================================
 
+-- Indexes for availability queries (optimize vehicle availability checks)
+-- Composite index for checking active bookings by vehicle and date range
+-- Used by: countActiveBookingsForDateRange, findActiveBookingsInRange
+CREATE INDEX idx_bookings_vehicle_status_dates ON bookings(vehicle_id, status, start_date, end_date);
+
+-- Composite index for checking active contracts by vehicle and date range
+-- Used by: countActiveContractsForDateRange, findActiveContractsInRange
+CREATE INDEX idx_contracts_vehicle_status_dates ON contracts(vehicle_id, status, start_date, end_date);
+
+-- Existing indexes (kept for backward compatibility and other queries)
 CREATE INDEX idx_contracts_active ON contracts(status, start_date);
 CREATE INDEX idx_vehicles_location ON vehicles(status, location_id);
 CREATE INDEX idx_bookings_date ON bookings(start_date, end_date);
+
+-- ===================================================================
+-- SYNC VEHICLE STATUSES AFTER DATA INSERTION
+-- ===================================================================
+-- This script updates vehicle statuses based on active bookings and contracts
+-- Run this after inserting sample data to ensure data consistency
+-- Note: Uses LEFT JOIN instead of NOT IN to avoid safe update mode issues
+-- IMPORTANT: Maintenance vehicles are NEVER updated by this script
+
+-- Step 1: Update vehicles that have active contracts (ACTIVE or PENDING_PAYMENT) overlapping with current time
+-- Only update vehicles that are NOT Maintenance
+UPDATE vehicles v
+INNER JOIN contracts c ON v.vehicle_id = c.vehicle_id
+SET v.status = 'Rented'
+WHERE v.vehicle_id = c.vehicle_id
+  AND c.status IN ('Active', 'Pending_Payment')
+  AND c.start_date <= NOW()
+  AND c.end_date >= NOW()
+  AND v.status != 'Maintenance';
+
+-- Step 2: Update vehicles that have active bookings (Pending or Approved) overlapping with current time
+-- Exclude vehicles that already have active contracts (contracts take priority)
+-- Only update vehicles that are NOT Maintenance
+UPDATE vehicles v
+INNER JOIN bookings b ON v.vehicle_id = b.vehicle_id
+LEFT JOIN contracts c ON v.vehicle_id = c.vehicle_id
+  AND c.status IN ('Active', 'Pending_Payment')
+  AND c.start_date <= NOW()
+  AND c.end_date >= NOW()
+SET v.status = 'Rented'
+WHERE v.vehicle_id = b.vehicle_id
+  AND b.status IN ('Pending', 'Approved')
+  AND b.start_date <= NOW()
+  AND b.end_date >= NOW()
+  AND v.status != 'Maintenance'
+  AND c.vehicle_id IS NULL;  -- No active contract exists
+
+-- Step 3: Update vehicles that are currently Rented but have no active bookings/contracts to Available
+-- IMPORTANT: 
+-- - Only update vehicles that are currently Rented (not Available, not Maintenance)
+-- - Maintenance vehicles are automatically excluded by the v.status = 'Rented' condition
+-- - This ensures Maintenance vehicles always remain Maintenance
+-- NOTE: This step is optional - it only updates vehicles that are Rented but shouldn't be
+-- If you want to preserve the original status from INSERT statements, comment out this step
+/*
+UPDATE vehicles v
+LEFT JOIN contracts c ON v.vehicle_id = c.vehicle_id
+  AND c.status IN ('Active', 'Pending_Payment')
+  AND c.start_date <= NOW()
+  AND c.end_date >= NOW()
+LEFT JOIN bookings b ON v.vehicle_id = b.vehicle_id
+  AND b.status IN ('Pending', 'Approved')
+  AND b.start_date <= NOW()
+  AND b.end_date >= NOW()
+SET v.status = 'Available'
+WHERE v.vehicle_id = v.vehicle_id  -- Use key column to satisfy safe update mode
+  AND v.status = 'Rented'  -- CRITICAL: Only update vehicles that are currently Rented
+  AND c.vehicle_id IS NULL  -- No active contracts
+  AND b.vehicle_id IS NULL;  -- No active bookings
+  -- Maintenance vehicles are automatically protected because v.status = 'Rented' excludes them
+*/
 

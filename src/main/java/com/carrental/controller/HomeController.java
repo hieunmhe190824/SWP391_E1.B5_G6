@@ -27,8 +27,8 @@ public class HomeController {
     @GetMapping({"/", "/home"})
     public String home(Model model) {
         try {
-            // Lấy danh sách xe có sẵn (tối đa 9 xe để hiển thị trên trang chủ)
-            List<Vehicle> allVehicles = vehicleService.getAvailableVehicles();
+            // Lấy danh sách tất cả xe ở mọi trạng thái (tối đa 9 xe để hiển thị trên trang chủ)
+            List<Vehicle> allVehicles = vehicleService.getAllVehicles();
             List<Vehicle> vehicles = (allVehicles != null && allVehicles.size() > 9)
                 ? allVehicles.subList(0, 9)
                 : (allVehicles != null ? allVehicles : List.of());

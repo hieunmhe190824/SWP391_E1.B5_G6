@@ -28,6 +28,11 @@
     <!-- Component: Vehicle Card mới với theme Black-Blue (Professional) -->
     <div th:fragment="vehicle-card-modern(vehicle)" class="vehicle-card-modern">
         <div class="vehicle-card-modern-image-wrapper">
+            <!-- Status Badge -->
+            <div class="vehicle-status-badge-card" 
+                 th:classappend="${vehicle.status.name() == 'Available' ? 'status-available' : (vehicle.status.name() == 'Rented' ? 'status-rented' : 'status-maintenance')}">
+                <span th:text="${vehicle.status.name() == 'Available' ? 'Có sẵn' : (vehicle.status.name() == 'Rented' ? 'Đã thuê' : 'Bảo trì')}">Có sẵn</span>
+            </div>
             <img class="vehicle-card-modern-image" 
                  th:src="${vehicle.firstImageUrl}" 
                  th:alt="${vehicle.model.brand.brandName + ' ' + vehicle.model.modelName}" />
@@ -80,11 +85,15 @@
                     </span>
                     <span class="vehicle-card-modern-price-unit">/ngày</span>
                 </div>
-                <a sec:authorize="!hasRole('ADMIN')" th:href="@{/bookings/create(vehicleId=${vehicle.id})}" class="btn btn-primary btn-icon">
+                <a sec:authorize="!hasRole('ADMIN')" 
+                   th:href="@{/bookings/create(vehicleId=${vehicle.id})}" 
+                   class="btn btn-primary btn-icon"
+                   th:classappend="${vehicle.status.name() == 'Maintenance' ? 'btn-disabled' : ''}"
+                   th:attr="onclick=${vehicle.status.name() == 'Maintenance' ? 'return false;' : ''}">
                     <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M8 3.33334V12.6667M3.33334 8H12.6667" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
-                    Đặt xe
+                    <span th:text="${vehicle.status.name() == 'Available' ? 'Đặt xe' : (vehicle.status.name() == 'Rented' ? 'Đặt trước' : 'Không có sẵn')}">Đặt xe</span>
                 </a>
             </div>
         </div>
@@ -93,6 +102,11 @@
     <!-- Component: Vehicle Card cho Admin/Staff với custom URL -->
     <div th:fragment="vehicle-card-admin(vehicle, baseUrl)" class="vehicle-card-modern">
         <div class="vehicle-card-modern-image-wrapper">
+            <!-- Status Badge -->
+            <div class="vehicle-status-badge-card" 
+                 th:classappend="${vehicle.status.name() == 'Available' ? 'status-available' : (vehicle.status.name() == 'Rented' ? 'status-rented' : 'status-maintenance')}">
+                <span th:text="${vehicle.status.name() == 'Available' ? 'Có sẵn' : (vehicle.status.name() == 'Rented' ? 'Đã thuê' : 'Bảo trì')}">Có sẵn</span>
+            </div>
             <img class="vehicle-card-modern-image" 
                  th:src="${vehicle.firstImageUrl}" 
                  th:alt="${vehicle.model.brand.brandName + ' ' + vehicle.model.modelName}" />

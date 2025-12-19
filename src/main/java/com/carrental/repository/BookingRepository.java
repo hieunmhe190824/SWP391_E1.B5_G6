@@ -130,4 +130,38 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     @Modifying
     @Query("UPDATE Booking b SET b.statusString = :status WHERE b.id = :bookingId")
     int updateBookingStatus(@Param("bookingId") Long bookingId, @Param("status") String status);
+
+    /**
+     * Check if vehicle has active bookings (Pending or Approved) that overlap with date range
+     * Used to determine if vehicle is available for booking
+     */
+    @Query("SELECT COUNT(b) FROM Booking b " +
+           "WHERE b.vehicle.id = :vehicleId " +
+           "AND b.statusString IN ('Pending', 'Approved') " +
+           "AND ((b.startDate <= :endDate AND b.endDate >= :startDate))")
+    long countActiveBookingsForDateRange(@Param("vehicleId") Long vehicleId,
+                                         @Param("startDate") LocalDateTime startDate,
+                                         @Param("endDate") LocalDateTime endDate);
+
+    /**
+     * Check if vehicle has any active bookings (Pending or Approved) at current time
+     */
+    @Query("SELECT COUNT(b) FROM Booking b " +
+           "WHERE b.vehicle.id = :vehicleId " +
+           "AND b.statusString IN ('Pending', 'Approved') " +
+           "AND b.startDate <= :currentTime AND b.endDate >= :currentTime")
+    long countActiveBookingsAtTime(@Param("vehicleId") Long vehicleId,
+                                   @Param("currentTime") LocalDateTime currentTime);
+
+    /**
+     * Get all active bookings (Pending or Approved) for a vehicle within a date range
+     * Used to display availability calendar
+     */
+    @Query("SELECT b FROM Booking b " +
+           "WHERE b.vehicle.id = :vehicleId " +
+           "AND b.statusString IN ('Pending', 'Approved') " +
+           "AND b.endDate >= :startDate " +
+           "ORDER BY b.startDate ASC")
+    List<Booking> findActiveBookingsInRange(@Param("vehicleId") Long vehicleId,
+                                            @Param("startDate") LocalDateTime startDate);
 }

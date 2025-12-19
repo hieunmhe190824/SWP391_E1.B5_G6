@@ -7,6 +7,15 @@ import com.carrental.model.Vehicle.VehicleStatus;
 import com.carrental.repository.VehicleRepository;
 import com.carrental.repository.VehicleModelRepository;
 import com.carrental.repository.LocationRepository;
+import com.carrental.repository.BookingRepository;
+import com.carrental.repository.ContractRepository;
+import com.carrental.model.Booking;
+import com.carrental.model.Contract;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +47,12 @@ public class VehicleService {
     @Autowired
     private LocationRepository locationRepository;
 
+    @Autowired
+    private BookingRepository bookingRepository;
+
+    @Autowired
+    private ContractRepository contractRepository;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     // Đường dẫn lưu ảnh - sử dụng thư mục ngoài classpath để tránh vấn đề với DevTools
@@ -60,15 +75,20 @@ public class VehicleService {
         // Đảm bảo dữ liệu có sẵn khi render template, tránh LazyInitializationException
         List<Vehicle> vehicles = vehicleRepository.findByStatusWithRelations(VehicleStatus.Available);
         // Remove duplicates caused by JOIN FETCH
+        // Filter out vehicles that have active bookings or contracts
+        LocalDateTime now = LocalDateTime.now();
         return vehicles.stream()
                 .distinct()
+                .filter(v -> isVehicleAvailableNow(v.getId()))
                 .collect(Collectors.toList());
     }
     
     /**
-     * UC04: Browse Vehicles - Tìm kiếm và lọc xe
+     * UC04: Browse Vehicles - Tìm kiếm và lọc xe (chỉ Available - giữ lại cho backward compatibility)
      * Tìm kiếm xe theo nhiều tiêu chí: brand, category, giá, số chỗ, transmission, fuel, keyword
+     * @deprecated Sử dụng searchAllVehiclesForCustomer() để hiển thị tất cả xe
      */
+    @Deprecated
     public List<Vehicle> searchVehicles(
             Long brandId,
             String category,
@@ -79,6 +99,39 @@ public class VehicleService {
             String searchKeyword) {
         List<Vehicle> vehicles = vehicleRepository.searchVehicles(
             VehicleStatus.Available,
+            brandId,
+            category,
+            maxPrice,
+            minSeats,
+            transmission,
+            fuelType,
+            searchKeyword
+        );
+        // Remove duplicates caused by JOIN FETCH
+        // Filter out vehicles that have active bookings or contracts
+        LocalDateTime now = LocalDateTime.now();
+        return vehicles.stream()
+                .distinct()
+                .filter(v -> isVehicleAvailableNow(v.getId()))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * UC04: Browse Vehicles - Tìm kiếm và lọc xe (tất cả trạng thái)
+     * Tìm kiếm xe theo nhiều tiêu chí: brand, category, giá, số chỗ, transmission, fuel, keyword
+     * Hiển thị tất cả xe ở mọi trạng thái (Available, Rented, Maintenance)
+     */
+    public List<Vehicle> searchAllVehiclesForCustomer(
+            Long brandId,
+            String category,
+            BigDecimal maxPrice,
+            Integer minSeats,
+            String transmission,
+            String fuelType,
+            String searchKeyword) {
+        // Không filter theo status (null = tất cả status)
+        List<Vehicle> vehicles = vehicleRepository.searchVehicles(
+            null, // status = null để lấy tất cả
             brandId,
             category,
             maxPrice,
@@ -312,6 +365,316 @@ public class VehicleService {
         return vehicleRepository.save(vehicle);
     }
     
+    /**
+     * Check if vehicle is available for a specific date range
+     * Returns true if vehicle has no active bookings or contracts overlapping the date range
+     */
+    public boolean isVehicleAvailableForDateRange(Long vehicleId, LocalDateTime startDate, LocalDateTime endDate) {
+        // Check if vehicle status is not Available or Maintenance
+        Optional<Vehicle> vehicleOpt = vehicleRepository.findById(vehicleId);
+        if (vehicleOpt.isEmpty()) {
+            return false;
+        }
+        Vehicle vehicle = vehicleOpt.get();
+        if (vehicle.getStatus() != VehicleStatus.Available) {
+            return false;
+        }
+
+        // Check for active bookings
+        long activeBookings = bookingRepository.countActiveBookingsForDateRange(vehicleId, startDate, endDate);
+        if (activeBookings > 0) {
+            return false;
+        }
+
+        // Check for active contracts
+        long activeContracts = contractRepository.countActiveContractsForDateRange(vehicleId, startDate, endDate);
+        if (activeContracts > 0) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Check if vehicle is available right now (at current time)
+     * Returns true if vehicle has no active bookings or contracts at current time
+     */
+    public boolean isVehicleAvailableNow(Long vehicleId) {
+        // Check if vehicle status is not Available or Maintenance
+        Optional<Vehicle> vehicleOpt = vehicleRepository.findById(vehicleId);
+        if (vehicleOpt.isEmpty()) {
+            return false;
+        }
+        Vehicle vehicle = vehicleOpt.get();
+        if (vehicle.getStatus() != VehicleStatus.Available) {
+            return false;
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+
+        // Check for active bookings
+        long activeBookings = bookingRepository.countActiveBookingsAtTime(vehicleId, now);
+        if (activeBookings > 0) {
+            return false;
+        }
+
+        // Check for active contracts
+        long activeContracts = contractRepository.countActiveContractsAtTime(vehicleId, now);
+        if (activeContracts > 0) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Get effective availability status of vehicle based on bookings and contracts
+     * This calculates the actual status dynamically
+     */
+    public VehicleStatus getEffectiveVehicleStatus(Long vehicleId) {
+        Optional<Vehicle> vehicleOpt = vehicleRepository.findById(vehicleId);
+        if (vehicleOpt.isEmpty()) {
+            return VehicleStatus.Maintenance; // Default to unavailable if not found
+        }
+        Vehicle vehicle = vehicleOpt.get();
+
+        // If status is Maintenance, always return Maintenance
+        if (vehicle.getStatus() == VehicleStatus.Maintenance) {
+            return VehicleStatus.Maintenance;
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+
+        // Check for active bookings
+        long activeBookings = bookingRepository.countActiveBookingsAtTime(vehicleId, now);
+        if (activeBookings > 0) {
+            return VehicleStatus.Rented;
+        }
+
+        // Check for active contracts
+        long activeContracts = contractRepository.countActiveContractsAtTime(vehicleId, now);
+        if (activeContracts > 0) {
+            return VehicleStatus.Rented;
+        }
+
+        // If no active bookings/contracts and status is Available, return Available
+        return VehicleStatus.Available;
+    }
+
+    /**
+     * Get next available date for a vehicle
+     * Returns the first date when vehicle becomes available after current bookings/contracts
+     */
+    public LocalDateTime getNextAvailableDate(Long vehicleId) {
+        LocalDateTime now = LocalDateTime.now();
+        
+        // Get all active bookings and contracts
+        List<Booking> activeBookings = bookingRepository.findActiveBookingsInRange(vehicleId, now);
+        List<Contract> activeContracts = contractRepository.findActiveContractsInRange(vehicleId, now);
+        
+        // Find the latest end date
+        LocalDateTime latestEndDate = now;
+        
+        for (Booking booking : activeBookings) {
+            if (booking.getEndDate().isAfter(latestEndDate)) {
+                latestEndDate = booking.getEndDate();
+            }
+        }
+        
+        for (Contract contract : activeContracts) {
+            if (contract.getEndDate().isAfter(latestEndDate)) {
+                latestEndDate = contract.getEndDate();
+            }
+        }
+        
+        // If no active bookings/contracts, return now
+        if (latestEndDate.equals(now)) {
+            return now;
+        }
+        
+        // Return the day after the latest end date
+        return latestEndDate.plusDays(1).withHour(0).withMinute(0).withSecond(0);
+    }
+
+    /**
+     * Get availability periods for a vehicle
+     * Returns a list of date ranges showing when vehicle is available/unavailable
+     * Format: List of maps with "start", "end", "available" keys
+     */
+    public List<java.util.Map<String, Object>> getAvailabilityPeriods(Long vehicleId, int daysAhead) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime endDate = now.plusDays(daysAhead);
+        
+        // Get all active bookings and contracts
+        List<Booking> activeBookings = bookingRepository.findActiveBookingsInRange(vehicleId, now);
+        List<Contract> activeContracts = contractRepository.findActiveContractsInRange(vehicleId, now);
+        
+        // Combine all blocked periods
+        List<java.util.Map<String, Object>> blockedPeriods = new ArrayList<>();
+        
+        for (Booking booking : activeBookings) {
+            java.util.Map<String, Object> period = new java.util.HashMap<>();
+            period.put("start", booking.getStartDate());
+            period.put("end", booking.getEndDate());
+            period.put("type", "booking");
+            blockedPeriods.add(period);
+        }
+        
+        for (Contract contract : activeContracts) {
+            java.util.Map<String, Object> period = new java.util.HashMap<>();
+            period.put("start", contract.getStartDate());
+            period.put("end", contract.getEndDate());
+            period.put("type", "contract");
+            blockedPeriods.add(period);
+        }
+        
+        // Sort by start date
+        blockedPeriods.sort(Comparator.comparing(p -> (LocalDateTime) p.get("start")));
+        
+        // Build availability periods
+        List<java.util.Map<String, Object>> availabilityPeriods = new ArrayList<>();
+        LocalDateTime currentDate = now;
+        
+        for (java.util.Map<String, Object> blocked : blockedPeriods) {
+            LocalDateTime blockStart = (LocalDateTime) blocked.get("start");
+            LocalDateTime blockEnd = (LocalDateTime) blocked.get("end");
+            
+            // If there's a gap before this block, add available period
+            if (currentDate.isBefore(blockStart)) {
+                java.util.Map<String, Object> available = new java.util.HashMap<>();
+                available.put("start", currentDate);
+                available.put("end", blockStart.minusSeconds(1));
+                available.put("available", true);
+                availabilityPeriods.add(available);
+            }
+            
+            // Add blocked period
+            java.util.Map<String, Object> unavailable = new java.util.HashMap<>();
+            unavailable.put("start", blockStart);
+            unavailable.put("end", blockEnd);
+            unavailable.put("available", false);
+            unavailable.put("type", blocked.get("type"));
+            availabilityPeriods.add(unavailable);
+            
+            currentDate = blockEnd.plusSeconds(1);
+        }
+        
+        // Add remaining available period if any
+        if (currentDate.isBefore(endDate)) {
+            java.util.Map<String, Object> available = new java.util.HashMap<>();
+            available.put("start", currentDate);
+            available.put("end", endDate);
+            available.put("available", true);
+            availabilityPeriods.add(available);
+        }
+        
+        return availabilityPeriods;
+    }
+
+    /**
+     * Get list of blocked dates (dates that cannot be selected for start date)
+     * Returns list of date strings in format "YYYY-MM-DD"
+     */
+    public List<String> getBlockedDates(Long vehicleId, int daysAhead) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime endDate = now.plusDays(daysAhead);
+        
+        // Get all active bookings and contracts
+        List<Booking> activeBookings = bookingRepository.findActiveBookingsInRange(vehicleId, now);
+        List<Contract> activeContracts = contractRepository.findActiveContractsInRange(vehicleId, now);
+        
+        List<String> blockedDates = new ArrayList<>();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        
+        // Add dates from bookings
+        for (Booking booking : activeBookings) {
+            LocalDateTime start = booking.getStartDate();
+            LocalDateTime end = booking.getEndDate();
+            LocalDateTime current = start;
+            
+            while (!current.isAfter(end) && !current.isAfter(endDate)) {
+                blockedDates.add(current.format(formatter));
+                current = current.plusDays(1);
+            }
+        }
+        
+        // Add dates from contracts
+        for (Contract contract : activeContracts) {
+            LocalDateTime start = contract.getStartDate();
+            LocalDateTime end = contract.getEndDate();
+            LocalDateTime current = start;
+            
+            while (!current.isAfter(end) && !current.isAfter(endDate)) {
+                String dateStr = current.format(formatter);
+                if (!blockedDates.contains(dateStr)) {
+                    blockedDates.add(dateStr);
+                }
+                current = current.plusDays(1);
+            }
+        }
+        
+        return blockedDates;
+    }
+
+    /**
+     * Sync vehicle statuses based on current bookings and contracts
+     * Updates vehicles that should be Rented but are still marked as Available
+     * This method should be called periodically or when needed
+     */
+    @Transactional
+    public int syncVehicleStatuses() {
+        List<Vehicle> allVehicles = vehicleRepository.findAll();
+        int updatedCount = 0;
+        LocalDateTime now = LocalDateTime.now();
+        
+        for (Vehicle vehicle : allVehicles) {
+            // Skip maintenance vehicles
+            if (vehicle.getStatus() == VehicleStatus.Maintenance) {
+                continue;
+            }
+            
+            // Get effective status based on bookings and contracts
+            VehicleStatus effectiveStatus = getEffectiveVehicleStatus(vehicle.getId());
+            
+            // If effective status differs from stored status, update it
+            if (vehicle.getStatus() != effectiveStatus) {
+                vehicle.setStatus(effectiveStatus);
+                vehicleRepository.save(vehicle);
+                updatedCount++;
+            }
+        }
+        
+        return updatedCount;
+    }
+
+    /**
+     * Sync status for a single vehicle
+     * Useful when booking is created/approved/cancelled
+     */
+    @Transactional
+    public void syncVehicleStatus(Long vehicleId) {
+        Optional<Vehicle> vehicleOpt = vehicleRepository.findById(vehicleId);
+        if (vehicleOpt.isEmpty()) {
+            return;
+        }
+        
+        Vehicle vehicle = vehicleOpt.get();
+        
+        // Skip maintenance vehicles
+        if (vehicle.getStatus() == VehicleStatus.Maintenance) {
+            return;
+        }
+        
+        // Get effective status
+        VehicleStatus effectiveStatus = getEffectiveVehicleStatus(vehicleId);
+        
+        // Update if different
+        if (vehicle.getStatus() != effectiveStatus) {
+            vehicle.setStatus(effectiveStatus);
+            vehicleRepository.save(vehicle);
+        }
+    }
+
     /**
      * Check if license plate exists (for duplicate validation)
      */

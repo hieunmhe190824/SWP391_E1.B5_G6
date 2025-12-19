@@ -36,6 +36,15 @@
                         <p class="page-description">Quản lý thông tin xe, cập nhật trạng thái, thêm mới và chỉnh sửa</p>
                     </div>
                     <div class="page-header-actions">
+                        <form th:action="@{/admin/vehicles/sync-statuses}" method="post" style="display: inline-block; margin-right: 10px;">
+                            <button type="submit" class="btn btn-secondary" 
+                                    onclick="return confirm('Bạn có chắc muốn đồng bộ trạng thái tất cả xe dựa trên bookings và contracts hiện tại?');">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"></path>
+                                </svg>
+                                Đồng bộ trạng thái
+                            </button>
+                        </form>
                         <a th:href="@{/admin/vehicles/create}" class="btn btn-primary">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <line x1="12" y1="5" x2="12" y2="19"></line>

@@ -145,6 +145,21 @@
                     <form id="bookingForm" th:action="@{/bookings/create}" method="post" th:object="${bookingDTO}">
                         <input type="hidden" name="vehicleId" th:value="${vehicle.id}">
 
+                        <!-- Availability Notice -->
+                        <div class="availability-notice" th:if="${nextAvailableDate != null && !isAvailable}">
+                            <div class="notice-content">
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M10 18C14.4183 18 18 14.4183 18 10C18 5.58172 14.4183 2 10 2C5.58172 2 2 5.58172 2 10C2 14.4183 5.58172 18 10 18Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M10 6V10M10 14H10.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                <div>
+                                    <strong>Đặt trước xe</strong>
+                                    <p>Xe sẽ có sẵn từ: <span th:text="${#temporals.format(nextAvailableDate, 'dd/MM/yyyy HH:mm')}">23/03/2025 00:00</span></p>
+                                    <p class="notice-hint">Vui lòng chọn ngày bắt đầu từ ngày có sẵn trở đi</p>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Date Selection -->
                         <div class="form-section">
                             <h3 class="form-section-title">Thời gian thuê</h3>
@@ -157,7 +172,10 @@
                                            th:field="*{startDate}"
                                            class="form-control"
                                            required
-                                           onchange="calculateCost()">
+                                           th:data-blocked-dates="${blockedDates != null ? #strings.listJoin(blockedDates, ',') : ''}"
+                                           th:data-next-available="${nextAvailableDate != null ? #temporals.format(nextAvailableDate, 'yyyy-MM-dd') + 'T' + #temporals.format(nextAvailableDate, 'HH:mm') : ''}"
+                                           onchange="validateStartDate(); calculateCost()">
+                                    <small class="form-text text-muted" id="startDateHelp"></small>
                                 </div>
 
                                 <div class="form-group">
@@ -330,13 +348,74 @@
         const pad = (num) => String(num).padStart(2, '0');
         const vnNow = toVnDate();
         const startOfTodayVn = `${vnNow.getFullYear()}-${pad(vnNow.getMonth() + 1)}-${pad(vnNow.getDate())}T00:00`;
-        document.getElementById('startDate').min = startOfTodayVn;
-        document.getElementById('endDate').min = startOfTodayVn;
+        
+        // Get blocked dates and next available date from data attributes
+        const startDateInput = document.getElementById('startDate');
+        const blockedDatesStr = startDateInput.getAttribute('data-blocked-dates');
+        const nextAvailableStr = startDateInput.getAttribute('data-next-available');
+        const blockedDates = blockedDatesStr ? blockedDatesStr.split(',') : [];
+        
+        // Set minimum date - use next available date if vehicle is not available, otherwise use today
+        let minDate = startOfTodayVn;
+        if (nextAvailableStr && nextAvailableStr.trim() !== '') {
+            const nextAvailable = new Date(nextAvailableStr);
+            const today = new Date(startOfTodayVn);
+            if (nextAvailable > today) {
+                minDate = nextAvailableStr;
+            }
+        }
+        
+        startDateInput.min = minDate;
+        document.getElementById('endDate').min = minDate;
+
+        // Validate start date against blocked dates
+        function validateStartDate() {
+            const startDateInput = document.getElementById('startDate');
+            const startDateValue = startDateInput.value;
+            const helpText = document.getElementById('startDateHelp');
+            
+            if (!startDateValue) {
+                helpText.textContent = '';
+                startDateInput.classList.remove('is-invalid');
+                return;
+            }
+            
+            // Extract date part (YYYY-MM-DD) from datetime-local value
+            const selectedDate = startDateValue.split('T')[0];
+            
+            // Check if selected date is in blocked dates
+            if (blockedDates.includes(selectedDate)) {
+                startDateInput.classList.add('is-invalid');
+                helpText.textContent = 'Ngày này đã được đặt trước. Vui lòng chọn ngày khác.';
+                helpText.style.color = '#dc3545';
+                return false;
+            }
+            
+            // Check if selected date is before minimum date
+            const selected = new Date(startDateValue);
+            const min = new Date(minDate);
+            if (selected < min) {
+                startDateInput.classList.add('is-invalid');
+                helpText.textContent = 'Vui lòng chọn ngày từ ' + min.toLocaleDateString('vi-VN') + ' trở đi.';
+                helpText.style.color = '#dc3545';
+                return false;
+            }
+            
+            // Valid date
+            startDateInput.classList.remove('is-invalid');
+            helpText.textContent = '';
+            return true;
+        }
 
         // Update end date minimum when start date changes
-        document.getElementById('startDate').addEventListener('change', function() {
-            document.getElementById('endDate').min = this.value;
-            calculateCost();
+        startDateInput.addEventListener('change', function() {
+            if (validateStartDate()) {
+                document.getElementById('endDate').min = this.value;
+                calculateCost();
+            } else {
+                // Reset end date if start date is invalid
+                document.getElementById('endDate').value = '';
+            }
         });
 
         // Validate when end date changes

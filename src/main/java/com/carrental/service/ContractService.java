@@ -70,6 +70,30 @@ public class ContractService {
         BigDecimal dailyRate = booking.getVehicle().getDailyRate();
         BigDecimal totalRentalFee = dailyRate.multiply(new BigDecimal(booking.getTotalDays()));
 
+        // Calculate deposit amount: must be STRICTLY greater than total_rental_fee (per constraint chk_deposit_fee)
+        // Constraint: deposit_amount > total_rental_fee (strictly greater, not >=)
+        // Strategy: Always use max(50M, total_rental_fee * 1.1) + 1 VND to ensure deposit > total_rental_fee
+        BigDecimal depositAmount;
+        
+        // Calculate 110% of total rental fee
+        BigDecimal depositFromRentalFee = totalRentalFee.multiply(new BigDecimal("1.1"));
+        
+        // Use the larger of: fixed deposit (50M) or 110% of rental fee
+        if (depositFromRentalFee.compareTo(FIXED_DEPOSIT_AMOUNT) > 0) {
+            depositAmount = depositFromRentalFee;
+        } else {
+            depositAmount = FIXED_DEPOSIT_AMOUNT;
+        }
+        
+        // CRITICAL: Add 1 VND to ensure deposit is STRICTLY greater than total_rental_fee
+        // This handles edge cases where deposit might equal total_rental_fee due to rounding
+        if (depositAmount.compareTo(totalRentalFee) <= 0) {
+            depositAmount = totalRentalFee.add(new BigDecimal("1"));
+        } else {
+            // Even if deposit > total_rental_fee, add 1 VND as safety margin
+            depositAmount = depositAmount.add(new BigDecimal("1"));
+        }
+
         // Create contract
         Contract contract = new Contract();
         contract.setBooking(booking);
@@ -82,7 +106,7 @@ public class ContractService {
         contract.setTotalDays(booking.getTotalDays());
         contract.setDailyRate(dailyRate);
         contract.setTotalRentalFee(totalRentalFee);
-        contract.setDepositAmount(FIXED_DEPOSIT_AMOUNT); // Fixed 50M VND deposit
+        contract.setDepositAmount(depositAmount); // Dynamic deposit: max(50M, total_rental_fee * 1.1)
         contract.setStatus(Contract.ContractStatus.PENDING_PAYMENT); // Waiting for deposit payment
 
         Contract savedContract = contractRepository.save(contract);
@@ -92,7 +116,7 @@ public class ContractService {
             notificationService.createContractCreatedNotification(
                 booking.getCustomer().getId(),
                 savedContract.getContractNumber(),
-                FIXED_DEPOSIT_AMOUNT
+                depositAmount
             );
         } catch (Exception e) {
             System.err.println("Failed to send contract created notification: " + e.getMessage());
@@ -165,7 +189,20 @@ public class ContractService {
         return contractRepository.findByStatus(status, pageable);
     }
 
+    /**
+     * Generate unique contract number
+     * Format: HD-YYYYMMDD-XXXXXX (max 50 chars)
+     * Example: HD-20251219-A1B2C3
+     */
     private String generateContractNumber() {
-        return "CTR-" + System.currentTimeMillis() + "-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        // Use date format YYYYMMDD instead of timestamp to keep it shorter
+        java.time.LocalDate today = java.time.LocalDate.now();
+        String dateStr = today.format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd"));
+        
+        // Use shorter random string (6 chars instead of 8)
+        String randomStr = UUID.randomUUID().toString().substring(0, 6).toUpperCase().replace("-", "");
+        
+        // Format: HD-YYYYMMDD-XXXXXX (total: 3 + 1 + 8 + 1 + 6 = 19 chars, well under 50 limit)
+        return "HD-" + dateStr + "-" + randomStr;
     }
 }

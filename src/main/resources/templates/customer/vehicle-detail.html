@@ -95,17 +95,49 @@
                         </div>
                     </div>
 
+                    <!-- Availability Info -->
+                    <div class="availability-info" th:if="${isAvailable != null and !isAvailable}">
+                        <div class="availability-alert">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M10 18C14.4183 18 18 14.4183 18 10C18 5.58172 14.4183 2 10 2C5.58172 2 2 5.58172 2 10C2 14.4183 5.58172 18 10 18Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M10 6V10M10 14H10.01" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <div>
+                                <strong>Xe đang được thuê</strong>
+                                <p th:if="${nextAvailableDate != null}">
+                                    Xe sẽ có sẵn từ: 
+                                    <span th:text="${#temporals.format(nextAvailableDate, 'dd/MM/yyyy HH:mm')}">23/03/2025 00:00</span>
+                                </p>
+                                <p th:if="${nextAvailableDate == null}">
+                                    Vui lòng liên hệ để biết thêm thông tin
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Action Buttons -->
                     <div class="action-buttons">
-                        <a th:href="@{/bookings/create(vehicleId=${vehicle.id})}" 
-                           class="btn btn-primary btn-large btn-icon btn-book"
-                           th:classappend="${vehicle.status.name() != 'Available' ? 'btn-disabled' : ''}"
-                           th:attr="onclick=${vehicle.status.name() != 'Available' ? 'return false;' : ''}">
+                        <!-- Button Đặt xe ngay (chỉ hiển thị khi available) -->
+                        <a th:if="${isAvailable != null and isAvailable}"
+                           th:href="@{/bookings/create(vehicleId=${vehicle.id})}" 
+                           class="btn btn-primary btn-large btn-icon btn-book">
                             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M6 2L3 6v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V6l-3-4H6zM3 6h14M10 10v6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
-                            <span th:text="${vehicle.status.name() == 'Available' ? 'Đặt xe ngay' : 'Xe không có sẵn'}">Đặt xe ngay</span>
+                            <span>Đặt xe ngay</span>
                         </a>
+                        
+                        <!-- Button Đặt trước (hiển thị khi không available) -->
+                        <a th:if="${isAvailable != null and !isAvailable}"
+                           th:href="@{/bookings/create(vehicleId=${vehicle.id})}" 
+                           class="btn btn-primary btn-large btn-icon btn-book">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M10 2C5.58172 2 2 5.58172 2 10C2 14.4183 5.58172 18 10 18C14.4183 18 18 14.4183 18 10C18 5.58172 14.4183 2 10 2Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M10 6V10L13 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <span>Đặt trước</span>
+                        </a>
+                        
                         <a th:href="@{/vehicles}" class="btn btn-secondary btn-large">
                             <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M11 3L6 9l5 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -192,6 +224,39 @@
                         <div class="spec-content">
                             <div class="spec-label">Màu sắc</div>
                             <div class="spec-value" th:text="${vehicle.color}">Trắng</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Availability Calendar Section -->
+            <div class="availability-section" th:if="${availabilityPeriods != null and !availabilityPeriods.isEmpty()}">
+                <h2 class="section-title">Lịch có sẵn</h2>
+                <div class="availability-calendar">
+                    <div class="availability-legend">
+                        <div class="legend-item">
+                            <span class="legend-color available"></span>
+                            <span>Có sẵn</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color unavailable"></span>
+                            <span>Đã được đặt</span>
+                        </div>
+                    </div>
+                    <div class="availability-timeline">
+                        <div th:each="period : ${availabilityPeriods}" 
+                             class="availability-period"
+                             th:classappend="${period.available == true} ? 'period-available' : 'period-unavailable'">
+                            <div class="period-info">
+                                <span class="period-date" 
+                                      th:text="${#temporals.format(period.start, 'dd/MM/yyyy HH:mm')} + ' - ' + ${#temporals.format(period.end, 'dd/MM/yyyy HH:mm')}">
+                                    19/03/2025 09:00 - 22/03/2025 18:00
+                                </span>
+                                <span class="period-status" 
+                                      th:text="${period.available == true} ? 'Có sẵn' : 'Đã được đặt'">
+                                    Có sẵn
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>

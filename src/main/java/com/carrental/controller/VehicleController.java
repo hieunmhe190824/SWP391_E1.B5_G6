@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -62,19 +64,19 @@ public class VehicleController {
         // Tạo Pageable: 9 xe mỗi trang (3 dòng x 3 card)
         int pageSize = 9;
         
-        // Tìm kiếm xe theo các tiêu chí
+        // Tìm kiếm xe theo các tiêu chí - hiển thị tất cả xe ở mọi trạng thái
         List<Vehicle> allVehicles;
         if (brandId != null || category != null || maxPrice != null || 
             minSeats != null || transmission != null || fuelType != null || 
             keyword != null) {
-            // Có filter/search -> sử dụng search method
-            allVehicles = vehicleService.searchVehicles(
+            // Có filter/search -> sử dụng search method (không filter theo status)
+            allVehicles = vehicleService.searchAllVehiclesForCustomer(
                 brandId, category, maxPrice, minSeats, 
                 transmission, fuelType, keyword
             );
         } else {
-            // Không có filter -> hiển thị tất cả xe available
-            allVehicles = vehicleService.getAvailableVehicles();
+            // Không có filter -> hiển thị tất cả xe ở mọi trạng thái
+            allVehicles = vehicleService.getAllVehicles();
         }
         
         // Thực hiện phân trang thủ công (vì searchVehicles trả về List, không phải Page)
@@ -131,7 +133,26 @@ public class VehicleController {
     public String viewVehicle(@PathVariable Long id, Model model) {
         Vehicle vehicle = vehicleService.getVehicleById(id)
                 .orElseThrow(() -> new RuntimeException("Vehicle not found"));
-        model.addAttribute("vehicle", vehicle);
+        
+        // Get effective status based on bookings and contracts
+        Vehicle.VehicleStatus effectiveStatus = vehicleService.getEffectiveVehicleStatus(id);
+        
+        // Update vehicle status for display (temporary, doesn't save to DB)
+        Vehicle displayVehicle = vehicle;
+        displayVehicle.setStatus(effectiveStatus);
+        
+        // Get next available date and availability periods
+        LocalDateTime nextAvailableDate = vehicleService.getNextAvailableDate(id);
+        List<java.util.Map<String, Object>> availabilityPeriods = vehicleService.getAvailabilityPeriods(id, 60);
+        
+        // Ensure boolean value is always set (never null)
+        boolean isAvailable = (effectiveStatus == Vehicle.VehicleStatus.Available);
+        
+        model.addAttribute("vehicle", displayVehicle);
+        model.addAttribute("nextAvailableDate", nextAvailableDate);
+        model.addAttribute("availabilityPeriods", availabilityPeriods != null ? availabilityPeriods : java.util.Collections.emptyList());
+        model.addAttribute("isAvailable", isAvailable);
+        
         return "customer/vehicle-detail";
     }
 }

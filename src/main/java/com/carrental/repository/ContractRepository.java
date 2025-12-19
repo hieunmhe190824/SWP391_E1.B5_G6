@@ -68,4 +68,38 @@ public interface ContractRepository extends JpaRepository<Contract, Long> {
            "AND c.createdAt >= :startDate AND c.createdAt <= :endDate")
     List<Contract> findActiveAndCompletedContractsWithVehicle(@Param("startDate") LocalDateTime startDate,
                                                               @Param("endDate") LocalDateTime endDate);
+
+    /**
+     * Check if vehicle has active contracts (ACTIVE or PENDING_PAYMENT) that overlap with date range
+     * Used to determine if vehicle is available for booking
+     */
+    @Query("SELECT COUNT(c) FROM Contract c " +
+           "WHERE c.vehicle.id = :vehicleId " +
+           "AND c.status IN ('ACTIVE', 'PENDING_PAYMENT') " +
+           "AND ((c.startDate <= :endDate AND c.endDate >= :startDate))")
+    long countActiveContractsForDateRange(@Param("vehicleId") Long vehicleId,
+                                          @Param("startDate") LocalDateTime startDate,
+                                          @Param("endDate") LocalDateTime endDate);
+
+    /**
+     * Check if vehicle has any active contracts (ACTIVE or PENDING_PAYMENT) at current time
+     */
+    @Query("SELECT COUNT(c) FROM Contract c " +
+           "WHERE c.vehicle.id = :vehicleId " +
+           "AND c.status IN ('ACTIVE', 'PENDING_PAYMENT') " +
+           "AND c.startDate <= :currentTime AND c.endDate >= :currentTime")
+    long countActiveContractsAtTime(@Param("vehicleId") Long vehicleId,
+                                    @Param("currentTime") LocalDateTime currentTime);
+
+    /**
+     * Get all active contracts (ACTIVE or PENDING_PAYMENT) for a vehicle within a date range
+     * Used to display availability calendar
+     */
+    @Query("SELECT c FROM Contract c " +
+           "WHERE c.vehicle.id = :vehicleId " +
+           "AND c.status IN ('ACTIVE', 'PENDING_PAYMENT') " +
+           "AND c.endDate >= :startDate " +
+           "ORDER BY c.startDate ASC")
+    List<Contract> findActiveContractsInRange(@Param("vehicleId") Long vehicleId,
+                                              @Param("startDate") LocalDateTime startDate);
 }

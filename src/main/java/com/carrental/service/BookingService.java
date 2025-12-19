@@ -49,6 +49,9 @@ public class BookingService {
     @Autowired
     private NotificationService notificationService;
 
+    @Autowired
+    private VehicleService vehicleService;
+
     /**
      * Get all bookings with relationships loaded
      */
@@ -102,16 +105,6 @@ public class BookingService {
         Vehicle vehicle = vehicleRepository.findByIdWithRelations(dto.getVehicleId())
                 .orElseThrow(() -> new RuntimeException("Vehicle not found"));
 
-        if (vehicle.getStatus() != Vehicle.VehicleStatus.Available) {
-            throw new RuntimeException("Vehicle is not available for booking");
-        }
-
-        // Validate locations
-        Location pickupLocation = locationRepository.findById(dto.getPickupLocationId())
-                .orElseThrow(() -> new RuntimeException("Pickup location not found"));
-        Location returnLocation = locationRepository.findById(dto.getReturnLocationId())
-                .orElseThrow(() -> new RuntimeException("Return location not found"));
-
         // Validate dates using Vietnam timezone (UTC+7); allow any time today
         if (dto.getStartDate() == null || dto.getEndDate() == null) {
             throw new RuntimeException("Start/end date is required");
@@ -121,12 +114,18 @@ public class BookingService {
             throw new RuntimeException("End date must be after start date");
         }
 
-        // Check for conflicting bookings
-        long conflicts = bookingRepository.countConflictingBookings(
-                dto.getVehicleId(), dto.getStartDate(), dto.getEndDate());
-        if (conflicts > 0) {
-            throw new RuntimeException("Vehicle is already booked for the selected dates");
+        // Check if vehicle is available for the requested date range
+        // This checks both vehicle status and active bookings/contracts
+        if (!vehicleService.isVehicleAvailableForDateRange(
+                dto.getVehicleId(), dto.getStartDate(), dto.getEndDate())) {
+            throw new RuntimeException("Vehicle is not available for the selected dates");
         }
+
+        // Validate locations
+        Location pickupLocation = locationRepository.findById(dto.getPickupLocationId())
+                .orElseThrow(() -> new RuntimeException("Pickup location not found"));
+        Location returnLocation = locationRepository.findById(dto.getReturnLocationId())
+                .orElseThrow(() -> new RuntimeException("Return location not found"));
 
         // Calculate total days
         long totalDays = ChronoUnit.DAYS.between(
@@ -149,6 +148,9 @@ public class BookingService {
 
         // Save booking
         booking = bookingRepository.save(booking);
+        
+        // Sync vehicle status to ensure it reflects current bookings
+        vehicleService.syncVehicleStatus(dto.getVehicleId());
 
         // Attach documents if provided
         if (dto.getDocumentIds() != null && !dto.getDocumentIds().isEmpty()) {
@@ -207,6 +209,10 @@ public class BookingService {
         booking.setStatus(BookingStatus.APPROVED);
         Booking savedBooking = bookingRepository.save(booking);
 
+        // Sync vehicle status based on effective availability
+        // This ensures the vehicle status matches its actual availability
+        vehicleService.syncVehicleStatus(savedBooking.getVehicle().getId());
+
         // Automatically create contract once booking is approved
         try {
             contractService.createContractFromBooking(savedBooking, staffUser);
@@ -261,6 +267,9 @@ public class BookingService {
         // Update booking status
         booking.setStatus(BookingStatus.REJECTED);
         Booking savedBooking = bookingRepository.save(booking);
+
+        // Sync vehicle status after rejection (vehicle might become available)
+        vehicleService.syncVehicleStatus(savedBooking.getVehicle().getId());
 
         // Send notification to customer about rejection
         try {
@@ -334,6 +343,9 @@ public class BookingService {
         Booking updatedBooking = bookingRepository.findByIdWithRelations(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking not found after update"));
         
+        // Sync vehicle status after cancellation (vehicle might become available)
+        vehicleService.syncVehicleStatus(updatedBooking.getVehicle().getId());
+        
         System.out.println("After reload - ID: " + updatedBooking.getId());
         System.out.println("After reload - enum: " + updatedBooking.getStatus());
         System.out.println("After reload - string: " + updatedBooking.getStatusString());
@@ -349,7 +361,12 @@ public class BookingService {
         Booking booking = bookingRepository.findByIdWithRelations(bookingId)
                 .orElseThrow(() -> new RuntimeException("Booking not found"));
         booking.setStatus(BookingStatus.CANCELLED);
-        return bookingRepository.save(booking);
+        Booking savedBooking = bookingRepository.save(booking);
+        
+        // Sync vehicle status after cancellation (vehicle might become available)
+        vehicleService.syncVehicleStatus(savedBooking.getVehicle().getId());
+        
+        return savedBooking;
     }
 
     /**
