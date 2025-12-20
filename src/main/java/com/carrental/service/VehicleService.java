@@ -368,30 +368,49 @@ public class VehicleService {
     /**
      * Check if vehicle is available for a specific date range
      * Returns true if vehicle has no active bookings or contracts overlapping the date range
+     * Allows advance booking for vehicles that are currently Rented, as long as the requested
+     * date range doesn't overlap with existing bookings/contracts
      */
     public boolean isVehicleAvailableForDateRange(Long vehicleId, LocalDateTime startDate, LocalDateTime endDate) {
-        // Check if vehicle status is not Available or Maintenance
+        System.out.println("=== VEHICLE AVAILABILITY CHECK ===");
+        System.out.println("Vehicle ID: " + vehicleId);
+        System.out.println("Requested Start Date: " + startDate);
+        System.out.println("Requested End Date: " + endDate);
+        
         Optional<Vehicle> vehicleOpt = vehicleRepository.findById(vehicleId);
         if (vehicleOpt.isEmpty()) {
+            System.out.println("Vehicle not found");
             return false;
         }
         Vehicle vehicle = vehicleOpt.get();
-        if (vehicle.getStatus() != VehicleStatus.Available) {
+        System.out.println("Vehicle Status: " + vehicle.getStatus());
+        
+        // If vehicle is in Maintenance, it's never available
+        if (vehicle.getStatus() == VehicleStatus.Maintenance) {
+            System.out.println("Vehicle is in Maintenance - NOT AVAILABLE");
             return false;
         }
 
-        // Check for active bookings
+        // Check for active bookings that overlap with the requested date range
+        // This works for both Available and Rented vehicles
         long activeBookings = bookingRepository.countActiveBookingsForDateRange(vehicleId, startDate, endDate);
+        System.out.println("Active bookings overlapping: " + activeBookings);
         if (activeBookings > 0) {
+            System.out.println("Found overlapping bookings - NOT AVAILABLE");
             return false;
         }
 
-        // Check for active contracts
+        // Check for active contracts that overlap with the requested date range
         long activeContracts = contractRepository.countActiveContractsForDateRange(vehicleId, startDate, endDate);
+        System.out.println("Active contracts overlapping: " + activeContracts);
         if (activeContracts > 0) {
+            System.out.println("Found overlapping contracts - NOT AVAILABLE");
             return false;
         }
 
+        // Vehicle is available for the requested date range
+        // (even if currently Rented, as long as there's no overlap)
+        System.out.println("Vehicle is AVAILABLE for the requested date range");
         return true;
     }
 
