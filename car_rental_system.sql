@@ -1824,3 +1824,39 @@ WHERE v.vehicle_id = v.vehicle_id  -- Use key column to satisfy safe update mode
   -- Maintenance vehicles are automatically protected because v.status = 'Rented' excludes them
 */
 
+-- ===================================================================
+-- TEST DATA: Bookings & Contracts ready for refund on 21/12/2025
+-- ===================================================================
+-- These contracts were returned on 7/12/2025, deposit hold ends on 21/12/2025 (READY for refund)
+
+-- Additional bookings for December 2025 refund testing
+INSERT INTO bookings (booking_id, customer_id, vehicle_id, pickup_location_id, return_location_id, start_date, end_date, total_days, status, assigned_staff_id, created_at) VALUES
+-- Bookings for contracts ready to refund on 21/12/2025
+(85, 5, 1, 1, 1, '2025-12-01 09:00:00', '2025-12-07 18:00:00', 6, 'Approved', 2, '2025-11-28 10:00:00'),
+(86, 6, 5, 2, 2, '2025-12-01 08:00:00', '2025-12-07 17:00:00', 6, 'Approved', 3, '2025-11-28 14:00:00'),
+(87, 7, 12, 3, 3, '2025-12-01 10:00:00', '2025-12-07 16:00:00', 6, 'Approved', 4, '2025-11-28 09:00:00');
+
+-- Contracts completed on 7/12/2025 (ready for refund on 21/12/2025)
+INSERT INTO contracts (contract_id, booking_id, contract_number, customer_id, vehicle_id, staff_id, start_date, end_date, total_days, daily_rate, total_rental_fee, deposit_amount, status, created_at) VALUES
+(79, 85, 'HD-2025-0079', 5, 1, 2, '2025-12-01 09:00:00', '2025-12-07 18:00:00', 6, 500000, 3000000, 50000000, 'Completed', '2025-11-30 10:00:00'),
+(80, 86, 'HD-2025-0080', 6, 5, 3, '2025-12-01 08:00:00', '2025-12-07 17:00:00', 6, 550000, 3300000, 50000000, 'Completed', '2025-11-30 14:00:00'),
+(81, 87, 'HD-2025-0081', 7, 12, 4, '2025-12-01 10:00:00', '2025-12-07 16:00:00', 6, 600000, 3600000, 50000000, 'Completed', '2025-11-30 09:00:00');
+
+-- Deposit holds ready for refund on 21/12/2025
+INSERT INTO deposit_holds (contract_id, deposit_amount, deducted_at_return, hold_start_date, hold_end_date, status, created_at) VALUES
+-- Contract 79: Ready for refund (no violations, no deductions)
+(79, 50000000, 0, '2025-12-07 18:00:00', '2025-12-21 18:00:00', 'READY', '2025-12-07 18:00:00'),
+-- Contract 80: Ready for refund (with some deductions at return)
+(80, 50000000, 1500000, '2025-12-07 17:00:00', '2025-12-21 17:00:00', 'READY', '2025-12-07 17:00:00'),
+-- Contract 81: Ready for refund (no deductions, can add violations)
+(81, 50000000, 0, '2025-12-07 16:00:00', '2025-12-21 16:00:00', 'READY', '2025-12-07 16:00:00');
+
+-- Payments for test contracts 79-81
+INSERT INTO payments (contract_id, payment_type, amount, method, status, payment_date) VALUES
+(79, 'DEPOSIT', 50000000, 'TRANSFER', 'COMPLETED', '2025-11-30 10:30:00'),
+(79, 'RENTAL', 3000000, 'TRANSFER', 'COMPLETED', '2025-12-07 18:30:00'),
+(80, 'DEPOSIT', 50000000, 'CARD', 'COMPLETED', '2025-11-30 14:30:00'),
+(80, 'RENTAL', 3300000, 'CARD', 'COMPLETED', '2025-12-07 17:30:00'),
+(81, 'DEPOSIT', 50000000, 'ONLINE', 'COMPLETED', '2025-11-30 09:30:00'),
+(81, 'RENTAL', 3600000, 'CASH', 'COMPLETED', '2025-12-07 16:30:00');
+

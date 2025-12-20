@@ -56,7 +56,9 @@ public class RefundService {
         BigDecimal deductedAtReturn = depositHold.getDeductedAtReturn();
         BigDecimal trafficFines = violationRepository.sumFineAmountByDepositHoldId(holdId);
         
-        BigDecimal refundAmount = originalDeposit.subtract(deductedAtReturn).subtract(trafficFines);
+        BigDecimal refundAmount = originalDeposit
+                .subtract(deductedAtReturn)
+                .subtract(trafficFines);
 
         // Ensure refund amount is not negative
         if (refundAmount.compareTo(BigDecimal.ZERO) < 0) {
@@ -118,7 +120,9 @@ public class RefundService {
         BigDecimal deductedAtReturn = depositHold.getDeductedAtReturn();
         BigDecimal trafficFines = violationRepository.sumFineAmountByDepositHoldId(holdId);
         
-        BigDecimal refundAmount = originalDeposit.subtract(deductedAtReturn).subtract(trafficFines);
+        BigDecimal refundAmount = originalDeposit
+                .subtract(deductedAtReturn)
+                .subtract(trafficFines);
         
         return refundAmount.compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : refundAmount;
     }

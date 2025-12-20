@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Vi Phạm - Staff</title>
+
+    <!-- ===== CSS FILES ===== -->
+    <link rel="stylesheet" th:href="@{/css/variables.css}">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/components.css}">
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}">
+
+    <style>
+        body {
+            font-family: var(--font-family-base);
+        }
+
+        .deposit-card {
+            background: rgba(20, 27, 38, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            padding: 1.5rem;
+            margin-bottom: 1.25rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .deposit-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .deposit-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .contract-number {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--color-primary);
+            font-family: monospace;
+            letter-spacing: 0.5px;
+        }
+
+        .deposit-card-body {
+            display: grid;
+            gap: 0.75rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+        }
+
+        .info-label {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.65);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .info-value {
+            font-size: 0.95rem;
+            color: var(--color-text-white);
+            font-weight: 700;
+        }
+
+        .violations-list {
+            background: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .violations-title {
+            font-weight: 700;
+            color: var(--color-text-white);
+            margin-bottom: 0.75rem;
+            font-size: 0.95rem;
+        }
+
+        .violation-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .violation-item:last-child {
+            border-bottom: none;
+        }
+
+        .violation-type {
+            color: rgba(255, 255, 255, 0.85);
+            font-weight: 600;
+        }
+
+        .violation-fine {
+            color: #ef4444;
+            font-weight: 700;
+        }
+
+        .empty-violations {
+            color: rgba(255, 255, 255, 0.5);
+            font-style: italic;
+            padding: 0.5rem 0;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .field.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .label {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 600;
+        }
+
+        .required {
+            color: #ef4444;
+        }
+
+        .input {
+            width: 100%;
+            padding: 0.65rem 0.85rem;
+            background: rgba(15, 22, 32, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: var(--color-text-white);
+            font-size: 0.95rem;
+            font-family: var(--font-family-base);
+            transition: border-color 0.2s;
+        }
+
+        .input:focus {
+            outline: none;
+            border-color: #ef4444;
+        }
+
+        .violation-form {
+            display: none;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .violation-form.show {
+            display: block;
+        }
+
+        .actions {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-tab {
+            padding: 0.65rem 1.25rem;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(15, 22, 32, 0.8);
+            color: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.2s;
+            text-decoration: none;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .filter-tab:hover,
+        .filter-tab.active {
+            background: var(--color-primary);
+            color: #fff;
+            border-color: var(--color-primary);
+            transform: translateY(-1px);
+        }
+
+        .icon-sm {
+            width: 18px;
+            height: 18px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.4rem 0.85rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-holding {
+            background: rgba(234, 179, 8, 0.15);
+            color: #fbbf24;
+            border: 1px solid rgba(234, 179, 8, 0.3);
+        }
+
+        .status-ready {
+            background: rgba(34, 197, 94, 0.15);
+            color: #4ade80;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+
+        .status-refunded {
+            background: rgba(148, 163, 184, 0.15);
+            color: #94a3b8;
+            border: 1px solid rgba(148, 163, 184, 0.3);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- ===== STAFF DASHBOARD LAYOUT ===== -->
+    <div class="dashboard-container">
+        <!-- Sidebar Overlay for mobile -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <!-- Sidebar - STAFF ONLY -->
+        <aside th:replace="~{fragments/components/sidebar-staff :: sidebar-staff}"></aside>
+
+        <!-- Main Content Area -->
+        <div class="dashboard-main">
+            <!-- Dashboard Header -->
+            <header th:replace="~{fragments/components/dashboard-header :: dashboard-header}"></header>
+
+            <!-- Dashboard Content -->
+            <main class="dashboard-content">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <div class="page-header-content">
+                        <h1 class="page-title">Quản lý vi phạm giao thông</h1>
+                        <p class="page-description">Thêm và quản lý vi phạm giao thông cho các hợp đồng</p>
+                    </div>
+                </div>
+
+                <!-- Flash Messages -->
+                <div th:if="${successMessage}" class="alert alert-success" role="alert">
+                    <svg class="alert-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                    <span th:text="${successMessage}"></span>
+                </div>
+                <div th:if="${errorMessage}" class="alert alert-danger" role="alert">
+                    <svg class="alert-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                    <span th:text="${errorMessage}"></span>
+                </div>
+
+                <!-- Filter Tabs -->
+                <div class="filter-tabs">
+                    <a th:href="@{/staff/violations}" class="filter-tab"
+                        th:classappend="${selectedStatus == null} ? 'active' : ''">
+                        <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="9" y1="3" x2="9" y2="21"></line>
+                        </svg>
+                        Tất cả
+                    </a>
+                    <a th:href="@{/staff/violations(status='HOLDING')}" class="filter-tab"
+                        th:classappend="${selectedStatus == 'HOLDING'} ? 'active' : ''">
+                        <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                        </svg>
+                        Đang giữ
+                    </a>
+                    <a th:href="@{/staff/violations(status='READY')}" class="filter-tab"
+                        th:classappend="${selectedStatus == 'READY'} ? 'active' : ''">
+                        <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                        </svg>
+                        Sẵn sàng hoàn
+                    </a>
+                    <a th:href="@{/staff/violations(status='REFUNDED')}" class="filter-tab"
+                        th:classappend="${selectedStatus == 'REFUNDED'} ? 'active' : ''">
+                        <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+                        </svg>
+                        Đã hoàn
+                    </a>
+                </div>
+
+                <!-- Deposit Cards -->
+                <div th:if="${deposits != null and !deposits.isEmpty()}">
+                    <div class="deposit-card" th:each="deposit : ${deposits}">
+                        <!-- Card Header -->
+                        <div class="deposit-card-header">
+                            <div>
+                                <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                                    <div class="contract-number" th:text="${deposit.contract.contractNumber}">CT-0001</div>
+                                    <span class="status-badge"
+                                        th:classappend="${deposit.status.name() == 'HOLDING'} ? 'status-holding' : (${deposit.status.name() == 'READY'} ? 'status-ready' : 'status-refunded')"
+                                        th:text="${deposit.status.name() == 'HOLDING'} ? 'Đang giữ' : (${deposit.status.name() == 'READY'} ? 'Sẵn sàng hoàn' : 'Đã hoàn')">
+                                        Đang giữ
+                                    </span>
+                                </div>
+                                <div style="font-size: 0.85rem; color: rgba(255, 255, 255, 0.6); margin-top: 0.25rem;">
+                                    Khách hàng: <span th:text="${deposit.contract.customer.fullName}">Nguyễn Văn A</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card Body -->
+                        <div class="deposit-card-body">
+                            <div class="info-row">
+                                <span class="info-label">Tiền cọc:</span>
+                                <span class="info-value"
+                                    th:text="${#numbers.formatDecimal(deposit.depositAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">50,000,000
+                                    VNĐ</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Đã trừ khi trả xe:</span>
+                                <span class="info-value"
+                                    th:text="${#numbers.formatDecimal(deposit.deductedAtReturn != null ? deposit.deductedAtReturn : 0, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">0
+                                    VNĐ</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Tổng phạt vi phạm:</span>
+                                <span class="info-value violation-fine"
+                                    th:text="${#numbers.formatDecimal(totalFinesMap.get(deposit.id), 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">0
+                                    VNĐ</span>
+                            </div>
+                            <div class="info-row" th:if="${deposit.status.name() == 'READY'}" style="border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 0.75rem; margin-top: 0.5rem;">
+                                <span class="info-label" style="color: #10b981; font-size: 1rem;">Số tiền hoàn lại:</span>
+                                <span class="info-value" style="color: #10b981; font-size: 1.1rem; font-weight: 800;"
+                                    th:text="${#numbers.formatDecimal(refundAmountMap.get(deposit.id), 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">0
+                                    VNĐ</span>
+                            </div>
+                        </div>
+
+                        <!-- Violations List -->
+                        <div class="violations-list" th:if="${violationsMap.get(deposit.id) != null and !violationsMap.get(deposit.id).isEmpty()}">
+                            <div class="violations-title">Danh sách vi phạm:</div>
+                            <div class="violation-item" th:each="violation : ${violationsMap.get(deposit.id)}">
+                                <span class="violation-type" th:text="${violation.violationType}">Vượt đèn đỏ</span>
+                                <span class="violation-fine"
+                                    th:text="${#numbers.formatDecimal(violation.fineAmount, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">500,000
+                                    VNĐ</span>
+                            </div>
+                        </div>
+                        <div class="violations-list" th:if="${violationsMap.get(deposit.id) == null or violationsMap.get(deposit.id).isEmpty()}">
+                            <div class="empty-violations">Chưa có vi phạm nào</div>
+                        </div>
+
+                        <!-- Add Violation Form -->
+                        <div class="violation-form" th:id="'violationForm-' + ${deposit.id}">
+                            <form th:action="@{/staff/deposits/{id}/violations(id=${deposit.id})}" method="post"
+                                enctype="multipart/form-data">
+                                <div class="form-grid">
+                                    <div class="field">
+                                        <label class="label" for="violationType">Loại vi phạm <span class="required">*</span></label>
+                                        <select class="input" id="violationType" name="violationType" required>
+                                            <option value="" disabled selected>Chọn loại vi phạm</option>
+                                            <option value="Vượt đèn đỏ">Vượt đèn đỏ</option>
+                                            <option value="Quá tốc độ">Quá tốc độ</option>
+                                            <option value="Đi sai làn đường">Đi sai làn đường</option>
+                                            <option value="Dừng, đỗ sai quy định">Dừng, đỗ sai quy định</option>
+                                            <option value="Không đội mũ bảo hiểm">Không đội mũ bảo hiểm</option>
+                                            <option value="Không chấp hành tín hiệu giao thông">Không chấp hành tín hiệu giao thông</option>
+                                            <option value="Lấn làn / đi ngược chiều">Lấn làn / đi ngược chiều</option>
+                                            <option value="Sử dụng điện thoại khi lái xe">Sử dụng điện thoại khi lái xe</option>
+                                            <option value="Khác">Khác (ghi rõ trong mô tả)</option>
+                                        </select>
+                                    </div>
+                                    <div class="field">
+                                        <label class="label" for="violationDate">Ngày vi phạm <span class="required">*</span></label>
+                                        <input class="input" id="violationDate" name="violationDate" type="datetime-local"
+                                            required>
+                                    </div>
+                                    <div class="field">
+                                        <label class="label" for="fineAmount">Số tiền phạt (VNĐ) <span class="required">*</span></label>
+                                        <input class="input" id="fineAmount" name="fineAmount" type="number" min="0"
+                                            required placeholder="Ví dụ: 500000">
+                                    </div>
+                                    <div class="field full-width">
+                                        <label class="label" for="description">Mô tả</label>
+                                        <textarea class="input" id="description" name="description" rows="3"
+                                            placeholder="Mô tả chi tiết vi phạm..."></textarea>
+                                    </div>
+                                    <div class="field full-width">
+                                        <label class="label" for="evidenceFile">Bằng chứng (ảnh)</label>
+                                        <input class="input" id="evidenceFile" name="evidenceFile" type="file"
+                                            accept="image/*">
+                                    </div>
+                                </div>
+                                <div class="actions" style="margin-top: 1rem;">
+                                    <button type="submit" class="btn btn-primary">Thêm vi phạm</button>
+                                    <button type="button" class="btn btn-secondary" th:onclick="'hideViolationForm(' + ${deposit.id} + ')'">Hủy</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="actions">
+                            <button type="button" class="btn btn-primary" th:onclick="'showViolationForm(' + ${deposit.id} + ')'">
+                                Thêm vi phạm
+                            </button>
+                            <a th:if="${deposit.status.name() == 'READY' and (refundProcessed == null or !refundProcessed.get(deposit.id))}"
+                                th:href="@{/staff/deposits/{id}/refund(id=${deposit.id})}" class="btn" style="background: #10b981; color: white; border: none;">
+                                Xử lý hoàn tiền
+                            </a>
+                            <a th:href="@{/staff/deposits/{id}(id=${deposit.id})}" class="btn btn-secondary">
+                                Xem chi tiết
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Empty State -->
+                <div th:if="${deposits == null or deposits.isEmpty()}" class="empty-state">
+                    <p style="color: white;">Không có hợp đồng nào để quản lý vi phạm</p>
+                    <a th:href="@{/staff/violations}" class="btn btn-primary">Xem tất cả</a>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        function showViolationForm(depositId) {
+            const form = document.getElementById('violationForm-' + depositId);
+            if (form) {
+                form.classList.add('show');
+            }
+        }
+
+        function hideViolationForm(depositId) {
+            const form = document.getElementById('violationForm-' + depositId);
+            if (form) {
+                form.classList.remove('show');
+                // Reset form
+                form.querySelector('form').reset();
+            }
+        }
+    </script>
+</body>
+
+</html>
+

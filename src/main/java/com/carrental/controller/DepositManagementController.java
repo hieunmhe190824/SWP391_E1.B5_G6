@@ -317,6 +317,7 @@ public class DepositManagementController {
         }
     }
 
+
     /**
      * UC18: Process deposit refund
      */
@@ -330,13 +331,12 @@ public class DepositManagementController {
             System.out.println("=== REFUND PROCESSING DEBUG ===");
             System.out.println("Hold ID: " + holdId);
             System.out.println("Refund Method String (raw): '" + refundMethodStr + "'");
-            System.out.println("Refund Method String (uppercase): '" + refundMethodStr.toUpperCase() + "'");
             
             // Parse refund method (convert to uppercase to handle case-insensitive input)
             RefundMethod refundMethod = RefundMethod.valueOf(refundMethodStr.toUpperCase());
             System.out.println("Parsed RefundMethod enum: " + refundMethod);
 
-            // Process refund
+            // Process refund (violations should already be added via /staff/violations page)
             Refund refund = refundService.processRefund(holdId, refundMethod);
             System.out.println("Refund processed successfully. Refund ID: " + refund.getId());
             System.out.println("=== END DEBUG ===");

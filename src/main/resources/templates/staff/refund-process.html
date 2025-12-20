@@ -296,6 +296,27 @@
             justify-content: flex-end;
             gap: 0.75rem;
         }
+
+        .form-control {
+            width: 100%;
+            padding: 0.65rem 0.85rem;
+            background: rgba(15, 22, 32, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: var(--color-text-white);
+            font-size: 0.95rem;
+            font-family: var(--font-family-base);
+            transition: border-color 0.2s;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #22c55e;
+        }
+
+        .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
     </style>
 </head>
 
@@ -372,6 +393,8 @@
             </div>
 
             <form id="refundForm" th:action="@{/staff/deposits/{id}/refund(id=${depositHold.id})}" method="post">
+                <!-- Refund Amount Summary -->
+
                 <div class="panel">
                     <div class="panel-title">Phương thức hoàn tiền</div>
                     <div class="payment-methods">
@@ -426,7 +449,7 @@
         </main>
     </div>
 
-    <script>
+    <script th:inline="javascript">
         (function () {
             const form = document.getElementById('refundForm');
             const confirmBtn = document.getElementById('confirmRefundBtn');
