@@ -43,9 +43,15 @@ public class PaymentCallbackController {
      */
     @GetMapping("/callback")
     public String handlePaymentCallback(HttpServletRequest request, Model model) {
-        log.info("Received VNPay callback with raw params: {}", Collections.list(request.getParameterNames())
-                .stream()
-                .collect(HashMap::new, (m, k) -> m.put(k, request.getParameter(k)), HashMap::putAll));
+        Map<String, String> rawParams = new HashMap<>();
+Enumeration<String> paramNames = request.getParameterNames();
+while (paramNames.hasMoreElements()) {
+    String key = paramNames.nextElement();
+    rawParams.put(key, request.getParameter(key));
+}
+
+log.info("Received VNPay callback with raw params: {}", rawParams);
+
 
         // Get all parameters from VNPay
         // IMPORTANT: For hash verification, only field VALUES must be URL encoded (per VNPay spec)
